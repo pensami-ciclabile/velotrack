@@ -6,7 +6,7 @@ Record your tram rides with any GPS tracking app, drop the GPX files into the pr
 
 ## How it works
 
-The GPS tracking app drops points when the device is stationary, creating time gaps in the data. Velotrack exploits this: a **stop** is any gap longer than 5 seconds where the tram moved less than 15 meters. Each stop is then classified by proximity to known tram stops (from Milan's official GTFS data) and user-provided traffic light locations.
+The GPS tracking app stops recording points when you're not moving, creating time gaps in the data. Velotrack exploits this: a **stop** is any gap longer than 5 seconds where the tram moved less than 15 meters. Each stop is then classified by proximity to known tram stops (from Milan's official GTFS data) and user-provided traffic light locations.
 
 **Stop categories:**
 - **Tram stop** — within 30m of a GTFS tram stop
@@ -72,18 +72,7 @@ This is optional — without it, stops near traffic lights will be classified as
 
 ### GTFS data
 
-Tram stop locations are downloaded from Milan's open data portal. Re-run `uv run main.py download-gtfs` to update them. The data is stored in `data/gtfs/` (gitignored).
-
-## Tech stack
-
-| Component | Library |
-|---|---|
-| GPX parsing | [gpxpy](https://github.com/tkrajina/gpxpy) |
-| Data processing | [pandas](https://pandas.pydata.org/) |
-| Interactive maps | [folium](https://python-folium.readthedocs.io/) (Leaflet.js wrapper) |
-| GTFS download | [requests](https://docs.python-requests.org/) |
-| Package management | [uv](https://docs.astral.sh/uv/) |
-| Runtime | Python 3.13+ |
+Tram stop locations are downloaded from [Milan's open data portal](https://dati.comune.milano.it/dataset/ds929-orari-del-trasporto-pubblico-locale-nel-comune-di-milano-in-formato-gtfs). Re-run `uv run main.py download-gtfs` to update them. The data is stored in `data/gtfs/` (gitignored).
 
 ## Project structure
 
