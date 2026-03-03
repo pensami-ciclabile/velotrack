@@ -16,6 +16,11 @@ The GPS tracking app stops recording points when you're not moving, creating tim
 
 When multiple rides share the same tram line, wait times and velocities are averaged.
 
+**Line statistics panel:** Each generated map includes a summary panel (bottom-left corner) with:
+- **Speed stats** — average, peak, median, P25/P75 (computed from moving segments only)
+- **Stop breakdown** — count and total wait time per category (tram stops, traffic lights, combined, bottlenecks)
+- **Scenario analysis** — green wave (sum of min wait at each location), red wave (sum of max), and P25/P75 totals
+
 ## Quick start
 
 ```bash
