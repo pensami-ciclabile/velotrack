@@ -1,0 +1,12 @@
+[project]
+name = "velotrack"
+version = "0.1.0"
+description = "Milan tram GPS ride analysis with velocity heatmaps and stop classification"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "gpxpy",
+    "folium",
+    "pandas",
+    "requests",
+]
