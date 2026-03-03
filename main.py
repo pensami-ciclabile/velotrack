@@ -5,7 +5,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from velotrack.config import OUTPUT_DIR, RIDES_DIR, TRAFFIC_LIGHTS_CSV
+from velotrack.config import MAX_REALISTIC_SPEED, OUTPUT_DIR, RIDES_DIR, TRAFFIC_LIGHTS_CSV
 from velotrack.gpx_parser import parse_gpx
 from velotrack.gtfs import download_gtfs, load_tram_stops
 from velotrack.map_builder import build_map
@@ -55,7 +55,7 @@ def cmd_analyze(gpx_paths: list[str]):
         all_stops = []
         for ride_path, name in ride_files:
             print(f"  Parsing {name}...")
-            df = parse_gpx(ride_path)
+            df, outlier_count = parse_gpx(ride_path)
             if df.empty:
                 print(f"  WARNING: No points in {name}, skipping.")
                 continue
@@ -63,6 +63,8 @@ def cmd_analyze(gpx_paths: list[str]):
             stops = detect_stops(df)
             stops = classify_stops(stops, tram_stops, traffic_lights)
             all_stops.append(stops)
+            if outlier_count > 0:
+                print(f"  ⚠ {outlier_count} velocity outliers clamped to {MAX_REALISTIC_SPEED} km/h")
             print(f"  {len(df)} points, {len(stops)} stops detected")
 
         if not ride_dfs:

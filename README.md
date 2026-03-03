@@ -14,6 +14,8 @@ The GPS tracking app stops recording points when you're not moving, creating tim
 - **Combined** — near both a tram stop and a traffic light
 - **Bottleneck** — none of the above (congestion, intersections, etc.)
 
+**Velocity outlier removal:** GPS jitter can produce unrealistic speed spikes. Velocities above the configured max (default 50 km/h) are clamped before computing statistics or rendering the heatmap.
+
 When multiple rides share the same tram line, wait times and velocities are averaged.
 
 **Line statistics panel:** Each generated map includes a summary panel (bottom-left corner) with:

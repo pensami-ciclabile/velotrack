@@ -6,6 +6,8 @@ from pathlib import Path
 import gpxpy
 import pandas as pd
 
+from velotrack.config import MAX_REALISTIC_SPEED
+
 
 def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Distance in meters between two GPS coordinates."""
@@ -17,7 +19,7 @@ def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
-def parse_gpx(path: Path) -> pd.DataFrame:
+def parse_gpx(path: Path) -> tuple[pd.DataFrame, int]:
     """Parse a GPX file into a DataFrame with columns:
     lat, lon, ele, time, dt, dist, velocity_kmh
     """
@@ -37,7 +39,7 @@ def parse_gpx(path: Path) -> pd.DataFrame:
 
     df = pd.DataFrame(points)
     if df.empty:
-        return df
+        return df, 0
 
     df = df.sort_values("time").reset_index(drop=True)
 
@@ -54,4 +56,7 @@ def parse_gpx(path: Path) -> pd.DataFrame:
     mask = df["dt"] > 0
     df.loc[mask, "velocity_kmh"] = (df.loc[mask, "dist"] / df.loc[mask, "dt"]) * 3.6
 
-    return df
+    outlier_count = int((df["velocity_kmh"] > MAX_REALISTIC_SPEED).sum())
+    df.loc[df["velocity_kmh"] > MAX_REALISTIC_SPEED, "velocity_kmh"] = MAX_REALISTIC_SPEED
+
+    return df, outlier_count

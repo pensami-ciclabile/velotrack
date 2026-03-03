@@ -18,6 +18,9 @@ TRAM_STOP_RADIUS = 30.0  # meters — match radius to GTFS tram stop
 TRAFFIC_LIGHT_RADIUS = 25.0  # meters — match radius to traffic light
 COMBINED_TRAM_DEDUCT = 10.0  # seconds — estimated boarding time deducted for combined stops
 
+# Velocity outlier removal
+MAX_REALISTIC_SPEED = 50.0  # km/h — cap for outlier removal
+
 # Velocity color bins: (max_kmh, color)
 VELOCITY_COLORS = [
     (5, "#d73027"),    # red — very slow / crawling
