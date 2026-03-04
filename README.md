@@ -45,8 +45,8 @@ When multiple rides share the same tram line, wait times and velocities are aver
 uv run main.py download-gtfs
 
 # 2. Place your GPX files in data/rides/
-#    Naming convention: line<N>_<description>.gpx
-#    Example: line1_repubblica_xxsettembre.gpx
+#    Naming convention: line<N>_<direction>_<description>.gpx
+#    Example: line1_west_repubblica_xxsettembre.gpx
 
 # 3. (Optional) Add traffic light locations
 uv run main.py template          # creates data/traffic_lights.csv
@@ -82,12 +82,12 @@ To get accurate data, follow these rules when recording a tram ride with your GP
 Place `.gpx` files in `data/rides/`. The filename determines which tram line the ride belongs to:
 
 ```
-line1_repubblica_xxsettembre.gpx   → tram line 1
-line2_duomo_notte.gpx              → tram line 2
-line15_morning_rush.gpx            → tram line 15
+line1_west_repubblica_xxsettembre.gpx    → tram line 1
+line2_est_duomo_notte.gpx                → tram line 2
+line15_north_morning_rush.gpx            → tram line 15
 ```
 
-The pattern is `line<N>_<description>.gpx`. Files that don't match this pattern are processed individually. Multiple rides on the same line are grouped and averaged in the output map.
+The pattern is `line<N>_<direction>_<description>.gpx`. Files that don't match this pattern are processed individually. Multiple rides on the same line are grouped and averaged in the output map.
 
 To remove a ride, delete the GPX file and re-run `uv run main.py analyze`.
 
@@ -96,8 +96,8 @@ To remove a ride, delete the GPX file and re-run `uv run main.py analyze`.
 Edit `data/traffic_lights.csv` to add known traffic light positions:
 
 ```csv
-lat,lon,name,notes
-45.4781,9.1897,Corso Buenos Aires / Via Pecchio,often long wait
+lat,lon,name,notes,added_at,added_by
+45.4781,9.1897,Corso Buenos Aires / Via Pecchio,often long wait,,2026-03-04T12:54:45.437245+00:00,daniel
 ```
 
 This is optional — without it, stops near traffic lights will be classified as bottlenecks instead.
@@ -109,7 +109,7 @@ uv run main.py traffic-lights
 open outputs/traffic_lights.html
 ```
 
-For an interactive workflow — right-click on the map to add traffic lights directly:
+(**recommended**) For an interactive workflow — right-click on the map to add traffic lights directly:
 
 ```bash
 uv run main.py traffic-lights --watch
