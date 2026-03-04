@@ -5,7 +5,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 RIDES_DIR = DATA_DIR / "rides"
 GTFS_DIR = DATA_DIR / "gtfs"
-OUTPUT_DIR = DATA_DIR / "output"
+OUTPUT_DIR = PROJECT_ROOT / "outputs"
 TRAFFIC_LIGHTS_CSV = DATA_DIR / "traffic_lights.csv"
 
 # GTFS
