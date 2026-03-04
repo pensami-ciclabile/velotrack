@@ -1,4 +1,4 @@
-# Velotrack
+# 🚋 Velotrack
 
 <p align="center">
   <img src="assets/img/teaser.png" alt="Velotrack teaser — interactive tram speed map of Milan" width="700">
@@ -67,7 +67,17 @@ uv run main.py analyze data/rides/line1_repubblica_xxsettembre.gpx
 
 ## Managing data
 
-### GPX rides
+### Recording GPX rides
+
+To get accurate data, follow these rules when recording a tram ride with your GPS app:
+
+1. **Start tracking before the tram departs**: begin recording while you are standing at the stop, waiting for the tram. This captures the real departure time and avoids cutting off the first segment.
+2. **Stay still inside the tram**: do not walk around. Movement inside the vehicle adds GPS noise and creates false speed readings. Try to sit or stand in one spot for the entire ride.
+3. **Stop tracking after the tram stops**: wait until the tram has come to a full stop at your destination before ending the recording. This ensures the final stop is captured correctly.
+4. **Use a high recording frequency**: set your GPS app to record a point every 1 second if possible. Lower frequencies (e.g. every 5s) may miss short stops.
+5. **Keep your phone near a window**: GPS signal is stronger near windows. Avoid keeping the phone deep in a bag or pocket, especially in older trams with metal bodywork.
+
+### GPX file naming
 
 Place `.gpx` files in `data/rides/`. The filename determines which tram line the ride belongs to:
 
