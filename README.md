@@ -1,16 +1,23 @@
 # Velotrack
 
-For 🇮🇹-speaking people: 
-> Questo è parte di un progetto in collaborazione con [Velocipiedi](https://velocipiedi.it), un progetto di divulgazione italiano sulla mobilità e l'urbanistica.
-> Qualche mese fa hanno lanciato [TRAMsformaMi](https://velocipiedi.it/tramsformami/), una campagna rivolta al comune di Milano per chiedere il potenziamento dei mezzi pubblici di superficie. 
-> Velotrack nasce come tool open-source che ho sviluppato per analizzare i dati GPS delle corse in tram a Milano, con l'obiettivo di produrre mappe interattive che mostrano le velocità e i tempi di attesa lungo le linee del tram.
-> I dati che nel futuro arriveranno grazie alla community di [Velocipiedi (instagram)](https://www.instagram.com/velocipiedi/) e [PensamiCiclabile (instagram)](https://www.instagram.com/pensamiciclabile/) potranno essere analizzati con Velotrack per identificare i problemi più urgenti e supportare le richieste di miglioramento del servizio.
-> L’intero processo è open source, così chiunque può contribuire, esaminare e replicare i risultati, garantendo il massimo livello di trasparenza possibile.
-
+<p align="center">
+  <img src="assets/img/teaser.png" alt="Velotrack teaser — interactive tram speed map of Milan" width="700">
+</p>
 
 Analyze GPS recordings of tram rides in Milan to produce interactive maps with velocity heatmaps and classified stop events.
 
 Record your tram rides with any GPS tracking app, drop the GPX files into the project, and Velotrack will generate an HTML map showing how fast the tram moved along the route and where it stopped — distinguishing between tram stops, traffic lights, and bottlenecks.
+
+---
+
+> **For Italian speakers 🇮🇹:**
+> Questo è parte di un progetto in collaborazione con [Velocipiedi](https://velocipiedi.it), un progetto di divulgazione italiano sulla mobilità e l'urbanistica.
+> Qualche mese fa hanno lanciato [TRAMsformaMi](https://velocipiedi.it/tramsformami/), una campagna rivolta al comune di Milano per chiedere il potenziamento dei mezzi pubblici di superficie.
+> Velotrack nasce come tool open-source che ho sviluppato per analizzare i dati GPS delle corse in tram a Milano, con l'obiettivo di produrre mappe interattive che mostrano le velocità e i tempi di attesa lungo le linee del tram.
+> I dati che nel futuro arriveranno grazie alla community di [Velocipiedi (instagram)](https://www.instagram.com/velocipiedi/) e [PensamiCiclabile (instagram)](https://www.instagram.com/pensamiciclabile/) potranno essere analizzati con Velotrack per identificare i problemi più urgenti e supportare le richieste di miglioramento del servizio.
+> L'intero processo è open source, così chiunque può contribuire, esaminare e replicare i risultati, garantendo il massimo livello di trasparenza possibile.
+
+---
 
 ## How it works
 
