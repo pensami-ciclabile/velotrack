@@ -82,9 +82,9 @@ To get accurate data, follow these rules when recording a tram ride with your GP
 Place `.gpx` files in `data/rides/`. The filename determines which tram line the ride belongs to:
 
 ```
-line1_west_repubblica_xxsettembre.gpx    → tram line 1
-line2_est_duomo_notte.gpx                → tram line 2
-line15_north_morning_rush.gpx            → tram line 15
+line1_west_repubblica_xxsettembre.gpx    → tram line 1, westbound
+line2_est_duomo_notte.gpx                → tram line 2, eastbound
+line15_north_morning_rush.gpx            → tram line 15, northbound
 ```
 
 The pattern is `line<N>_<direction>_<description>.gpx`. Files that don't match this pattern are processed individually. Multiple rides on the same line are grouped and averaged in the output map.
