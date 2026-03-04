@@ -29,7 +29,7 @@ def cmd_template():
 def cmd_analyze(gpx_paths: list[str]):
     if not gpx_paths:
         # Default: all GPX files in rides directory
-        gpx_paths = sorted(str(p) for p in RIDES_DIR.glob("*.gpx"))
+        gpx_paths = sorted(str(p) for p in RIDES_DIR.glob("*.gpx") if not p.name.startswith("._"))
         if not gpx_paths:
             print(f"No GPX files found. Place .gpx files in {RIDES_DIR}")
             sys.exit(1)
