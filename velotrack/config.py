@@ -16,7 +16,7 @@ STOP_TIME_GAP = 5.0  # seconds — gap threshold for a stop
 STOP_DISTANCE = 15.0  # meters — max movement during a stop
 TRAM_STOP_RADIUS = 30.0  # meters — match radius to GTFS tram stop
 TRAFFIC_LIGHT_RADIUS = 25.0  # meters — match radius to traffic light
-COMBINED_TRAM_DEDUCT = 10.0  # seconds — estimated boarding time deducted for combined stops
+COMBINED_TRAM_DEDUCT = 12.0  # seconds — estimated boarding time deducted for combined stops
 
 # Velocity outlier removal
 MAX_REALISTIC_SPEED = 50.0  # km/h — cap for outlier removal

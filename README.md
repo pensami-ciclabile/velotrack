@@ -37,6 +37,7 @@ When multiple rides share the same tram line, wait times and velocities are aver
 - **Speed stats** — average, peak, median, P25/P75 (computed from moving segments only)
 - **Stop breakdown** — count and total wait time per category (tram stops, traffic lights, combined, bottlenecks)
 - **Scenario analysis** — green wave (sum of min wait at each location), red wave (sum of max), and P25/P75 totals
+- **Traffic light priority** — estimated time saved if all traffic light stops were automatically switched to green when the tram approaches (based on the average wait time at traffic light stops)
 
 ## Quick start
 
@@ -97,7 +98,7 @@ Edit `data/traffic_lights.csv` to add known traffic light positions:
 
 ```csv
 lat,lon,name,notes,added_at,added_by
-45.4781,9.1897,Corso Buenos Aires / Via Pecchio,often long wait,,2026-03-04T12:54:45.437245+00:00,daniel
+45.4781,9.1897,Corso Buenos Aires / Via Pecchio,often long wait,2026-03-04T12:54:45.437245+00:00,daniel
 ```
 
 This is optional — without it, stops near traffic lights will be classified as bottlenecks instead.
