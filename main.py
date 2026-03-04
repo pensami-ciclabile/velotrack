@@ -43,8 +43,8 @@ def cmd_analyze(gpx_paths: list[str]):
     rides_by_line: dict[str, list[tuple[Path, str]]] = defaultdict(list)
     for p in gpx_paths:
         path = Path(p)
-        match = re.search(r"line(\d+)_", path.name)
-        line_key = f"line{match.group(1)}" if match else path.stem
+        match = re.search(r"line(\d+)_(\w+?)_", path.name)
+        line_key = f"line{match.group(1)}_{match.group(2)}" if match else path.stem
         rides_by_line[line_key].append((path, path.name))
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
