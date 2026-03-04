@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_5bdef76d7a6869964c99a5672b60dc91 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find the Leaflet map instance
+            var map;
+            for (var key in window) {
+                if (window[key] instanceof L.Map) { map = window[key]; break; }
+            }
+            if (!map) return;
+
+            // Restore view from URL hash
+            var hash = window.location.hash.slice(1);
+            if (hash) {
+                var parts = hash.split('/');
+                if (parts.length === 3) {
+                    map.setView([parseFloat(parts[0]), parseFloat(parts[1])], parseInt(parts[2]));
+                }
+            }
+
+            // Restore tile layer from localStorage
+            var savedLayer = localStorage.getItem('tl_layer');
+            if (savedLayer) {
+                var inputs = document.querySelectorAll('.leaflet-control-layers input[type=radio]');
+                inputs.forEach(function(input) {
+                    var label = input.nextSibling ? input.nextSibling.textContent.trim() : '';
+                    if (label === savedLayer) { input.click(); }
+                });
+            }
+
+            // Track active layer
+            var activeLayer = savedLayer || '';
+            map.on('baselayerchange', function(e) { activeLayer = e.name; });
+
+            // Helper to save state before reload
+            function saveState() {
+                var c = map.getCenter();
+                window.location.hash = c.lat.toFixed(6) + '/' + c.lng.toFixed(6) + '/' + map.getZoom();
+                if (activeLayer) localStorage.setItem('tl_layer', activeLayer);
+            }
+
+            // Right-click to add a traffic light
+            map.on('contextmenu', function(e) {
+                var lat = e.latlng.lat.toFixed(8);
+                var lon = e.latlng.lng.toFixed(8);
+                var formHtml = '<div style="font-family:sans-serif;font-size:13px">'
+                    + '<b>Add traffic light</b><br>'
+                    + '<form id="tl-form" style="margin-top:6px">'
+                    + '<input id="tl-name" type="text" placeholder="Name (required)" required '
+                    + 'style="width:100%;margin:3px 0;padding:4px;box-sizing:border-box"><br>'
+                    + '<input id="tl-notes" type="text" placeholder="Notes (optional)" '
+                    + 'style="width:100%;margin:3px 0;padding:4px;box-sizing:border-box"><br>'
+                    + '<button type="submit" style="margin-top:4px;padding:4px 12px;cursor:pointer">'
+                    + 'Add</button>'
+                    + '<span id="tl-status" style="margin-left:8px;color:#888"></span>'
+                    + '</form></div>';
+                var popup = L.popup({maxWidth: 500, minWidth: 300}).setLatLng(e.latlng).setContent(formHtml).openOn(map);
+                setTimeout(function() {
+                    var form = document.getElementById('tl-form');
+                    if (!form) return;
+                    form.addEventListener('submit', function(ev) {
+                        ev.preventDefault();
+                        var name = document.getElementById('tl-name').value.trim();
+                        if (!name) return;
+                        var notes = document.getElementById('tl-notes').value.trim();
+                        var status = document.getElementById('tl-status');
+                        status.textContent = 'Saving...';
+                        fetch('/add', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({lat: parseFloat(lat), lon: parseFloat(lon), name: name, notes: notes})
+                        }).then(function(r) {
+                            if (r.ok) {
+                                saveState();
+                                window.location.reload();
+                            } else {
+                                status.textContent = 'Error!';
+                            }
+                        }).catch(function() { status.textContent = 'Error!'; });
+                    });
+                }, 50);
+            });
+        });
+        </script>
+        
+    
+            <div class="folium-map" id="map_5bdef76d7a6869964c99a5672b60dc91" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_5bdef76d7a6869964c99a5672b60dc91 = L.map(
+                "map_5bdef76d7a6869964c99a5672b60dc91",
+                {
+                    center: [45.4680965525017, 9.179565432373945],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 14,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_b3a20fc9cc81ffe46dfb3f6d8d4b692c = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 22,
+  "maxNativeZoom": 22,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_b3a20fc9cc81ffe46dfb3f6d8d4b692c.addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+            var tile_layer_1cb9bb7b92f746b1cdb7fa30fd6a9b72 = L.tileLayer(
+                "https://mt1.google.com/vt/lyrs=s\u0026x={x}\u0026y={y}\u0026z={z}",
+                {
+  "minZoom": 0,
+  "maxZoom": 22,
+  "maxNativeZoom": 22,
+  "noWrap": false,
+  "attribution": "Google",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_1cb9bb7b92f746b1cdb7fa30fd6a9b72.addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+            var circle_marker_4d13029242fa4cda3a69902cd0d1f60d = L.circleMarker(
+                [45.46806583003343, 9.177668581548524],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_a0b62a3d7b94cd26a0c6e47cd2bb18f5 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_68b8d61bab09ea4040122c150065794c = $(`<div id="html_68b8d61bab09ea4040122c150065794c" style="width: 100.0%; height: 100.0%;"><b> Piazzale Cadorna Est1</b><br>nan</div>`)[0];
+                popup_a0b62a3d7b94cd26a0c6e47cd2bb18f5.setContent(html_68b8d61bab09ea4040122c150065794c);
+            
+        
+
+        circle_marker_4d13029242fa4cda3a69902cd0d1f60d.bindPopup(popup_a0b62a3d7b94cd26a0c6e47cd2bb18f5)
+        ;
+
+        
+    
+    
+            circle_marker_4d13029242fa4cda3a69902cd0d1f60d.bindTooltip(
+                `<div>
+                      Piazzale Cadorna Est1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_dd2d01c0e42d4efb818c01966151dc9e = L.circleMarker(
+                [45.46802726847152, 9.17744662875355],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_4e42eb6174863eb3028c76f36dd1bcc0 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_6cfdb12e127dbccc198c525704945cd6 = $(`<div id="html_6cfdb12e127dbccc198c525704945cd6" style="width: 100.0%; height: 100.0%;"><b> Piazzale Cadorna Est2</b><br>nan</div>`)[0];
+                popup_4e42eb6174863eb3028c76f36dd1bcc0.setContent(html_6cfdb12e127dbccc198c525704945cd6);
+            
+        
+
+        circle_marker_dd2d01c0e42d4efb818c01966151dc9e.bindPopup(popup_4e42eb6174863eb3028c76f36dd1bcc0)
+        ;
+
+        
+    
+    
+            circle_marker_dd2d01c0e42d4efb818c01966151dc9e.bindTooltip(
+                `<div>
+                      Piazzale Cadorna Est2
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_19c2da752e071ffe2440c78f4d34eb2b = L.circleMarker(
+                [45.467989448324865, 9.17695510250343],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_bcea37ad3a40e8a9727672bd0713db0a = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_13b2a0ec7c7265526c6dc9081366c10f = $(`<div id="html_13b2a0ec7c7265526c6dc9081366c10f" style="width: 100.0%; height: 100.0%;"><b> Piazzale Cadorna West1</b><br>nan</div>`)[0];
+                popup_bcea37ad3a40e8a9727672bd0713db0a.setContent(html_13b2a0ec7c7265526c6dc9081366c10f);
+            
+        
+
+        circle_marker_19c2da752e071ffe2440c78f4d34eb2b.bindPopup(popup_bcea37ad3a40e8a9727672bd0713db0a)
+        ;
+
+        
+    
+    
+            circle_marker_19c2da752e071ffe2440c78f4d34eb2b.bindTooltip(
+                `<div>
+                      Piazzale Cadorna West1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_150ceba5ff0cc58d976d2dae1558efb9 = L.circleMarker(
+                [45.4680285393238, 9.17663836274877],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_68c02721c812e8e4b553e5432bef90ed = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_a13c195fe1214a2cea0323a9347cb6d4 = $(`<div id="html_a13c195fe1214a2cea0323a9347cb6d4" style="width: 100.0%; height: 100.0%;"><b> Piazzale Cadorna West2</b><br>nan</div>`)[0];
+                popup_68c02721c812e8e4b553e5432bef90ed.setContent(html_a13c195fe1214a2cea0323a9347cb6d4);
+            
+        
+
+        circle_marker_150ceba5ff0cc58d976d2dae1558efb9.bindPopup(popup_68c02721c812e8e4b553e5432bef90ed)
+        ;
+
+        
+    
+    
+            circle_marker_150ceba5ff0cc58d976d2dae1558efb9.bindTooltip(
+                `<div>
+                      Piazzale Cadorna West2
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5351501ed56deafea68f876ce04bd805 = L.circleMarker(
+                [45.46772489618326, 9.176828093050323],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_6cb475780911ec109468bb0f2af77263 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_e6776537fb15d6de89b2e4a43db8a786 = $(`<div id="html_e6776537fb15d6de89b2e4a43db8a786" style="width: 100.0%; height: 100.0%;"><b> Piazzale Cadorna South1</b><br>nan</div>`)[0];
+                popup_6cb475780911ec109468bb0f2af77263.setContent(html_e6776537fb15d6de89b2e4a43db8a786);
+            
+        
+
+        circle_marker_5351501ed56deafea68f876ce04bd805.bindPopup(popup_6cb475780911ec109468bb0f2af77263)
+        ;
+
+        
+    
+    
+            circle_marker_5351501ed56deafea68f876ce04bd805.bindTooltip(
+                `<div>
+                      Piazzale Cadorna South1
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_1707df8cdce736cdd47f0e6a14676c18 = L.circleMarker(
+                [45.4677913328671, 9.173858201691766],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_ae36bed9519f83fda34a269afea044e5 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_f5cb7f6aeabc23d5e11a421d5a4a331e = $(`<div id="html_f5cb7f6aeabc23d5e11a421d5a4a331e" style="width: 100.0%; height: 100.0%;"><b> Piazza Virgilio Est</b><br>nan</div>`)[0];
+                popup_ae36bed9519f83fda34a269afea044e5.setContent(html_f5cb7f6aeabc23d5e11a421d5a4a331e);
+            
+        
+
+        circle_marker_1707df8cdce736cdd47f0e6a14676c18.bindPopup(popup_ae36bed9519f83fda34a269afea044e5)
+        ;
+
+        
+    
+    
+            circle_marker_1707df8cdce736cdd47f0e6a14676c18.bindTooltip(
+                `<div>
+                      Piazza Virgilio Est
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_843d77e1ecf467fc143aba29d9713163 = L.circleMarker(
+                [45.46759253032219, 9.179814453351748],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_5ceed810ec46c1d5676c0cdcf9a903de = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_75513399ffd79862ae5e70a1f056dee2 = $(`<div id="html_75513399ffd79862ae5e70a1f056dee2" style="width: 100.0%; height: 100.0%;"><b> Foro Buonaparte - Via Ricasoli Est</b><br>nan</div>`)[0];
+                popup_5ceed810ec46c1d5676c0cdcf9a903de.setContent(html_75513399ffd79862ae5e70a1f056dee2);
+            
+        
+
+        circle_marker_843d77e1ecf467fc143aba29d9713163.bindPopup(popup_5ceed810ec46c1d5676c0cdcf9a903de)
+        ;
+
+        
+    
+    
+            circle_marker_843d77e1ecf467fc143aba29d9713163.bindTooltip(
+                `<div>
+                      Foro Buonaparte - Via Ricasoli Est
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_3d00dcd7f8f76f423829ce2ef714e8b0 = L.circleMarker(
+                [45.4676028740004, 9.179284543564416],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_a7067b2a0f81fd25433964186425a629 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_09ef90d376c914636c1b0310b487f7e4 = $(`<div id="html_09ef90d376c914636c1b0310b487f7e4" style="width: 100.0%; height: 100.0%;"><b> Foro Buonaparte - Via Ricasoli West</b><br>nan</div>`)[0];
+                popup_a7067b2a0f81fd25433964186425a629.setContent(html_09ef90d376c914636c1b0310b487f7e4);
+            
+        
+
+        circle_marker_3d00dcd7f8f76f423829ce2ef714e8b0.bindPopup(popup_a7067b2a0f81fd25433964186425a629)
+        ;
+
+        
+    
+    
+            circle_marker_3d00dcd7f8f76f423829ce2ef714e8b0.bindTooltip(
+                `<div>
+                      Foro Buonaparte - Via Ricasoli West
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_88ea8760bd523c999c632187757f7a50 = L.circleMarker(
+                [45.46792286577095, 9.181731372883384],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_0ca99efbb45963aa94bfaf4c0343a228 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_23ef07658766838b73b34c9da4958635 = $(`<div id="html_23ef07658766838b73b34c9da4958635" style="width: 100.0%; height: 100.0%;"><b> Largo Cairoli - Foro Buonaparte West</b><br>nan</div>`)[0];
+                popup_0ca99efbb45963aa94bfaf4c0343a228.setContent(html_23ef07658766838b73b34c9da4958635);
+            
+        
+
+        circle_marker_88ea8760bd523c999c632187757f7a50.bindPopup(popup_0ca99efbb45963aa94bfaf4c0343a228)
+        ;
+
+        
+    
+    
+            circle_marker_88ea8760bd523c999c632187757f7a50.bindTooltip(
+                `<div>
+                      Largo Cairoli - Foro Buonaparte West
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5b2f6723bf6f1174b588d5ca64d97287 = L.circleMarker(
+                [45.46830942143114, 9.182523965630908],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_c0aeebc09cf2eab3ca3ff8f83f840c9d = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_effd5d4aa339601491586183c492b91e = $(`<div id="html_effd5d4aa339601491586183c492b91e" style="width: 100.0%; height: 100.0%;"><b> Largo Cairoli Est</b><br>nan</div>`)[0];
+                popup_c0aeebc09cf2eab3ca3ff8f83f840c9d.setContent(html_effd5d4aa339601491586183c492b91e);
+            
+        
+
+        circle_marker_5b2f6723bf6f1174b588d5ca64d97287.bindPopup(popup_c0aeebc09cf2eab3ca3ff8f83f840c9d)
+        ;
+
+        
+    
+    
+            circle_marker_5b2f6723bf6f1174b588d5ca64d97287.bindTooltip(
+                `<div>
+                      Largo Cairoli Est
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_387f0b58857e2320482d93f9669f3376 = L.circleMarker(
+                [45.468181108317765, 9.182012001284043],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_3e49e18afa79f7e3171407d7f06c457b = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_fbb83361a59d14c9996a7d2b0fe3923c = $(`<div id="html_fbb83361a59d14c9996a7d2b0fe3923c" style="width: 100.0%; height: 100.0%;"><b> Largo Cairoli West</b><br>nan</div>`)[0];
+                popup_3e49e18afa79f7e3171407d7f06c457b.setContent(html_fbb83361a59d14c9996a7d2b0fe3923c);
+            
+        
+
+        circle_marker_387f0b58857e2320482d93f9669f3376.bindPopup(popup_3e49e18afa79f7e3171407d7f06c457b)
+        ;
+
+        
+    
+    
+            circle_marker_387f0b58857e2320482d93f9669f3376.bindTooltip(
+                `<div>
+                      Largo Cairoli West
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_e2fed77d37c717bc772001cfc9e22715 = L.circleMarker(
+                [45.468623237258335, 9.183211532266409],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_586d85b7b4b749a149596a7f260410c4 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_9e51220b03060275ed8d45ad5614e395 = $(`<div id="html_9e51220b03060275ed8d45ad5614e395" style="width: 100.0%; height: 100.0%;"><b> Largo Cairoli - Via Cusani South</b><br>nan</div>`)[0];
+                popup_586d85b7b4b749a149596a7f260410c4.setContent(html_9e51220b03060275ed8d45ad5614e395);
+            
+        
+
+        circle_marker_e2fed77d37c717bc772001cfc9e22715.bindPopup(popup_586d85b7b4b749a149596a7f260410c4)
+        ;
+
+        
+    
+    
+            circle_marker_e2fed77d37c717bc772001cfc9e22715.bindTooltip(
+                `<div>
+                      Largo Cairoli - Via Cusani South
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d9cf8befb11358b006d7e9410a9a56de = L.circleMarker(
+                [45.46857856271902, 9.182982873957958],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_663ee3b5f637da47ee73e56ef41eff88 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_e5b51e1638e371c67fc5ea4d1cf089f6 = $(`<div id="html_e5b51e1638e371c67fc5ea4d1cf089f6" style="width: 100.0%; height: 100.0%;"><b> Largo Cairoli - Via Cusani North</b><br>nan</div>`)[0];
+                popup_663ee3b5f637da47ee73e56ef41eff88.setContent(html_e5b51e1638e371c67fc5ea4d1cf089f6);
+            
+        
+
+        circle_marker_d9cf8befb11358b006d7e9410a9a56de.bindPopup(popup_663ee3b5f637da47ee73e56ef41eff88)
+        ;
+
+        
+    
+    
+            circle_marker_d9cf8befb11358b006d7e9410a9a56de.bindTooltip(
+                `<div>
+                      Largo Cairoli - Via Cusani North
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_dbdb23eec21e04f4f926efa6619fdfad = L.circleMarker(
+                [45.46891382, 9.18296034],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+        var popup_15fd165b1e2fe57dd9c08d011b4b979c = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_721cb1921581de0f580d67d44782991d = $(`<div id="html_721cb1921581de0f580d67d44782991d" style="width: 100.0%; height: 100.0%;"><b>Largo Cairoli - Foro Buonaparte Est</b><br>nan</div>`)[0];
+                popup_15fd165b1e2fe57dd9c08d011b4b979c.setContent(html_721cb1921581de0f580d67d44782991d);
+            
+        
+
+        circle_marker_dbdb23eec21e04f4f926efa6619fdfad.bindPopup(popup_15fd165b1e2fe57dd9c08d011b4b979c)
+        ;
+
+        
+    
+    
+            circle_marker_dbdb23eec21e04f4f926efa6619fdfad.bindTooltip(
+                `<div>
+                     Largo Cairoli - Foro Buonaparte Est
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var tile_layer_d43242e5f6ec6e77632e25b0f0c4d8a3 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}@2x.png",
+                {
+  "minZoom": 15,
+  "maxZoom": 22,
+  "maxNativeZoom": 22,
+  "noWrap": false,
+  "attribution": "CartoDB",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+  "tileSize": 1024,
+  "zoomOffset": -2,
+}
+
+            );
+        
+    
+            tile_layer_d43242e5f6ec6e77632e25b0f0c4d8a3.addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+        
+    
+            var layer_control_81dfe26b336e77a11c07c57528ca6023_layers = {
+                base_layers : {
+                    "cartodbpositron" : tile_layer_b3a20fc9cc81ffe46dfb3f6d8d4b692c,
+                    "Google Satellite + Streets" : tile_layer_1cb9bb7b92f746b1cdb7fa30fd6a9b72,
+                },
+                overlays :  {
+                    "Street names" : tile_layer_d43242e5f6ec6e77632e25b0f0c4d8a3,
+                },
+            };
+            let layer_control_81dfe26b336e77a11c07c57528ca6023 = L.control.layers(
+                layer_control_81dfe26b336e77a11c07c57528ca6023_layers.base_layers,
+                layer_control_81dfe26b336e77a11c07c57528ca6023_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_5bdef76d7a6869964c99a5672b60dc91);
+
+        
+</script>
+</html>

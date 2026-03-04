@@ -9,6 +9,154 @@ from velotrack.config import STOP_COLORS, VELOCITY_COLORS
 from velotrack.stop_detector import StopEvent
 
 
+def build_traffic_lights_map(
+    traffic_lights: pd.DataFrame, server_mode: bool = False
+) -> folium.Map:
+    """Build a Folium map showing all traffic light locations.
+
+    Args:
+        traffic_lights: DataFrame with lat, lon, name (and optionally notes) columns.
+        server_mode: If True, inject JS for right-click-to-add via POST /add.
+    """
+    if traffic_lights.empty:
+        center_lat, center_lon = 45.464, 9.19
+    else:
+        center_lat = traffic_lights["lat"].mean()
+        center_lon = traffic_lights["lon"].mean()
+
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=14, tiles="cartodbpositron", max_zoom=22)
+
+    # Google Maps satellite (no labels) + CartoDB street-only overlay
+    folium.TileLayer(
+        tiles="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+        attr="Google",
+        name="Google Satellite + Streets",
+        overlay=False,
+        max_zoom=22,
+    ).add_to(m)
+
+    for _, row in traffic_lights.iterrows():
+        name = row.get("name", "")
+        notes = row.get("notes", "")
+        popup_text = f"<b>{name}</b>"
+        if notes:
+            popup_text += f"<br>{notes}"
+        folium.CircleMarker(
+            location=[row["lat"], row["lon"]],
+            radius=8,
+            color="red",
+            fill=True,
+            fill_color="red",
+            fill_opacity=0.7,
+            popup=folium.Popup(popup_text, max_width=250),
+            tooltip=name,
+        ).add_to(m)
+
+    # Street names overlay (no POIs/shops) — useful on top of satellite
+    street_labels = folium.TileLayer(
+        tiles="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}@2x.png",
+        attr="CartoDB",
+        name="Street names",
+        overlay=True,
+        show=True,
+        max_zoom=22,
+        min_zoom=15,
+        tile_size=1024,
+        zoom_offset=-2,
+    )
+    street_labels.add_to(m)
+
+    folium.LayerControl(collapsed=False).add_to(m)
+
+    if server_mode:
+        m.get_root().html.add_child(Element("""
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find the Leaflet map instance
+            var map;
+            for (var key in window) {
+                if (window[key] instanceof L.Map) { map = window[key]; break; }
+            }
+            if (!map) return;
+
+            // Restore view from URL hash
+            var hash = window.location.hash.slice(1);
+            if (hash) {
+                var parts = hash.split('/');
+                if (parts.length === 3) {
+                    map.setView([parseFloat(parts[0]), parseFloat(parts[1])], parseInt(parts[2]));
+                }
+            }
+
+            // Restore tile layer from localStorage
+            var savedLayer = localStorage.getItem('tl_layer');
+            if (savedLayer) {
+                var inputs = document.querySelectorAll('.leaflet-control-layers input[type=radio]');
+                inputs.forEach(function(input) {
+                    var label = input.nextSibling ? input.nextSibling.textContent.trim() : '';
+                    if (label === savedLayer) { input.click(); }
+                });
+            }
+
+            // Track active layer
+            var activeLayer = savedLayer || '';
+            map.on('baselayerchange', function(e) { activeLayer = e.name; });
+
+            // Helper to save state before reload
+            function saveState() {
+                var c = map.getCenter();
+                window.location.hash = c.lat.toFixed(6) + '/' + c.lng.toFixed(6) + '/' + map.getZoom();
+                if (activeLayer) localStorage.setItem('tl_layer', activeLayer);
+            }
+
+            // Right-click to add a traffic light
+            map.on('contextmenu', function(e) {
+                var lat = e.latlng.lat.toFixed(8);
+                var lon = e.latlng.lng.toFixed(8);
+                var formHtml = '<div style="font-family:sans-serif;font-size:13px">'
+                    + '<b>Add traffic light</b><br>'
+                    + '<form id="tl-form" style="margin-top:6px">'
+                    + '<input id="tl-name" type="text" placeholder="Name (required)" required '
+                    + 'style="width:100%;margin:3px 0;padding:4px;box-sizing:border-box"><br>'
+                    + '<input id="tl-notes" type="text" placeholder="Notes (optional)" '
+                    + 'style="width:100%;margin:3px 0;padding:4px;box-sizing:border-box"><br>'
+                    + '<button type="submit" style="margin-top:4px;padding:4px 12px;cursor:pointer">'
+                    + 'Add</button>'
+                    + '<span id="tl-status" style="margin-left:8px;color:#888"></span>'
+                    + '</form></div>';
+                var popup = L.popup({maxWidth: 500, minWidth: 300}).setLatLng(e.latlng).setContent(formHtml).openOn(map);
+                setTimeout(function() {
+                    var form = document.getElementById('tl-form');
+                    if (!form) return;
+                    form.addEventListener('submit', function(ev) {
+                        ev.preventDefault();
+                        var name = document.getElementById('tl-name').value.trim();
+                        if (!name) return;
+                        var notes = document.getElementById('tl-notes').value.trim();
+                        var status = document.getElementById('tl-status');
+                        status.textContent = 'Saving...';
+                        fetch('/add', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({lat: parseFloat(lat), lon: parseFloat(lon), name: name, notes: notes})
+                        }).then(function(r) {
+                            if (r.ok) {
+                                saveState();
+                                window.location.reload();
+                            } else {
+                                status.textContent = 'Error!';
+                            }
+                        }).catch(function() { status.textContent = 'Error!'; });
+                    });
+                }, 50);
+            });
+        });
+        </script>
+        """))
+
+    return m
+
+
 def velocity_color(speed_kmh: float) -> str:
     """Map a velocity to a color."""
     for max_speed, color in VELOCITY_COLORS:

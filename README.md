@@ -102,6 +102,21 @@ lat,lon,name,notes
 
 This is optional — without it, stops near traffic lights will be classified as bottlenecks instead.
 
+To view all traffic lights on an interactive map:
+
+```bash
+uv run main.py traffic-lights
+open outputs/traffic_lights.html
+```
+
+For an interactive workflow — right-click on the map to add traffic lights directly:
+
+```bash
+uv run main.py traffic-lights --watch
+```
+
+With `--watch`, a local HTTP server starts at `http://localhost:8000`. The map includes a Google Satellite + Labels layer (toggle in top-right) for easy identification. Right-click anywhere on the map to open a popup form — enter a name (required) and optional notes, then click "Add". The page reloads automatically with the new marker. Each entry is timestamped (`added_at`) and tagged with your local username (`added_by`) in the CSV.
+
 ### GTFS data
 
 Tram stop locations are downloaded from [Milan's open data portal](https://dati.comune.milano.it/dataset/ds929-orari-del-trasporto-pubblico-locale-nel-comune-di-milano-in-formato-gtfs). Re-run `uv run main.py download-gtfs` to update them. The data is stored in `data/gtfs/` (gitignored).
