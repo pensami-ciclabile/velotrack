@@ -28,9 +28,11 @@ def _compute_stats(
     )
     moving = all_speeds[all_speeds > 0]
     speed = {
-        "avg": moving.mean() if len(moving) else 0,
+        "avg_moving": moving.mean() if len(moving) else 0,
+        "avg_trip": all_speeds.mean() if len(all_speeds) else 0,
         "peak": all_speeds.max() if len(all_speeds) else 0,
-        "median": moving.median() if len(moving) else 0,
+        "median_moving": moving.median() if len(moving) else 0,
+        "median_trip": all_speeds.median() if len(all_speeds) else 0,
         "p25": float(np.percentile(moving, 25)) if len(moving) else 0,
         "p75": float(np.percentile(moving, 75)) if len(moving) else 0,
     }
@@ -110,19 +112,25 @@ def _stats_html(stats: dict) -> str:
         background: rgba(255,255,255,0.92); border-radius: 8px;
         padding: 12px 16px; font-family: 'Menlo','Consolas',monospace;
         font-size: 11px; line-height: 1.6; color: #222;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.18); max-width: 320px;
-        border: 1px solid #ddd; pointer-events: auto;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        border: 1px solid #ddd; pointer-events: auto; white-space: nowrap;
     ">
         <div style="font-weight:bold;text-align:center;margin-bottom:6px;
                      border-bottom:1px solid #ccc;padding-bottom:4px;">
             Line Statistics
         </div>
-        <div style="display:flex;justify-content:space-between">
-            <span>Avg speed: <b>{s['avg']:.1f}</b> km/h</span>
-            <span>Peak: <b>{s['peak']:.1f}</b> km/h</span>
+        <div style="display:flex;justify-content:space-between;gap:16px">
+            <span>Avg moving: <b>{s['avg_moving']:.1f}</b> km/h</span>
+            <span>Avg trip: <b>{s['avg_trip']:.1f}</b> km/h</span>
         </div>
-        <div>Median: {s['median']:.1f} km/h
-            (P25: {s['p25']:.1f} · P75: {s['p75']:.1f})</div>
+        <div style="display:flex;justify-content:space-between;gap:16px">
+            <span>Median moving: <b>{s['median_moving']:.1f}</b> km/h</span>
+            <span>Median trip: <b>{s['median_trip']:.1f}</b> km/h</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:16px">
+            <span>Peak: <b>{s['peak']:.1f}</b> km/h</span>
+            <span style="color:#888">P25: {s['p25']:.1f} · P75: {s['p75']:.1f}</span>
+        </div>
         <div style="border-top:1px solid #eee;margin:6px 0 4px"></div>
         <div style="display:flex;justify-content:space-between">
             <span>Stops: <b>{stats['total_stops']}</b> total</span>
@@ -142,6 +150,155 @@ def _stats_html(stats: dict) -> str:
             <span style="color:#888">P75: {stats['p75_sum']:.0f}s</span>
         </div>
     </div>
+    """
+
+
+def _speed_space_data(
+    ride_dfs: list[pd.DataFrame], bin_width_m: float = 25.0
+) -> tuple[list[float], list[float], list[list[tuple[float, float]]]]:
+    """Compute binned speed-vs-distance data across rides.
+
+    Returns:
+        x_km: bin center positions in km
+        avg_speed: average speed per bin across all rides
+        ride_traces: per-ride list of (distance_km, speed) points
+    """
+    ride_traces: list[list[tuple[float, float]]] = []
+    bin_sums: dict[int, float] = {}
+    bin_counts: dict[int, int] = {}
+
+    for df in ride_dfs:
+        if len(df) < 2:
+            continue
+        cum_dist = df["dist"].cumsum().values  # meters
+        speeds = df["velocity_kmh"].values
+        trace = [(cum_dist[i] / 1000, float(speeds[i])) for i in range(len(df))]
+        ride_traces.append(trace)
+
+        for i in range(len(df)):
+            b = int(cum_dist[i] // bin_width_m)
+            bin_sums[b] = bin_sums.get(b, 0.0) + speeds[i]
+            bin_counts[b] = bin_counts.get(b, 0) + 1
+
+    if not bin_counts:
+        return [], [], ride_traces
+
+    max_bin = max(bin_counts.keys())
+    x_km = []
+    avg_speed = []
+    for b in range(max_bin + 1):
+        x_km.append((b * bin_width_m + bin_width_m / 2) / 1000)
+        if b in bin_counts:
+            avg_speed.append(bin_sums[b] / bin_counts[b])
+        else:
+            avg_speed.append(float("nan"))
+
+    return x_km, avg_speed, ride_traces
+
+
+def _speed_space_chart_html(
+    x_km: list[float],
+    avg_speed: list[float],
+    ride_traces: list[list[tuple[float, float]]],
+) -> str:
+    """Build HTML/JS for a Chart.js speed-space diagram."""
+    import json
+
+    avg_data = json.dumps(
+        [{"x": round(x, 4), "y": round(y, 1)} for x, y in zip(x_km, avg_speed) if y == y]
+    )
+
+    ride_datasets = ""
+    for idx, trace in enumerate(ride_traces):
+        points = json.dumps(
+            [{"x": round(d, 4), "y": round(s, 1)} for d, s in trace]
+        )
+        ride_datasets += f"""{{
+            label: 'Ride {idx + 1}',
+            data: {points},
+            borderColor: 'rgba(100,149,237,0.25)',
+            borderWidth: 1,
+            pointRadius: 0,
+            fill: false,
+            tension: 0.3,
+            showLine: true,
+        }},"""
+
+    return f"""
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <div id="ssd-toggle" style="
+        position:fixed; bottom:30px; right:10px; z-index:9999;
+        background:rgba(255,255,255,0.92); border-radius:8px;
+        padding:6px 12px; font-family:'Menlo','Consolas',monospace;
+        font-size:11px; color:#222; cursor:pointer;
+        box-shadow:0 2px 8px rgba(0,0,0,0.18); border:1px solid #ddd;
+        pointer-events:auto;
+    " onclick="document.getElementById('ssd-panel').style.display =
+        document.getElementById('ssd-panel').style.display === 'none' ? 'block' : 'none'">
+        Speed-Space Diagram
+    </div>
+    <div id="ssd-panel" style="
+        display:none; position:fixed; bottom:60px; right:10px; z-index:9998;
+        background:rgba(255,255,255,0.96); border-radius:8px;
+        padding:12px; font-family:'Menlo','Consolas',monospace;
+        box-shadow:0 2px 8px rgba(0,0,0,0.18); border:1px solid #ddd;
+        pointer-events:auto; width:520px; height:320px;
+    ">
+        <canvas id="ssd-canvas"></canvas>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {{
+        const ctx = document.getElementById('ssd-canvas').getContext('2d');
+        new Chart(ctx, {{
+            type: 'scatter',
+            data: {{
+                datasets: [
+                    {ride_datasets}
+                    {{
+                        label: 'Average',
+                        data: {avg_data},
+                        borderColor: 'rgba(220,60,60,0.9)',
+                        borderWidth: 2.5,
+                        pointRadius: 0,
+                        fill: false,
+                        tension: 0.3,
+                        showLine: true,
+                    }}
+                ]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {{
+                    legend: {{ display: false }},
+                    tooltip: {{
+                        mode: 'nearest',
+                        intersect: false,
+                        callbacks: {{
+                            label: function(ctx) {{
+                                return ctx.dataset.label + ': ' +
+                                    ctx.parsed.y.toFixed(1) + ' km/h @ ' +
+                                    ctx.parsed.x.toFixed(2) + ' km';
+                            }}
+                        }}
+                    }}
+                }},
+                scales: {{
+                    x: {{
+                        type: 'linear',
+                        title: {{ display: true, text: 'Distance (km)' }},
+                        ticks: {{ maxTicksLimit: 12 }}
+                    }},
+                    y: {{
+                        title: {{ display: true, text: 'Speed (km/h)' }},
+                        beginAtZero: true
+                    }}
+                }}
+            }}
+        }});
+    }});
+    </script>
     """
 
 
@@ -241,5 +398,11 @@ def build_map(
     stats = _compute_stats(ride_dfs, merged_stops)
     panel_html = _stats_html(stats)
     m.get_root().html.add_child(Element(panel_html))
+
+    # Speed-space diagram
+    x_km, avg_speed, ride_traces = _speed_space_data(ride_dfs)
+    if x_km:
+        chart_html = _speed_space_chart_html(x_km, avg_speed, ride_traces)
+        m.get_root().html.add_child(Element(chart_html))
 
     return m
