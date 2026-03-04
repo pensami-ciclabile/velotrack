@@ -22,6 +22,14 @@ def _compute_stats(
     merged_stops: dict[tuple[float, float], list[StopEvent]],
 ) -> dict:
     """Compute aggregate statistics from ride data and merged stops."""
+    # --- Trip duration ---
+    trip_durations = []
+    for df in ride_dfs:
+        if len(df) >= 2:
+            dur = (df["time"].iloc[-1] - df["time"].iloc[0]).total_seconds()
+            trip_durations.append(dur)
+    avg_trip_duration = sum(trip_durations) / len(trip_durations) if trip_durations else 0
+
     # --- Speed stats ---
     all_speeds = pd.concat(
         [df["velocity_kmh"] for df in ride_dfs if not df.empty], ignore_index=True
@@ -40,12 +48,22 @@ def _compute_stats(
     # --- Stop time stats (per-category) ---
     cat_counts: dict[str, int] = {}
     cat_total_avg: dict[str, float] = {}
+    tl_wait_from_tl = 0.0
+    tl_wait_from_combined = 0.0
+    tl_wait_from_bottleneck = 0.0
     for (_lat, _lon), events in merged_stops.items():
         categories = [e.category for e in events]
         category = max(set(categories), key=categories.count)
         avg_dur = sum(e.duration for e in events) / len(events)
         cat_counts[category] = cat_counts.get(category, 0) + 1
         cat_total_avg[category] = cat_total_avg.get(category, 0) + avg_dur
+        if category == "traffic_light":
+            tl_wait_from_tl += avg_dur
+        elif category == "combined":
+            avg_tl_wait = sum(e.traffic_light_wait or 0 for e in events) / len(events)
+            tl_wait_from_combined += avg_tl_wait
+        elif category == "bottleneck":
+            tl_wait_from_bottleneck += avg_dur
 
     total_stops = sum(cat_counts.values())
     total_delay = sum(cat_total_avg.values())
@@ -67,6 +85,9 @@ def _compute_stats(
             p25_sum += durations[0]
             p75_sum += durations[0]
 
+    priority_excl = tl_wait_from_tl + tl_wait_from_combined
+    priority_incl = priority_excl + tl_wait_from_bottleneck
+
     return {
         "speed": speed,
         "cat_counts": cat_counts,
@@ -78,6 +99,9 @@ def _compute_stats(
         "red_wave": red_wave,
         "p25_sum": p25_sum,
         "p75_sum": p75_sum,
+        "avg_trip_duration": avg_trip_duration,
+        "priority_savings_excl_bottlenecks": priority_excl,
+        "priority_savings_incl_bottlenecks": priority_incl,
     }
 
 
@@ -148,6 +172,16 @@ def _stats_html(stats: dict) -> str:
         <div style="display:flex;justify-content:space-between">
             <span style="color:#c33">Red wave: {stats['red_wave']:.0f}s</span>
             <span style="color:#888">P75: {stats['p75_sum']:.0f}s</span>
+        </div>
+        <div style="border-top:1px solid #eee;margin:6px 0 4px"></div>
+        <div style="font-weight:bold;margin-bottom:2px;">Traffic light priority:</div>
+        <div style="display:flex;justify-content:space-between">
+            <span style="color:#888">Excl. bottlenecks:</span>
+            <span>-{stats['priority_savings_excl_bottlenecks']:.0f}s ({stats['priority_savings_excl_bottlenecks'] / stats['avg_trip_duration'] * 100 if stats['avg_trip_duration'] else 0:.1f}% faster)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+            <span style="color:#888">Incl. bottlenecks:</span>
+            <span>-{stats['priority_savings_incl_bottlenecks']:.0f}s ({stats['priority_savings_incl_bottlenecks'] / stats['avg_trip_duration'] * 100 if stats['avg_trip_duration'] else 0:.1f}% faster)</span>
         </div>
     </div>
     """
