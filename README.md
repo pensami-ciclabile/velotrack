@@ -56,7 +56,7 @@ uv run main.py template          # creates data/traffic_lights.csv
 uv run main.py analyze
 
 # 5. Open the result
-open data/output/line1.html
+open output/line1_west.html
 ```
 
 You can also analyze specific files:
@@ -111,5 +111,5 @@ velotrack/
     rides/                 # your GPX files go here
     traffic_lights.csv     # user-provided traffic light locations
     gtfs/                  # auto-downloaded, gitignored
-    output/                # generated HTML maps, gitignored
+  output/                # generated HTML maps, gitignored
 ```
