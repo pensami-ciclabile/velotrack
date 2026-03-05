@@ -7,25 +7,13 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from velotrack.config import GTFS_DIR, GTFS_URL
+from velotrack.config import GTFS_DIR, GTFS_URL, TRAM_STOPS_CSV
 
 
-def download_gtfs() -> Path:
-    """Download and extract the Milan GTFS zip to GTFS_DIR."""
-    GTFS_DIR.mkdir(parents=True, exist_ok=True)
-    print(f"Downloading GTFS from {GTFS_URL} ...")
-    resp = requests.get(GTFS_URL, timeout=60)
-    resp.raise_for_status()
-    with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
-        zf.extractall(GTFS_DIR)
-    print(f"Extracted to {GTFS_DIR}")
-    return GTFS_DIR
+def _extract_tram_stops_from_gtfs() -> pd.DataFrame:
+    """Extract tram stops from raw GTFS data in GTFS_DIR.
 
-
-def load_tram_stops() -> pd.DataFrame:
-    """Load tram stops from GTFS data.
-
-    Filter chain: routes (type=0) → trips → stop_times → stops.
+    Filter chain: routes (type=0) -> trips -> stop_times -> stops.
     Returns DataFrame with columns: stop_id, stop_name, lat, lon.
     """
     routes = pd.read_csv(GTFS_DIR / "routes.txt", dtype={"route_id": str})
@@ -44,5 +32,40 @@ def load_tram_stops() -> pd.DataFrame:
     ].drop_duplicates(subset="stop_id").reset_index(drop=True)
 
     tram_stops = tram_stops.rename(columns={"stop_lat": "lat", "stop_lon": "lon"})
-    print(f"Loaded {len(tram_stops)} tram stops")
+    return tram_stops
+
+
+def download_gtfs() -> Path:
+    """Download and extract the Milan GTFS zip, then export tram_stops.csv cache."""
+    GTFS_DIR.mkdir(parents=True, exist_ok=True)
+    print(f"Downloading GTFS from {GTFS_URL} ...")
+    resp = requests.get(GTFS_URL, timeout=60)
+    resp.raise_for_status()
+    with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
+        zf.extractall(GTFS_DIR)
+    print(f"Extracted to {GTFS_DIR}")
+
+    tram_stops = _extract_tram_stops_from_gtfs()
+    TRAM_STOPS_CSV.parent.mkdir(parents=True, exist_ok=True)
+    tram_stops.to_csv(TRAM_STOPS_CSV, index=False)
+    print(f"Exported {len(tram_stops)} tram stops to {TRAM_STOPS_CSV}")
+
+    return GTFS_DIR
+
+
+def load_tram_stops() -> pd.DataFrame:
+    """Load tram stops from the cached data/tram_stops.csv file.
+
+    Returns DataFrame with columns: stop_id, stop_name, lat, lon.
+    """
+    if not TRAM_STOPS_CSV.exists():
+        print(
+            f"Error: {TRAM_STOPS_CSV} not found.\n"
+            "Run 'uv run main.py download-gtfs' to generate it, "
+            "or provide your own CSV with columns: stop_id, stop_name, lat, lon."
+        )
+        return pd.DataFrame(columns=["stop_id", "stop_name", "lat", "lon"])
+
+    tram_stops = pd.read_csv(TRAM_STOPS_CSV, dtype={"stop_id": str})
+    print(f"Loaded {len(tram_stops)} tram stops from {TRAM_STOPS_CSV}")
     return tram_stops

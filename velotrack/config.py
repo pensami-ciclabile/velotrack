@@ -7,6 +7,7 @@ RIDES_DIR = DATA_DIR / "rides"
 GTFS_DIR = DATA_DIR / "gtfs"
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 TRAFFIC_LIGHTS_CSV = DATA_DIR / "traffic_lights.csv"
+TRAM_STOPS_CSV = DATA_DIR / "tram_stops.csv"
 
 # Site generation
 SITE_DIR = PROJECT_ROOT / "site"
