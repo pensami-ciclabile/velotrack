@@ -9,25 +9,33 @@
 </section>
 
 <section class="cards">
-    {% for line in lines %}
-    <a href="{{ root_path }}/lines/{{ line.line_key }}.html" class="card">
-        <h2>{{ line.display_name }}</h2>
-        <div class="card-stats">
-            <div class="stat">
-                <span class="stat-value">{{ "%.1f"|format(line.stats.speed.avg_moving) }}</span>
-                <span class="stat-label">km/h avg</span>
+    {% for group in grouped_lines %}
+    <h2 class="line-group-heading">Line {{ group.line_number }}</h2>
+    <div class="direction-cards">
+        {% for line in group.directions %}
+        <a href="{{ root_path }}/lines/{{ line.line_key }}.html" class="card">
+            <h3>{{ direction_name(line.line_key) }}</h3>
+            <div class="card-stats">
+                <div class="stat">
+                    <span class="stat-value">{{ "%.1f"|format(line.stats.speed.avg_trip) }}</span>
+                    <span class="stat-label">km/h avg trip</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">{{ line.stats.total_stops }}</span>
+                    <span class="stat-label">stops</span>
+                </div>
             </div>
-            <div class="stat">
-                <span class="stat-value">{{ "%.0f"|format(line.stats.total_delay) }}s</span>
-                <span class="stat-label">total delay</span>
-            </div>
-            <div class="stat">
-                <span class="stat-value">{{ line.stats.total_stops }}</span>
-                <span class="stat-label">stops</span>
-            </div>
-        </div>
-        <p class="card-meta">{{ line.num_rides }} ride{{ "s" if line.num_rides != 1 }} · {{ "%.1f"|format(line.total_distance_km) }} km</p>
-    </a>
+            {% if line.stats.avg_trip_duration > 0 and line.stats.priority_savings_incl_bottlenecks > 0 %}
+            {% set pct = (line.stats.priority_savings_incl_bottlenecks / line.stats.avg_trip_duration * 100)|round(0)|int %}
+            {% set secs = line.stats.priority_savings_incl_bottlenecks|int %}
+            {% set mins = (secs // 60)|int %}
+            {% set remainder = (secs % 60)|int %}
+            <p class="card-savings">Could be {{ pct }}% faster ({{ mins }}m {{ remainder }}s)</p>
+            {% endif %}
+            <p class="card-meta">{{ line.num_rides }} ride{{ "s" if line.num_rides != 1 }} · {{ "%.1f"|format(line.total_distance_km) }} km</p>
+        </a>
+        {% endfor %}
+    </div>
     {% endfor %}
 </section>
 {% endblock %}

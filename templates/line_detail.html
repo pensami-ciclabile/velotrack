@@ -2,6 +2,8 @@
 
 {% block title %}{{ line.display_name }} — Velotrack{% endblock %}
 
+{% macro fmt_ms(secs) %}{% set s = secs|int %}{% set m = (s // 60)|int %}{% set r = (s % 60)|int %}{% if m > 0 %}{{ m }}m {{ r }}s{% else %}{{ r }}s{% endif %}{% endmacro %}
+
 {% block content %}
 <section class="section">
     <h1>{{ line.display_name }}</h1>
@@ -12,19 +14,74 @@
     </div>
 
     <h2>Statistics</h2>
-    <table class="stats-table">
-        <tbody>
-            <tr><td>Avg moving speed</td><td>{{ "%.1f"|format(line.stats.speed.avg_moving) }} km/h</td></tr>
-            <tr><td>Avg trip speed</td><td>{{ "%.1f"|format(line.stats.speed.avg_trip) }} km/h</td></tr>
-            <tr><td>Median moving speed</td><td>{{ "%.1f"|format(line.stats.speed.median_moving) }} km/h</td></tr>
-            <tr><td>Peak speed</td><td>{{ "%.1f"|format(line.stats.speed.peak) }} km/h</td></tr>
-            <tr><td>Total stops</td><td>{{ line.stats.total_stops }}</td></tr>
-            <tr><td>Total delay</td><td>{{ "%.0f"|format(line.stats.total_delay) }}s</td></tr>
-            <tr><td>Avg wait per stop</td><td>{{ "%.0f"|format(line.stats.avg_wait) }}s</td></tr>
-            <tr><td>Green wave scenario</td><td>{{ "%.0f"|format(line.stats.green_wave) }}s</td></tr>
-            <tr><td>Red wave scenario</td><td>{{ "%.0f"|format(line.stats.red_wave) }}s</td></tr>
-            <tr><td>Avg trip duration</td><td>{{ "%.0f"|format(line.stats.avg_trip_duration) }}s</td></tr>
-        </tbody>
-    </table>
+
+    <div class="stat-group">
+        <h3>Speed</h3>
+        <div class="stat-row">
+            <span class="stat-row-label">Avg trip speed</span>
+            <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.avg_trip) }} km/h</span>
+        </div>
+        <div class="stat-row-desc">Average speed including all stops and delays</div>
+        <div class="stat-row">
+            <span class="stat-row-label">Avg moving speed</span>
+            <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.avg_moving) }} km/h</span>
+        </div>
+        <div class="stat-row-desc">Average speed while the tram is moving</div>
+        <div class="stat-row">
+            <span class="stat-row-label">Median moving</span>
+            <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.median_moving) }} km/h</span>
+        </div>
+        <div class="stat-row-desc">Half of measurements are above/below this</div>
+        <div class="stat-row">
+            <span class="stat-row-label">Peak</span>
+            <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.peak) }} km/h</span>
+        </div>
+    </div>
+
+    <div class="stat-group">
+        <h3>Stops & Delays</h3>
+        <div class="stat-row">
+            <span class="stat-row-label">Total stops</span>
+            <span class="stat-row-value">{{ line.stats.total_stops }}</span>
+        </div>
+        <div class="stat-row-desc">Number of detected stops along the route</div>
+        <div class="stat-row">
+            <span class="stat-row-label">Total delay</span>
+            <span class="stat-row-value">{{ fmt_ms(line.stats.total_delay) }}</span>
+        </div>
+        <div class="stat-row-desc">Combined waiting time at all stops</div>
+        <div class="stat-row">
+            <span class="stat-row-label">Avg wait per stop</span>
+            <span class="stat-row-value">{{ fmt_ms(line.stats.avg_wait) }}</span>
+        </div>
+        <div class="stat-row-desc">Average duration of each stop</div>
+        <div class="stat-row">
+            <span class="stat-row-label">Avg trip duration</span>
+            <span class="stat-row-value">{{ fmt_ms(line.stats.avg_trip_duration) }}</span>
+        </div>
+        <div class="stat-row-desc">Total journey time from start to end</div>
+    </div>
+
+    <div class="stat-group">
+        <h3>Scenarios</h3>
+        <div class="stat-row">
+            <span class="stat-row-label">Green wave</span>
+            <span class="stat-row-value">{{ fmt_ms(line.stats.green_wave) }}</span>
+        </div>
+        <div class="stat-row-desc">Best case: minimum recorded wait at each stop location</div>
+        <div class="stat-row">
+            <span class="stat-row-label">Red wave</span>
+            <span class="stat-row-value">{{ fmt_ms(line.stats.red_wave) }}</span>
+        </div>
+        <div class="stat-row-desc">Worst case: maximum recorded wait at each stop location</div>
+        {% if line.stats.avg_trip_duration > 0 and line.stats.priority_savings_incl_bottlenecks > 0 %}
+        {% set pct = (line.stats.priority_savings_incl_bottlenecks / line.stats.avg_trip_duration * 100)|round(1) %}
+        <div class="stat-row">
+            <span class="stat-row-label">Could be faster</span>
+            <span class="stat-row-value">{{ pct }}%</span>
+        </div>
+        <div class="stat-row-desc">Time saved if traffic lights gave trams priority</div>
+        {% endif %}
+    </div>
 </section>
 {% endblock %}

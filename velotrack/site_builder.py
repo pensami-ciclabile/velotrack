@@ -1,6 +1,7 @@
 """Build the static website from Jinja2 templates and line data."""
 
 import json
+import re
 import shutil
 from dataclasses import dataclass, asdict
 from pathlib import Path
@@ -31,6 +32,35 @@ def _display_name(line_key: str) -> str:
     return " ".join(p.capitalize() if p[0].islower() else p for p in parts)
 
 
+def _direction_name(line_key: str) -> str:
+    """Extract direction from line_key, e.g. 'line1_west' → 'West'."""
+    parts = line_key.split("_", 1)
+    if len(parts) > 1:
+        return parts[1].capitalize()
+    return ""
+
+
+def _group_lines(lines: list[LineInfo]) -> list[dict]:
+    """Group lines by line number for the home page.
+
+    Returns list of {"line_number": int, "directions": [LineInfo, ...]}
+    sorted by line number.
+    """
+    groups: dict[int, list[LineInfo]] = {}
+    for li in lines:
+        match = re.search(r"line(\d+)", li.line_key)
+        if match:
+            num = int(match.group(1))
+            groups.setdefault(num, []).append(li)
+        else:
+            groups.setdefault(0, []).append(li)
+
+    return [
+        {"line_number": num, "directions": dirs}
+        for num, dirs in sorted(groups.items())
+    ]
+
+
 def build_site(lines: list[LineInfo]) -> None:
     """Render the full static site into SITE_DIR."""
     # Prepare output dirs
@@ -51,12 +81,18 @@ def build_site(lines: list[LineInfo]) -> None:
     lines_data = [asdict(li) for li in lines]
     (DATA_DIR_SITE / "lines.json").write_text(json.dumps(lines_data, indent=2))
 
+    # Group lines by number for home page
+    grouped_lines = _group_lines(lines)
+
     # Setup Jinja2
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
+    env.globals["direction_name"] = _direction_name
 
     # Render home page
     tmpl = env.get_template("home.html")
-    (SITE_DIR / "index.html").write_text(tmpl.render(lines=lines, root_path="."))
+    (SITE_DIR / "index.html").write_text(
+        tmpl.render(grouped_lines=grouped_lines, lines=lines, root_path=".")
+    )
 
     # Render lines listing
     tmpl = env.get_template("lines.html")

@@ -16,7 +16,7 @@ a:hover { text-decoration: underline; }
 
 /* Navbar */
 .navbar {
-    background: #1a1a2e;
+    background: #e2722c;
     color: #fff;
     padding: 0 1rem;
     position: sticky;
@@ -42,8 +42,8 @@ a:hover { text-decoration: underline; }
     display: flex;
     gap: 1.5rem;
 }
-.nav-links a { color: #ccc; font-size: 0.875rem; }
-.nav-links a:hover { color: #fff; text-decoration: none; }
+.nav-links a { color: #fff; font-size: 0.875rem; }
+.nav-links a:hover { color: #fdf9db; text-decoration: none; }
 
 /* Hamburger — CSS-only toggle */
 .nav-toggle-input { display: none; }
@@ -74,12 +74,29 @@ main {
 .hero h1 { font-size: 2rem; margin-bottom: 0.5rem; }
 .hero p { color: #555; max-width: 540px; margin: 0 auto; }
 
+/* Line group headings */
+.line-group-heading {
+    font-size: 1.25rem;
+    margin: 1.5rem 0 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 2px solid #e2722c;
+    color: #333;
+}
+.line-group-heading:first-child {
+    margin-top: 0;
+}
+
 /* Card grid */
 .cards {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
     margin-top: 1.5rem;
+}
+.direction-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
 }
 .card {
     display: block;
@@ -91,7 +108,7 @@ main {
     color: inherit;
 }
 .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.1); text-decoration: none; }
-.card h2 { font-size: 1.125rem; margin-bottom: 0.75rem; }
+.card h3 { font-size: 1.125rem; margin-bottom: 0.75rem; }
 .card-stats {
     display: flex;
     gap: 1.5rem;
@@ -99,6 +116,7 @@ main {
 .stat { display: flex; flex-direction: column; }
 .stat-value { font-size: 1.25rem; font-weight: 700; }
 .stat-label { font-size: 0.75rem; color: #888; }
+.card-savings { font-size: 0.85rem; color: #e2722c; font-weight: 600; margin-top: 0.5rem; }
 .card-meta { font-size: 0.8rem; color: #888; margin-top: 0.5rem; }
 
 /* Section */
@@ -117,7 +135,44 @@ main {
     max-height: 400px;
 }
 
-/* Stats table */
+/* Stat groups (line detail page) */
+.stat-group {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+.stat-group h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: #333;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 0.5rem;
+}
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.35rem 0;
+}
+.stat-row-label {
+    font-size: 0.875rem;
+    color: #555;
+}
+.stat-row-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #222;
+}
+.stat-row-desc {
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: -0.15rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Stats table (kept for compatibility) */
 .stats-table {
     width: 100%;
     border-collapse: collapse;
@@ -173,7 +228,7 @@ footer a { color: #888; }
         top: 3rem;
         left: 0;
         right: 0;
-        background: #1a1a2e;
+        background: #e2722c;
         flex-direction: column;
         padding: 0.5rem 1rem 1rem;
         gap: 0.5rem;
@@ -185,5 +240,5 @@ footer a { color: #888; }
 
 /* Desktop (>= 640px) */
 @media (min-width: 640px) {
-    .cards { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .direction-cards { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 }

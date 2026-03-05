@@ -310,8 +310,19 @@ def _stats_html(stats: dict) -> str:
         )
 
     return f"""
+    <div id="stats-toggle" style="
+        position:fixed; bottom:10px; left:10px; z-index:10000;
+        background:rgba(253,249,219,0.95); border-radius:8px;
+        padding:6px 12px; font-family:'Menlo','Consolas',monospace;
+        font-size:11px; color:#222; cursor:pointer;
+        box-shadow:0 2px 8px rgba(0,0,0,0.18); border:1px solid #ddd;
+        pointer-events:auto;
+    " onclick="document.getElementById('stats-panel').style.display =
+        document.getElementById('stats-panel').style.display === 'none' ? 'block' : 'none'">
+        Line Statistics
+    </div>
     <div id="stats-panel" style="
-        position: fixed; bottom: 30px; left: 10px; z-index: 9999;
+        position: fixed; bottom: 40px; left: 10px; z-index: 9999;
         background: rgba(255,255,255,0.92); border-radius: 8px;
         padding: 12px 16px; font-family: 'Menlo','Consolas',monospace;
         font-size: 11px; line-height: 1.6; color: #222;
