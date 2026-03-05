@@ -6,81 +6,81 @@
 
 {% block content %}
 <section class="section">
-    <h1>{{ line.display_name }}</h1>
-    <p class="subtitle">{{ line.num_rides }} ride{{ "s" if line.num_rides != 1 }} · {{ "%.1f"|format(line.total_distance_km) }} km</p>
+    <h1><span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ line.display_name }}</span></h1>
+    <p class="subtitle">{{ line.num_rides }} <span class="i18n-it">corsa{{ "e" if line.num_rides != 1 }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km</p>
 
     <div class="iframe-wrapper">
         <iframe src="{{ root_path }}/maps/{{ line.line_key }}.html" loading="lazy" allowfullscreen></iframe>
     </div>
 
-    <h2>Statistics</h2>
+    <h2><span class="i18n-it">Statistiche</span><span class="i18n-en">Statistics</span></h2>
 
     <div class="stat-group">
-        <h3>Speed</h3>
+        <h3><span class="i18n-it">Velocità</span><span class="i18n-en">Speed</span></h3>
         <div class="stat-row">
-            <span class="stat-row-label">Avg trip speed</span>
+            <span class="stat-row-label"><span class="i18n-it">Velocità media corsa</span><span class="i18n-en">Avg trip speed</span></span>
             <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.avg_trip) }} km/h</span>
         </div>
-        <div class="stat-row-desc">Average speed including all stops and delays</div>
+        <div class="stat-row-desc"><span class="i18n-it">Velocità media incluse tutte le fermate e i ritardi</span><span class="i18n-en">Average speed including all stops and delays</span></div>
         <div class="stat-row">
-            <span class="stat-row-label">Avg moving speed</span>
+            <span class="stat-row-label"><span class="i18n-it">Velocità media in movimento</span><span class="i18n-en">Avg moving speed</span></span>
             <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.avg_moving) }} km/h</span>
         </div>
-        <div class="stat-row-desc">Average speed while the tram is moving</div>
+        <div class="stat-row-desc"><span class="i18n-it">Velocità media mentre il tram è in movimento</span><span class="i18n-en">Average speed while the tram is moving</span></div>
         <div class="stat-row">
-            <span class="stat-row-label">Median moving</span>
+            <span class="stat-row-label"><span class="i18n-it">Mediana in movimento</span><span class="i18n-en">Median moving</span></span>
             <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.median_moving) }} km/h</span>
         </div>
-        <div class="stat-row-desc">Half of measurements are above/below this</div>
+        <div class="stat-row-desc"><span class="i18n-it">Metà delle misurazioni sono sopra/sotto questo valore</span><span class="i18n-en">Half of measurements are above/below this</span></div>
         <div class="stat-row">
-            <span class="stat-row-label">Peak</span>
+            <span class="stat-row-label"><span class="i18n-it">Picco</span><span class="i18n-en">Peak</span></span>
             <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.peak) }} km/h</span>
         </div>
     </div>
 
     <div class="stat-group">
-        <h3>Stops & Delays</h3>
+        <h3><span class="i18n-it">Fermate e ritardi</span><span class="i18n-en">Stops & Delays</span></h3>
         <div class="stat-row">
-            <span class="stat-row-label">Total stops</span>
+            <span class="stat-row-label"><span class="i18n-it">Fermate totali</span><span class="i18n-en">Total stops</span></span>
             <span class="stat-row-value">{{ line.stats.total_stops }}</span>
         </div>
-        <div class="stat-row-desc">Number of detected stops along the route</div>
+        <div class="stat-row-desc"><span class="i18n-it">Numero di fermate rilevate lungo il percorso</span><span class="i18n-en">Number of detected stops along the route</span></div>
         <div class="stat-row">
-            <span class="stat-row-label">Total delay</span>
+            <span class="stat-row-label"><span class="i18n-it">Ritardo totale</span><span class="i18n-en">Total delay</span></span>
             <span class="stat-row-value">{{ fmt_ms(line.stats.total_delay) }}</span>
         </div>
-        <div class="stat-row-desc">Combined waiting time at all stops</div>
+        <div class="stat-row-desc"><span class="i18n-it">Tempo di attesa combinato a tutte le fermate</span><span class="i18n-en">Combined waiting time at all stops</span></div>
         <div class="stat-row">
-            <span class="stat-row-label">Avg wait per stop</span>
+            <span class="stat-row-label"><span class="i18n-it">Attesa media per fermata</span><span class="i18n-en">Avg wait per stop</span></span>
             <span class="stat-row-value">{{ fmt_ms(line.stats.avg_wait) }}</span>
         </div>
-        <div class="stat-row-desc">Average duration of each stop</div>
+        <div class="stat-row-desc"><span class="i18n-it">Durata media di ogni fermata</span><span class="i18n-en">Average duration of each stop</span></div>
         <div class="stat-row">
-            <span class="stat-row-label">Avg trip duration</span>
+            <span class="stat-row-label"><span class="i18n-it">Durata media corsa</span><span class="i18n-en">Avg trip duration</span></span>
             <span class="stat-row-value">{{ fmt_ms(line.stats.avg_trip_duration) }}</span>
         </div>
-        <div class="stat-row-desc">Total journey time from start to end</div>
+        <div class="stat-row-desc"><span class="i18n-it">Tempo totale del viaggio dall'inizio alla fine</span><span class="i18n-en">Total journey time from start to end</span></div>
     </div>
 
     <div class="stat-group">
-        <h3>Scenarios</h3>
+        <h3><span class="i18n-it">Scenari</span><span class="i18n-en">Scenarios</span></h3>
         <div class="stat-row">
-            <span class="stat-row-label">Green wave</span>
+            <span class="stat-row-label"><span class="i18n-it">Onda verde</span><span class="i18n-en">Green wave</span></span>
             <span class="stat-row-value">{{ fmt_ms(line.stats.green_wave) }}</span>
         </div>
-        <div class="stat-row-desc">Best case: minimum recorded wait at each stop location</div>
+        <div class="stat-row-desc"><span class="i18n-it">Caso migliore: attesa minima registrata in ogni fermata</span><span class="i18n-en">Best case: minimum recorded wait at each stop location</span></div>
         <div class="stat-row">
-            <span class="stat-row-label">Red wave</span>
+            <span class="stat-row-label"><span class="i18n-it">Onda rossa</span><span class="i18n-en">Red wave</span></span>
             <span class="stat-row-value">{{ fmt_ms(line.stats.red_wave) }}</span>
         </div>
-        <div class="stat-row-desc">Worst case: maximum recorded wait at each stop location</div>
+        <div class="stat-row-desc"><span class="i18n-it">Caso peggiore: attesa massima registrata in ogni fermata</span><span class="i18n-en">Worst case: maximum recorded wait at each stop location</span></div>
         {% if line.stats.avg_trip_duration > 0 and line.stats.priority_savings_incl_bottlenecks > 0 %}
         {% set pct = (line.stats.priority_savings_incl_bottlenecks / line.stats.avg_trip_duration * 100)|round(1) %}
         <div class="stat-row">
-            <span class="stat-row-label">Could be faster</span>
+            <span class="stat-row-label"><span class="i18n-it">Potrebbe essere più veloce</span><span class="i18n-en">Could be faster</span></span>
             <span class="stat-row-value">{{ pct }}%</span>
         </div>
-        <div class="stat-row-desc">Time saved if traffic lights gave trams priority</div>
+        <div class="stat-row-desc"><span class="i18n-it">Tempo risparmiato se i semafori dessero priorità ai tram</span><span class="i18n-en">Time saved if traffic lights gave trams priority</span></div>
         {% endif %}
     </div>
 </section>

@@ -1,9 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Velotrack{% endblock %}</title>
+    <style>.i18n-en{display:none}</style>
+    <script>
+    if(!navigator.language.startsWith('it')){
+      document.documentElement.lang='en';
+      var s=document.createElement('style');
+      s.textContent='.i18n-it{display:none!important}.i18n-en{display:inline!important}';
+      document.head.appendChild(s);
+    }
+    </script>
     <link rel="stylesheet" href="{{ root_path }}/css/style.css">
     {% block head %}{% endblock %}
 </head>
@@ -26,7 +35,7 @@
     </main>
 
     <footer>
-        <p>Built by <a href="https://pensamiciclabile.it" target="_blank" rel="noopener">PensaMiCiclabile</a> ❤️ <a href="https://velocipiedi.it" target="_blank" rel="noopener">Velocipiedi</a></p>
+        <p><span class="i18n-it">Realizzato da</span><span class="i18n-en">Built by</span> <a href="https://pensamiciclabile.it" target="_blank" rel="noopener">PensaMiCiclabile</a> ❤️ <a href="https://velocipiedi.it" target="_blank" rel="noopener">Velocipiedi</a></p>
     </footer>
 </body>
 </html>

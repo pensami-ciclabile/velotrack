@@ -40,6 +40,26 @@ def _direction_name(line_key: str) -> str:
     return ""
 
 
+_DIRECTION_IT = {"west": "Ovest", "east": "Est", "north": "Nord", "south": "Sud"}
+
+
+def _direction_name_it(line_key: str) -> str:
+    """Extract Italian direction, e.g. 'line1_west' → 'Ovest'."""
+    parts = line_key.split("_", 1)
+    if len(parts) > 1:
+        return _DIRECTION_IT.get(parts[1].lower(), parts[1].capitalize())
+    return ""
+
+
+def _display_name_it(line_key: str) -> str:
+    """Convert 'line1_west' → 'Linea 1 Ovest'."""
+    match = re.search(r"line(\d+)", line_key)
+    num = match.group(1) if match else ""
+    parts = line_key.split("_", 1)
+    direction = _DIRECTION_IT.get(parts[1].lower(), parts[1].capitalize()) if len(parts) > 1 else ""
+    return f"Linea {num} {direction}".strip()
+
+
 def _group_lines(lines: list[LineInfo]) -> list[dict]:
     """Group lines by line number for the home page.
 
@@ -87,6 +107,8 @@ def build_site(lines: list[LineInfo]) -> None:
     # Setup Jinja2
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
     env.globals["direction_name"] = _direction_name
+    env.globals["direction_name_it"] = _direction_name_it
+    env.globals["display_name_it"] = _display_name_it
 
     # Render home page
     tmpl = env.get_template("home.html")
