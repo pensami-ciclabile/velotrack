@@ -7,6 +7,7 @@
 Analyze GPS recordings of tram rides in Milan to produce interactive maps with velocity heatmaps and classified stop events.
 
 Record your tram rides with any GPS tracking app, drop the GPX files into the project, and Velotrack will generate an HTML map showing how fast the tram moved along the route and where it stopped — distinguishing between tram stops, traffic lights, and bottlenecks.
+It also aggregates multiple rides on the same line to produce average speed and wait time maps, and provides a statistics panel with insights on potential improvements like traffic light priority and other interesting insights.
 
 ---
 
@@ -15,7 +16,7 @@ Record your tram rides with any GPS tracking app, drop the GPX files into the pr
 > Qualche mese fa hanno lanciato [TRAMsformaMi](https://velocipiedi.it/tramsformami/), una campagna rivolta al comune di Milano per chiedere il potenziamento dei mezzi pubblici di superficie.
 > Velotrack nasce come tool open-source che ho sviluppato per analizzare i dati GPS delle corse in tram a Milano, con l'obiettivo di produrre mappe interattive che mostrano le velocità e i tempi di attesa lungo le linee del tram.
 > I dati che nel futuro arriveranno grazie alla community di [Velocipiedi (instagram)](https://www.instagram.com/velocipiedi/) e [PensamiCiclabile (instagram)](https://www.instagram.com/pensamiciclabile/) potranno essere analizzati con Velotrack per identificare i problemi più urgenti e supportare le richieste di miglioramento del servizio.
-> L'intero processo è open source, così chiunque può contribuire, esaminare e replicare i risultati, garantendo il massimo livello di trasparenza possibile.
+> L'intero processo è open source, in modo che chiunque può contribuire, esaminare e replicare i risultati, garantendo il massimo livello di trasparenza possibile.
 
 ---
 
@@ -36,8 +37,7 @@ When multiple rides share the same tram line, wait times and velocities are aver
 **Line statistics panel:** Each generated map includes a summary panel (bottom-left corner) with:
 - **Speed stats** — average, peak, median, P25/P75 (computed from moving segments only)
 - **Stop breakdown** — count and total wait time per category (tram stops, traffic lights, combined, bottlenecks)
-- **Scenario analysis** — green wave (sum of min wait at each location), red wave (sum of max), and P25/P75 totals
-- **Traffic light priority** — estimated time saved if all traffic light stops were automatically switched to green when the tram approaches (based on the average wait time at traffic light stops)
+- **Scenario analysis** — green wave (estimated time saved if all traffic light stops were automatically switched to green when the tram approaches), red wave (sum of max wait at each location), and P25/P75 totals
 
 ## Quick start
 
