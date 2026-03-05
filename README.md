@@ -10,7 +10,7 @@ Record your tram rides with any GPS tracking app, drop the GPX files into the pr
 
 ---
 
-> **For Italian speakers 🇮🇹:**
+> **For 🇮🇹 speakers:**
 > Questo è parte di un progetto in collaborazione con [Velocipiedi](https://velocipiedi.it), un progetto di divulgazione italiano sulla mobilità e l'urbanistica.
 > Qualche mese fa hanno lanciato [TRAMsformaMi](https://velocipiedi.it/tramsformami/), una campagna rivolta al comune di Milano per chiedere il potenziamento dei mezzi pubblici di superficie.
 > Velotrack nasce come tool open-source che ho sviluppato per analizzare i dati GPS delle corse in tram a Milano, con l'obiettivo di produrre mappe interattive che mostrano le velocità e i tempi di attesa lungo le linee del tram.
@@ -42,21 +42,19 @@ When multiple rides share the same tram line, wait times and velocities are aver
 ## Quick start
 
 ```bash
-# 1. Download Milan tram stop data (one-time)
-uv run main.py download-gtfs
-
-# 2. Place your GPX files in data/rides/
+# 1. Place your GPX files in data/rides/
+#    (tram stop data is already included in data/tram_stops.csv)
 #    Naming convention: line<N>_<direction>_<description>.gpx
 #    Example: line1_west_repubblica_xxsettembre.gpx
 
-# 3. (Optional) Add traffic light locations
+# 2. (Optional) Add traffic light locations
 uv run main.py template          # creates data/traffic_lights.csv
 # Edit the CSV with lat, lon, name, notes
 
-# 4. Generate maps
+# 3. Generate maps
 uv run main.py analyze
 
-# 5. Open the result
+# 4. Open the result
 open outputs/line1_west.html
 ```
 
@@ -129,9 +127,13 @@ uv run main.py traffic-lights --watch
 
 With `--watch`, a local HTTP server starts at `http://localhost:8000`. The map includes a Google Satellite + Labels layer (toggle in top-right) for easy identification. Right-click anywhere on the map to open a popup form — enter a name (required) and optional notes, then click "Add". The page reloads automatically with the new marker. Each entry is timestamped (`added_at`) and tagged with your local username (`added_by`) in the CSV.
 
-### GTFS data
+### Tram stop data
 
-Tram stop locations are downloaded from [Milan's open data portal](https://dati.comune.milano.it/dataset/ds929-orari-del-trasporto-pubblico-locale-nel-comune-di-milano-in-formato-gtfs). Re-run `uv run main.py download-gtfs` to update them. The data is stored in `data/gtfs/` (gitignored).
+Tram stop locations are stored in `data/tram_stops.csv` (committed to git). This file ships with the project, so you don't need to download anything to get started.
+
+To refresh the data from [Milan's open data portal](https://dati.comune.milano.it/dataset/ds929-orari-del-trasporto-pubblico-locale-nel-comune-di-milano-in-formato-gtfs), run `uv run main.py download-gtfs`. This downloads the full GTFS dataset (~330MB) into `data/gtfs/` (gitignored), extracts the tram stops, and overwrites `data/tram_stops.csv`.
+
+You can also provide your own `tram_stops.csv` for a different city — just use columns: `stop_id`, `stop_name`, `lat`, `lon`.
 
 ## Project structure
 
@@ -150,8 +152,9 @@ velotrack/
     static/js/main.js
   data/
     rides/                 # your GPX files go here
+    tram_stops.csv         # cached tram stop locations (committed)
     traffic_lights.csv     # user-provided traffic light locations
-    gtfs/                  # auto-downloaded, gitignored
+    gtfs/                  # raw GTFS download, gitignored
   outputs/                 # generated HTML maps, gitignored
   site/                    # generated static website, gitignored
 ```
