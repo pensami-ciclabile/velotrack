@@ -310,6 +310,25 @@ def _stats_html(stats: dict) -> str:
         )
 
     return f"""
+    <style>
+    @media (max-width: 639px) {{
+        #stats-panel {{
+            left: 5px !important; right: 5px !important;
+            max-height: 60vh; overflow-y: auto;
+            white-space: normal !important; font-size: 10px !important;
+        }}
+        #stats-toggle {{ left: 5px !important; }}
+        #ssd-panel {{
+            left: 5px !important; right: 5px !important;
+            width: auto !important; height: 250px !important;
+        }}
+        #ssd-toggle {{ right: 5px !important; }}
+        #layer-panel {{
+            top: 5px !important; right: 5px !important;
+            font-size: 10px !important; padding: 8px 10px !important;
+        }}
+    }}
+    </style>
     <div id="stats-toggle" style="
         position:fixed; bottom:10px; left:10px; z-index:10000;
         background:rgba(253,249,219,0.95); border-radius:8px;
@@ -374,6 +393,90 @@ def _stats_html(stats: dict) -> str:
             <span>-{stats['priority_savings_incl_bottlenecks']:.0f}s ({stats['priority_savings_incl_bottlenecks'] / stats['avg_trip_duration'] * 100 if stats['avg_trip_duration'] else 0:.1f}% faster)</span>
         </div>
     </div>
+    """
+
+
+def _layer_control_html(layer_js_names: dict[str, str]) -> str:
+    """Build a custom layer-control legend styled like the stats panel.
+
+    Args:
+        layer_js_names: mapping of logical name → Folium JS variable name,
+            e.g. {"route_velocity": "feature_group_abc123", "stops_tram_stop": "feature_group_def456"}
+    """
+    import json
+
+    vel_colors = ["#d73027", "#f46d43", "#fdae61", "#fee08b", "#d9ef8b", "#a6d96a", "#1a9850"]
+    gradient = ", ".join(vel_colors)
+    js_map = json.dumps(layer_js_names)
+
+    return """
+    <div id="layer-panel" style="
+        position:fixed; top:10px; right:10px; z-index:9999;
+        background:rgba(255,255,255,0.92); border-radius:8px;
+        padding:10px 14px; font-family:'Menlo','Consolas',monospace;
+        font-size:11px; line-height:1.8; color:#222;
+        box-shadow:0 2px 8px rgba(0,0,0,0.18); border:1px solid #ddd;
+        pointer-events:auto;
+    ">
+        <div style="font-weight:bold;margin-bottom:4px;">Layers</div>
+
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" checked data-layer="route_velocity" style="margin:0">
+            <span style="display:inline-block;width:20px;height:4px;border-radius:2px;
+                         background:linear-gradient(to right, """ + gradient + """)"></span>
+            Route
+        </label>
+
+        <div style="font-weight:600;margin:6px 0 2px;color:#888;font-size:10px;
+                     text-transform:uppercase;letter-spacing:0.5px">Stops</div>
+
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" checked data-layer="stops_tram_stop" style="margin:0">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
+                         background:green;opacity:0.8"></span>
+            Tram stops
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" checked data-layer="stops_traffic_light" style="margin:0">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
+                         background:red;opacity:0.8"></span>
+            Traffic lights
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" checked data-layer="stops_combined" style="margin:0">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
+                         background:orange;opacity:0.8"></span>
+            Combined
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" checked data-layer="stops_bottleneck" style="margin:0">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
+                         background:gray;opacity:0.8"></span>
+            Bottlenecks
+        </label>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var nameToVar = """ + js_map + """;
+        // Find the Leaflet map
+        var map;
+        for (var key in window) {
+            if (window[key] instanceof L.Map) { map = window[key]; break; }
+        }
+        if (!map) return;
+
+        document.querySelectorAll('#layer-panel input[data-layer]').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                var jsVar = nameToVar[cb.getAttribute('data-layer')];
+                if (!jsVar) return;
+                var layer = window[jsVar];
+                if (!layer) return;
+                if (cb.checked) { map.addLayer(layer); }
+                else { map.removeLayer(layer); }
+            });
+        });
+    });
+    </script>
     """
 
 
@@ -547,9 +650,9 @@ def build_map(
     m = folium.Map(location=[center_lat, center_lon], zoom_start=14, tiles="cartodbpositron")
 
     # Feature groups for layer control
-    route_group = folium.FeatureGroup(name="Route (velocity)", show=True)
+    route_group = folium.FeatureGroup(name="route_velocity", show=True)
     stop_groups = {
-        cat: folium.FeatureGroup(name=f"Stops: {cat}", show=True)
+        cat: folium.FeatureGroup(name=f"stops_{cat}", show=True)
         for cat in STOP_COLORS
     }
 
@@ -616,7 +719,11 @@ def build_map(
     for group in stop_groups.values():
         group.add_to(m)
 
-    folium.LayerControl(collapsed=False).add_to(m)
+    # Custom layer control panel (replaces default LayerControl)
+    layer_js_names = {"route_velocity": route_group.get_name()}
+    for cat, group in stop_groups.items():
+        layer_js_names[f"stops_{cat}"] = group.get_name()
+    m.get_root().html.add_child(Element(_layer_control_html(layer_js_names)))
 
     # Compute and inject statistics panel
     stats = _compute_stats(ride_dfs, merged_stops)
