@@ -1,0 +1,57 @@
+name: Build & Deploy Site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Cache GTFS data
+        uses: actions/cache@v4
+        with:
+          path: data/gtfs/
+          key: gtfs-v1
+
+      - name: Download GTFS (if not cached)
+        run: |
+          if [ ! -f data/gtfs/stops.txt ]; then
+            uv run main.py download-gtfs
+          fi
+
+      - name: Build site
+        run: uv run main.py build-site
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

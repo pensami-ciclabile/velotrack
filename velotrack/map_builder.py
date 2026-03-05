@@ -253,6 +253,37 @@ def _compute_stats(
     }
 
 
+def _jsonify_stats(obj):
+    """Convert numpy/pandas types to plain Python for JSON serialization."""
+    if isinstance(obj, dict):
+        return {k: _jsonify_stats(v) for k, v in obj.items()}
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    if isinstance(obj, (np.floating, np.float64)):
+        return float(obj)
+    if isinstance(obj, (np.ndarray,)):
+        return [_jsonify_stats(x) for x in obj]
+    return obj
+
+
+def compute_line_stats(
+    ride_dfs: list[pd.DataFrame],
+    all_stops: list[list[StopEvent]],
+) -> dict:
+    """Compute JSON-serializable stats for a tram line.
+
+    Reuses the same merge-stops + _compute_stats logic from build_map.
+    """
+    merged_stops: dict[tuple[float, float], list[StopEvent]] = {}
+    for stops in all_stops:
+        for stop in stops:
+            key = (round(stop.lat, 5), round(stop.lon, 5))
+            merged_stops.setdefault(key, []).append(stop)
+
+    stats = _compute_stats(ride_dfs, merged_stops)
+    return _jsonify_stats(stats)
+
+
 def _stats_html(stats: dict) -> str:
     """Build the HTML/CSS for the statistics panel."""
     s = stats["speed"]

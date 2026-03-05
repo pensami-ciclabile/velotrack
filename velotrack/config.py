@@ -8,6 +8,13 @@ GTFS_DIR = DATA_DIR / "gtfs"
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 TRAFFIC_LIGHTS_CSV = DATA_DIR / "traffic_lights.csv"
 
+# Site generation
+SITE_DIR = PROJECT_ROOT / "site"
+MAPS_DIR = SITE_DIR / "maps"
+LINES_DIR = SITE_DIR / "lines"
+DATA_DIR_SITE = SITE_DIR / "data"
+TEMPLATES_DIR = PROJECT_ROOT / "templates"
+
 # GTFS
 GTFS_URL = "https://dati.comune.milano.it/dataset/ae3f3db9-de61-45b7-94e7-9395c0e3ef53/resource/6251f156-4c74-4a0b-904e-01bcb701a686/download/gtfs.zip"
 

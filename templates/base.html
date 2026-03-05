@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Velotrack{% endblock %}</title>
+    <link rel="stylesheet" href="{{ root_path }}/css/style.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a href="{{ root_path }}/index.html" class="nav-brand">Velotrack</a>
+            <input type="checkbox" id="nav-toggle" class="nav-toggle-input">
+            <label for="nav-toggle" class="nav-toggle-label">
+                <span></span><span></span><span></span>
+            </label>
+            <ul class="nav-links">
+                <li><a href="{{ root_path }}/index.html">Home</a></li>
+                <li><a href="{{ root_path }}/lines/index.html">Lines</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>Built by <a href="https://velocipiedi.it" target="_blank" rel="noopener">Velocipiedi</a></p>
+    </footer>
+</body>
+</html>

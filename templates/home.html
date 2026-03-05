@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Velotrack — Milan Tram Ride Analysis{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Velotrack</h1>
+    <p>GPS-based tram ride analysis for Milan. Velocity heatmaps, stop detection, and traffic light delay tracking.</p>
+</section>
+
+<section class="cards">
+    {% for line in lines %}
+    <a href="{{ root_path }}/lines/{{ line.line_key }}.html" class="card">
+        <h2>{{ line.display_name }}</h2>
+        <div class="card-stats">
+            <div class="stat">
+                <span class="stat-value">{{ "%.1f"|format(line.stats.speed.avg_moving) }}</span>
+                <span class="stat-label">km/h avg</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">{{ "%.0f"|format(line.stats.total_delay) }}s</span>
+                <span class="stat-label">total delay</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">{{ line.stats.total_stops }}</span>
+                <span class="stat-label">stops</span>
+            </div>
+        </div>
+        <p class="card-meta">{{ line.num_rides }} ride{{ "s" if line.num_rides != 1 }} · {{ "%.1f"|format(line.total_distance_km) }} km</p>
+    </a>
+    {% endfor %}
+</section>
+{% endblock %}

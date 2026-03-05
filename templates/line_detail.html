@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}{{ line.display_name }} — Velotrack{% endblock %}
+
+{% block content %}
+<section class="section">
+    <h1>{{ line.display_name }}</h1>
+    <p class="subtitle">{{ line.num_rides }} ride{{ "s" if line.num_rides != 1 }} · {{ "%.1f"|format(line.total_distance_km) }} km</p>
+
+    <div class="iframe-wrapper">
+        <iframe src="{{ root_path }}/maps/{{ line.line_key }}.html" loading="lazy" allowfullscreen></iframe>
+    </div>
+
+    <h2>Statistics</h2>
+    <table class="stats-table">
+        <tbody>
+            <tr><td>Avg moving speed</td><td>{{ "%.1f"|format(line.stats.speed.avg_moving) }} km/h</td></tr>
+            <tr><td>Avg trip speed</td><td>{{ "%.1f"|format(line.stats.speed.avg_trip) }} km/h</td></tr>
+            <tr><td>Median moving speed</td><td>{{ "%.1f"|format(line.stats.speed.median_moving) }} km/h</td></tr>
+            <tr><td>Peak speed</td><td>{{ "%.1f"|format(line.stats.speed.peak) }} km/h</td></tr>
+            <tr><td>Total stops</td><td>{{ line.stats.total_stops }}</td></tr>
+            <tr><td>Total delay</td><td>{{ "%.0f"|format(line.stats.total_delay) }}s</td></tr>
+            <tr><td>Avg wait per stop</td><td>{{ "%.0f"|format(line.stats.avg_wait) }}s</td></tr>
+            <tr><td>Green wave scenario</td><td>{{ "%.0f"|format(line.stats.green_wave) }}s</td></tr>
+            <tr><td>Red wave scenario</td><td>{{ "%.0f"|format(line.stats.red_wave) }}s</td></tr>
+            <tr><td>Avg trip duration</td><td>{{ "%.0f"|format(line.stats.avg_trip_duration) }}s</td></tr>
+        </tbody>
+    </table>
+</section>
+{% endblock %}

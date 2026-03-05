@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Lines — Velotrack{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+{% endblock %}
+
+{% block content %}
+<section class="section">
+    <h1>Line Comparison</h1>
+
+    <div class="chart-container">
+        <canvas id="comparison-chart" data-lines='{{ lines_json }}'></canvas>
+    </div>
+
+    <table class="stats-table">
+        <thead>
+            <tr>
+                <th>Line</th>
+                <th>Rides</th>
+                <th>Avg Speed (km/h)</th>
+                <th>Total Delay (s)</th>
+                <th>Stops</th>
+                <th>Distance (km)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in lines %}
+            <tr>
+                <td><a href="{{ root_path }}/lines/{{ line.line_key }}.html">{{ line.display_name }}</a></td>
+                <td>{{ line.num_rides }}</td>
+                <td>{{ "%.1f"|format(line.stats.speed.avg_moving) }}</td>
+                <td>{{ "%.0f"|format(line.stats.total_delay) }}</td>
+                <td>{{ line.stats.total_stops }}</td>
+                <td>{{ "%.1f"|format(line.total_distance_km) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<script src="{{ root_path }}/js/main.js"></script>
+{% endblock %}

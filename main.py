@@ -11,10 +11,16 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-from velotrack.config import MAX_REALISTIC_SPEED, OUTPUT_DIR, RIDES_DIR, TRAFFIC_LIGHTS_CSV
+from velotrack.config import (
+    MAPS_DIR,
+    MAX_REALISTIC_SPEED,
+    OUTPUT_DIR,
+    RIDES_DIR,
+    TRAFFIC_LIGHTS_CSV,
+)
 from velotrack.gpx_parser import parse_gpx
 from velotrack.gtfs import download_gtfs, load_tram_stops
-from velotrack.map_builder import build_map, build_traffic_lights_map
+from velotrack.map_builder import build_map, build_traffic_lights_map, compute_line_stats
 from velotrack.stop_detector import classify_stops, detect_stops, load_traffic_lights
 
 
@@ -121,30 +127,32 @@ def cmd_traffic_lights(watch: bool = False):
         print("\nServer stopped.")
 
 
-def cmd_analyze(gpx_paths: list[str]):
+def _process_rides(gpx_paths: list[str] | None = None):
+    """Parse GPX files, detect stops, group by line. Returns (rides_by_line, tram_stops, traffic_lights).
+
+    Each value in rides_by_line is a dict with keys: ride_dfs, all_stops, ride_files.
+    """
     if not gpx_paths:
-        # Default: all GPX files in rides directory
         gpx_paths = sorted(str(p) for p in RIDES_DIR.glob("*.gpx") if not p.name.startswith("._"))
         if not gpx_paths:
             print(f"No GPX files found. Place .gpx files in {RIDES_DIR}")
             sys.exit(1)
 
-    # Load reference data
     print("Loading tram stops from GTFS...")
     tram_stops = load_tram_stops()
     traffic_lights = load_traffic_lights()
 
-    # Group rides by tram line
-    rides_by_line: dict[str, list[tuple[Path, str]]] = defaultdict(list)
+    # Group files by tram line
+    files_by_line: dict[str, list[tuple[Path, str]]] = defaultdict(list)
     for p in gpx_paths:
         path = Path(p)
         match = re.search(r"line(\d+)_(\w+?)_", path.name)
         line_key = f"line{match.group(1)}_{match.group(2)}" if match else path.stem
-        rides_by_line[line_key].append((path, path.name))
+        files_by_line[line_key].append((path, path.name))
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-    for line_key, ride_files in rides_by_line.items():
+    # Parse and detect stops
+    rides_by_line: dict[str, dict] = {}
+    for line_key, ride_files in files_by_line.items():
         print(f"\nProcessing {line_key} ({len(ride_files)} ride(s))...")
         ride_dfs = []
         all_stops = []
@@ -162,16 +170,79 @@ def cmd_analyze(gpx_paths: list[str]):
                 print(f"  ⚠ {outlier_count} velocity outliers clamped to {MAX_REALISTIC_SPEED} km/h")
             print(f"  {len(df)} points, {len(stops)} stops detected")
 
-        if not ride_dfs:
+        if ride_dfs:
+            rides_by_line[line_key] = {
+                "ride_dfs": ride_dfs,
+                "all_stops": all_stops,
+                "ride_files": ride_files,
+            }
+        else:
             print(f"  No valid rides for {line_key}, skipping.")
-            continue
 
-        m = build_map(ride_dfs, all_stops, title=f"Velotrack — {line_key}")
+    return rides_by_line, tram_stops, traffic_lights
+
+
+def cmd_analyze(gpx_paths: list[str]):
+    rides_by_line, _, _ = _process_rides(gpx_paths or None)
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    for line_key, data in rides_by_line.items():
+        m = build_map(data["ride_dfs"], data["all_stops"], title=f"Velotrack — {line_key}")
         out_path = OUTPUT_DIR / f"{line_key}.html"
         m.save(str(out_path))
         print(f"  Map saved: {out_path}")
 
     print("\nDone!")
+
+
+def cmd_build_site():
+    from velotrack.site_builder import LineInfo, build_site
+
+    rides_by_line, _, _ = _process_rides()
+
+    MAPS_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Build per-line maps and collect stats
+    line_infos: list[LineInfo] = []
+    for line_key, data in rides_by_line.items():
+        ride_dfs = data["ride_dfs"]
+        all_stops = data["all_stops"]
+
+        # Save map to site/maps/
+        m = build_map(ride_dfs, all_stops, title=f"Velotrack — {line_key}")
+        m.save(str(MAPS_DIR / f"{line_key}.html"))
+        print(f"  Map saved: {MAPS_DIR / f'{line_key}.html'}")
+
+        # Compute stats
+        stats = compute_line_stats(ride_dfs, all_stops)
+
+        # Total distance from all rides
+        total_dist_km = sum(
+            df["dist"].sum() / 1000 for df in ride_dfs if not df.empty
+        )
+
+        # Display name: line1_west → Line 1 West
+        parts = line_key.replace("line", "Line ").split("_")
+        display_name = " ".join(p.capitalize() if p[0].islower() else p for p in parts)
+
+        line_infos.append(LineInfo(
+            line_key=line_key,
+            display_name=display_name,
+            num_rides=len(data["ride_files"]),
+            stats=stats,
+            total_distance_km=round(total_dist_km, 1),
+        ))
+
+    # Build traffic lights map into site/maps/
+    tl = load_traffic_lights()
+    tl_map = build_traffic_lights_map(tl)
+    tl_map.save(str(MAPS_DIR / "traffic_lights.html"))
+    print(f"  Traffic lights map saved: {MAPS_DIR / 'traffic_lights.html'}")
+
+    # Render the site
+    build_site(line_infos)
+    print("\nSite build complete!")
 
 
 def main():
@@ -181,6 +252,7 @@ def main():
         print("  uv run main.py template                Create traffic_lights.csv template")
         print("  uv run main.py traffic-lights [--watch]     View traffic lights on a map")
         print("  uv run main.py analyze [files]         Analyze GPX rides and generate maps")
+        print("  uv run main.py build-site              Build static website for GitHub Pages")
         sys.exit(1)
 
     cmd = sys.argv[1]
@@ -196,6 +268,8 @@ def main():
             cmd_traffic_lights()
     elif cmd == "analyze":
         cmd_analyze(sys.argv[2:])
+    elif cmd == "build-site":
+        cmd_build_site()
     else:
         print(f"Unknown command: {cmd}")
         sys.exit(1)

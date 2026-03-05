@@ -57,8 +57,19 @@ uv run main.py template          # creates data/traffic_lights.csv
 uv run main.py analyze
 
 # 5. Open the result
-open output/line1_west.html
+open outputs/line1_west.html
 ```
+
+### Build the website
+
+To generate a full static site (home page, line comparison, detail pages with embedded maps):
+
+```bash
+uv run main.py build-site
+open site/index.html
+```
+
+The site is also built and deployed to GitHub Pages automatically on every push to `main`.
 
 You can also analyze specific files:
 
@@ -133,9 +144,14 @@ velotrack/
     stop_detector.py       # detect + classify stops
     gtfs.py                # download/parse GTFS tram stops
     map_builder.py         # folium map generation
+    site_builder.py        # static site generation (Jinja2)
+  templates/               # Jinja2 templates for the website
+    static/css/style.css
+    static/js/main.js
   data/
     rides/                 # your GPX files go here
     traffic_lights.csv     # user-provided traffic light locations
     gtfs/                  # auto-downloaded, gitignored
-  output/                # generated HTML maps, gitignored
+  outputs/                 # generated HTML maps, gitignored
+  site/                    # generated static website, gitignored
 ```
