@@ -5,7 +5,7 @@ import folium
 from folium import Element
 import pandas as pd
 
-from velotrack.config import STOP_COLORS, VELOCITY_COLORS
+from velotrack.config import STOP_COLORS, STOP_DISTANCE, STOP_TIME_GAP, VELOCITY_COLORS
 from velotrack.stop_detector import StopEvent
 
 
@@ -178,22 +178,49 @@ def _compute_stats(
             trip_durations.append(dur)
     avg_trip_duration = sum(trip_durations) / len(trip_durations) if trip_durations else 0
 
-    # --- Speed stats ---
+    # --- Speed stats (distance/time based, not mean of instantaneous speeds) ---
     all_speeds = pd.concat(
-        [df["velocity_kmh"] for df in ride_dfs if not df.empty], ignore_index=True
+        [df[["velocity_kmh", "dt", "dist"]].iloc[1:] for df in ride_dfs if len(df) >= 2],
+        ignore_index=True,
     )
-    moving = all_speeds[all_speeds > 0]
+    total_dist = all_speeds["dist"].sum()
+    total_dt = all_speeds["dt"].sum()
+    moving_mask = ~((all_speeds["dt"] > STOP_TIME_GAP) & (all_speeds["dist"] < STOP_DISTANCE))
+    moving_dist = all_speeds.loc[moving_mask, "dist"].sum()
+    moving_dt = all_speeds.loc[moving_mask, "dt"].sum()
+
+    # Time-weighted percentiles for moving segments
+    moving_speeds = all_speeds.loc[moving_mask, ["velocity_kmh", "dt"]].copy()
+    if len(moving_speeds):
+        moving_speeds = moving_speeds.sort_values("velocity_kmh")
+        cum_weight = moving_speeds["dt"].cumsum() / moving_speeds["dt"].sum()
+        median_moving = float(moving_speeds.loc[
+            cum_weight >= 0.5, "velocity_kmh"
+        ].iloc[0])
+        p25 = float(moving_speeds.loc[cum_weight >= 0.25, "velocity_kmh"].iloc[0])
+        p75 = float(moving_speeds.loc[cum_weight >= 0.75, "velocity_kmh"].iloc[0])
+    else:
+        median_moving = p25 = p75 = 0
+
+    # Time-weighted median for all segments (including stops)
+    all_sorted = all_speeds[["velocity_kmh", "dt"]].sort_values("velocity_kmh")
+    if len(all_sorted):
+        cum_w = all_sorted["dt"].cumsum() / all_sorted["dt"].sum()
+        median_trip = float(all_sorted.loc[cum_w >= 0.5, "velocity_kmh"].iloc[0])
+    else:
+        median_trip = 0
+
     # Peak = highest average-across-trips segment speed (typical top speed)
     _x, avg_spd, _ = _speed_space_data(ride_dfs)
     peak = max((s for s in avg_spd if not np.isnan(s)), default=0)
     speed = {
-        "avg_moving": moving.mean() if len(moving) else 0,
-        "avg_trip": all_speeds.mean() if len(all_speeds) else 0,
-        "peak": peak if peak else (all_speeds.max() if len(all_speeds) else 0),
-        "median_moving": moving.median() if len(moving) else 0,
-        "median_trip": all_speeds.median() if len(all_speeds) else 0,
-        "p25": float(np.percentile(moving, 25)) if len(moving) else 0,
-        "p75": float(np.percentile(moving, 75)) if len(moving) else 0,
+        "avg_moving": (moving_dist / moving_dt * 3.6) if moving_dt > 0 else 0,
+        "avg_trip": (total_dist / total_dt * 3.6) if total_dt > 0 else 0,
+        "peak": peak if peak else (all_speeds["velocity_kmh"].max() if len(all_speeds) else 0),
+        "median_moving": median_moving,
+        "median_trip": median_trip,
+        "p25": p25,
+        "p75": p75,
     }
 
     # --- Stop time stats (per-category) ---
@@ -515,7 +542,7 @@ def _layer_control_html(layer_js_names: dict[str, str]) -> str:
 
 
 def _speed_space_data(
-    ride_dfs: list[pd.DataFrame], bin_width_m: float = 25.0
+    ride_dfs: list[pd.DataFrame], bin_width_m: float = 50.0
 ) -> tuple[list[float], list[float], list[list[tuple[float, float]]]]:
     """Compute binned speed-vs-distance data across rides.
 
