@@ -14,11 +14,11 @@
     <div class="direction-cards">
         {% for line in group.directions %}
         <a href="{{ root_path }}/lines/{{ line.line_key }}.html" class="card">
-            <h3><span class="i18n-it">{{ direction_name_it(line.line_key) }}</span><span class="i18n-en">{{ direction_name(line.line_key) }}</span></h3>
+            <h3><span class="i18n-it">Direzione {{ direction_name_it(line.line_key) }}</span><span class="i18n-en">{{ direction_name_bound(line.line_key) }}</span></h3>
             <div class="card-stats">
                 <div class="stat">
-                    <span class="stat-value">{{ "%.1f"|format(line.stats.speed.avg_trip) }}</span>
-                    <span class="stat-label"><span class="i18n-it">km/h velocità media</span><span class="i18n-en">km/h avg trip</span></span>
+                    <span class="stat-value">{{ "%.1f"|format(line.stats.speed.avg_trip) }} <small>km/h</small></span>
+                    <span class="stat-label"><span class="i18n-it">velocità media</span><span class="i18n-en">avg trip</span></span>
                 </div>
                 <div class="stat">
                     <span class="stat-value">{{ line.stats.total_stops }}</span>
@@ -30,7 +30,7 @@
             {% set secs = line.stats.priority_savings_incl_bottlenecks|int %}
             {% set mins = (secs // 60)|int %}
             {% set remainder = (secs % 60)|int %}
-            <p class="card-savings"><span class="i18n-it">Potrebbe essere {{ pct }}% più veloce ({{ mins }}m {{ remainder }}s)</span><span class="i18n-en">Could be {{ pct }}% faster ({{ mins }}m {{ remainder }}s)</span></p>
+            <p class="card-savings"><span class="i18n-it">Potrebbe essere il {{ pct }}% più veloce ({{ mins }}m {{ remainder }}s)</span><span class="i18n-en">Could be {{ pct }}% faster ({{ mins }}m {{ remainder }}s)</span></p>
             {% endif %}
             <p class="card-meta">{{ line.num_rides }} <span class="i18n-it">corsa{{ "e" if line.num_rides != 1 }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km</p>
         </a>

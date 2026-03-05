@@ -6,12 +6,17 @@
     <title>{% block title %}Velotrack{% endblock %}</title>
     <style>.i18n-en{display:none}</style>
     <script>
-    if(!navigator.language.startsWith('it')){
-      document.documentElement.lang='en';
-      var s=document.createElement('style');
-      s.textContent='.i18n-it{display:none!important}.i18n-en{display:inline!important}';
-      document.head.appendChild(s);
-    }
+    (function(){
+      var saved=localStorage.getItem('lang');
+      var lang=saved||(navigator.language.startsWith('it')?'it':'en');
+      if(lang==='en'){
+        document.documentElement.lang='en';
+        var s=document.createElement('style');
+        s.textContent='.i18n-it{display:none!important}.i18n-en{display:inline!important}';
+        document.head.appendChild(s);
+      }
+      window.__veloLang=lang;
+    })();
     </script>
     <link rel="stylesheet" href="{{ root_path }}/css/style.css">
     {% block head %}{% endblock %}
@@ -20,13 +25,18 @@
     <nav class="navbar">
         <div class="nav-inner">
             <a href="{{ root_path }}/index.html" class="nav-brand">Velotrack</a>
-            <input type="checkbox" id="nav-toggle" class="nav-toggle-input">
-            <label for="nav-toggle" class="nav-toggle-label">
-                <span></span><span></span><span></span>
-            </label>
-            <ul class="nav-links">
-                <li><a href="{{ root_path }}/index.html">Home</a></li>
-            </ul>
+            <button class="lang-switch" id="lang-switch" aria-label="Switch language"></button>
+            <script>
+            (function(){
+              var btn=document.getElementById('lang-switch');
+              btn.textContent=window.__veloLang==='it'?'EN':'IT';
+              btn.addEventListener('click',function(){
+                var next=window.__veloLang==='it'?'en':'it';
+                localStorage.setItem('lang',next);
+                location.reload();
+              });
+            })();
+            </script>
         </div>
     </nav>
 

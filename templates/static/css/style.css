@@ -44,6 +44,19 @@ a:hover { text-decoration: underline; }
 }
 .nav-links a { color: #fff; font-size: 0.875rem; }
 .nav-links a:hover { color: #fdf9db; text-decoration: none; }
+.lang-switch {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    margin-left: 0.75rem;
+}
+.lang-switch:hover { background: rgba(255,255,255,0.35); }
 
 /* Hamburger — CSS-only toggle */
 .nav-toggle-input { display: none; }
@@ -115,8 +128,9 @@ main {
 }
 .stat { display: flex; flex-direction: column; }
 .stat-value { font-size: 1.25rem; font-weight: 700; }
+.stat-value small { font-size: 0.75rem; font-weight: 600; }
 .stat-label { font-size: 0.75rem; color: #888; }
-.card-savings { font-size: 0.85rem; color: #e2722c; font-weight: 600; margin-top: 0.5rem; }
+.card-savings { font-size: 0.85rem; color: #e2722c; font-weight: 600; margin-top: 0.5rem; white-space: nowrap; }
 .card-meta { font-size: 0.8rem; color: #888; margin-top: 0.5rem; }
 
 /* Section */
@@ -240,5 +254,5 @@ footer a { color: #888; }
 
 /* Desktop (>= 640px) */
 @media (min-width: 640px) {
-    .direction-cards { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .direction-cards { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
 }

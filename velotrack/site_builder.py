@@ -40,7 +40,25 @@ def _direction_name(line_key: str) -> str:
     return ""
 
 
+_DIRECTION_BOUND = {"west": "Westbound", "east": "Eastbound", "north": "Northbound", "south": "Southbound"}
 _DIRECTION_IT = {"west": "Ovest", "east": "Est", "north": "Nord", "south": "Sud"}
+
+
+def _direction_name_bound(line_key: str) -> str:
+    """Extract bound direction, e.g. 'line1_west' → 'Westbound'."""
+    parts = line_key.split("_", 1)
+    if len(parts) > 1:
+        return _DIRECTION_BOUND.get(parts[1].lower(), parts[1].capitalize())
+    return ""
+
+
+def _display_name_bound(line_key: str) -> str:
+    """Convert 'line1_west' → 'Line 1 Westbound'."""
+    match = re.search(r"line(\d+)", line_key)
+    num = match.group(1) if match else ""
+    parts = line_key.split("_", 1)
+    direction = _DIRECTION_BOUND.get(parts[1].lower(), parts[1].capitalize()) if len(parts) > 1 else ""
+    return f"Line {num} {direction}".strip()
 
 
 def _direction_name_it(line_key: str) -> str:
@@ -107,6 +125,8 @@ def build_site(lines: list[LineInfo]) -> None:
     # Setup Jinja2
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
     env.globals["direction_name"] = _direction_name
+    env.globals["direction_name_bound"] = _direction_name_bound
+    env.globals["display_name_bound"] = _display_name_bound
     env.globals["direction_name_it"] = _direction_name_it
     env.globals["display_name_it"] = _display_name_it
 
