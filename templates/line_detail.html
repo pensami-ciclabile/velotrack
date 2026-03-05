@@ -3,6 +3,8 @@
 {% block title %}{{ line.display_name }} — Velotrack{% endblock %}
 
 {% macro fmt_ms(secs) %}{% set s = secs|int %}{% set m = (s // 60)|int %}{% set r = (s % 60)|int %}{% if m > 0 %}{{ m }}m {{ r }}s{% else %}{{ r }}s{% endif %}{% endmacro %}
+{% macro fmt_delta(secs) %}{% set sign = "+" if secs >= 0 else "-" %}{% set a = secs|abs|int %}{% set m = (a // 60)|int %}{% set r = (a % 60)|int %}{% if m > 0 %}{{ sign }}{{ m }}m {{ r }}s{% else %}{{ sign }}{{ r }}s{% endif %}{% endmacro %}
+{% macro fmt_pct(scenario, baseline) %}{% if baseline > 0 %}{{ "%+.1f"|format((scenario - baseline) / baseline * 100) }}%{% endif %}{% endmacro %}
 
 {% block content %}
 <section class="section">
@@ -63,25 +65,28 @@
     </div>
 
     <div class="stat-group">
-        <h3><span class="i18n-it">Scenari</span><span class="i18n-en">Scenarios</span></h3>
+        <h3><span class="i18n-it">Scenari durata corsa</span><span class="i18n-en">Trip duration scenarios</span></h3>
         <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Onda verde</span><span class="i18n-en">Green wave</span></span>
-            <span class="stat-row-value">{{ fmt_ms(line.stats.green_wave) }}</span>
+            <span class="stat-row-label"><span class="i18n-it">Situazione attuale</span><span class="i18n-en">Current situation</span></span>
+            <span class="stat-row-value">{{ fmt_ms(line.stats.avg_trip_duration) }}</span>
         </div>
-        <div class="stat-row-desc"><span class="i18n-it">Caso migliore: attesa minima registrata in ogni fermata</span><span class="i18n-en">Best case: minimum recorded wait at each stop location</span></div>
+        <div class="stat-row-desc"><span class="i18n-it">Durata media della corsa registrata</span><span class="i18n-en">Average recorded trip duration</span></div>
+        {% set cur = line.stats.avg_trip_duration %}
         <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Onda rossa</span><span class="i18n-en">Red wave</span></span>
-            <span class="stat-row-value">{{ fmt_ms(line.stats.red_wave) }}</span>
+            <span class="stat-row-label" style="color:#2a2"><span class="i18n-it">Onda verde (priorità semaforica)</span><span class="i18n-en">Green wave (TL priority)</span></span>
+            <span class="stat-row-value" style="color:#2a2">{{ fmt_ms(line.stats.scenario_green_wave) }} <small>({{ fmt_delta(line.stats.scenario_green_wave - cur) }}, {{ fmt_pct(line.stats.scenario_green_wave, cur) }})</small></span>
         </div>
-        <div class="stat-row-desc"><span class="i18n-it">Caso peggiore: attesa massima registrata in ogni fermata</span><span class="i18n-en">Worst case: maximum recorded wait at each stop location</span></div>
-        {% if line.stats.avg_trip_duration > 0 and line.stats.priority_savings_incl_bottlenecks > 0 %}
-        {% set pct = (line.stats.priority_savings_incl_bottlenecks / line.stats.avg_trip_duration * 100)|round(1) %}
+        <div class="stat-row-desc"><span class="i18n-it">Se i semafori dessero priorità ai tram (esclusi colli di bottiglia)</span><span class="i18n-en">If traffic lights gave trams priority (excl. bottlenecks)</span></div>
         <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Potrebbe essere più veloce</span><span class="i18n-en">Could be faster</span></span>
-            <span class="stat-row-value">{{ pct }}%</span>
+            <span class="stat-row-label" style="color:#c33"><span class="i18n-it">Onda rossa (caso peggiore)</span><span class="i18n-en">Red wave (worst case)</span></span>
+            <span class="stat-row-value" style="color:#c33">{{ fmt_ms(line.stats.scenario_red_wave) }} <small>({{ fmt_delta(line.stats.scenario_red_wave - cur) }}, {{ fmt_pct(line.stats.scenario_red_wave, cur) }})</small></span>
         </div>
-        <div class="stat-row-desc"><span class="i18n-it">Tempo risparmiato se i semafori dessero priorità ai tram</span><span class="i18n-en">Time saved if traffic lights gave trams priority</span></div>
-        {% endif %}
+        <div class="stat-row-desc"><span class="i18n-it">Caso peggiore: ritardo massimo registrato ad ogni fermata</span><span class="i18n-en">Worst case: maximum recorded delay at each stop</span></div>
+        <div class="stat-row">
+            <span class="stat-row-label" style="color:#07a"><span class="i18n-it">Caso migliore</span><span class="i18n-en">Best case</span></span>
+            <span class="stat-row-value" style="color:#07a">{{ fmt_ms(line.stats.scenario_best_case) }} <small>({{ fmt_delta(line.stats.scenario_best_case - cur) }}, {{ fmt_pct(line.stats.scenario_best_case, cur) }})</small></span>
+        </div>
+        <div class="stat-row-desc"><span class="i18n-it">Priorità semaforica + nessun collo di bottiglia</span><span class="i18n-en">TL priority + no bottlenecks</span></div>
     </div>
 </section>
 {% endblock %}

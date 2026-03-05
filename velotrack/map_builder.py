@@ -183,10 +183,13 @@ def _compute_stats(
         [df["velocity_kmh"] for df in ride_dfs if not df.empty], ignore_index=True
     )
     moving = all_speeds[all_speeds > 0]
+    # Peak = highest average-across-trips segment speed (typical top speed)
+    _x, avg_spd, _ = _speed_space_data(ride_dfs)
+    peak = max((s for s in avg_spd if not np.isnan(s)), default=0)
     speed = {
         "avg_moving": moving.mean() if len(moving) else 0,
         "avg_trip": all_speeds.mean() if len(all_speeds) else 0,
-        "peak": all_speeds.max() if len(all_speeds) else 0,
+        "peak": peak if peak else (all_speeds.max() if len(all_speeds) else 0),
         "median_moving": moving.median() if len(moving) else 0,
         "median_trip": all_speeds.median() if len(all_speeds) else 0,
         "p25": float(np.percentile(moving, 25)) if len(moving) else 0,
@@ -236,6 +239,11 @@ def _compute_stats(
     priority_excl = tl_wait_from_tl + tl_wait_from_combined
     priority_incl = priority_excl + tl_wait_from_bottleneck
 
+    # Scenario durations (projected trip times)
+    scenario_green_wave = avg_trip_duration - priority_excl
+    scenario_red_wave = avg_trip_duration - total_delay + red_wave
+    scenario_best_case = avg_trip_duration - priority_incl
+
     return {
         "speed": speed,
         "cat_counts": cat_counts,
@@ -250,6 +258,9 @@ def _compute_stats(
         "avg_trip_duration": avg_trip_duration,
         "priority_savings_excl_bottlenecks": priority_excl,
         "priority_savings_incl_bottlenecks": priority_incl,
+        "scenario_green_wave": scenario_green_wave,
+        "scenario_red_wave": scenario_red_wave,
+        "scenario_best_case": scenario_best_case,
     }
 
 
@@ -282,6 +293,40 @@ def compute_line_stats(
 
     stats = _compute_stats(ride_dfs, merged_stops)
     return _jsonify_stats(stats)
+
+
+def _fmt_duration(seconds: float) -> str:
+    """Format seconds as m:ss."""
+    m, s = divmod(int(round(seconds)), 60)
+    return f"{m}:{s:02d}"
+
+
+def _fmt_delta(seconds: float) -> str:
+    """Format a delta in seconds as ±m:ss."""
+    sign = "+" if seconds >= 0 else "-"
+    m, s = divmod(int(round(abs(seconds))), 60)
+    return f"{sign}{m}:{s:02d}"
+
+
+def _fmt_pct(scenario: float, baseline: float) -> str:
+    """Format relative change as percentage string."""
+    if not baseline:
+        return ""
+    pct = (scenario - baseline) / baseline * 100
+    return f"{pct:+.1f}%"
+
+
+def _scenario_row(color: str, label: str, value: float, baseline: float) -> str:
+    """Build one scenario row with absolute time, delta, and percentage."""
+    delta = _fmt_delta(value - baseline)
+    pct = _fmt_pct(value, baseline)
+    return (
+        f'<div style="display:flex;justify-content:space-between">'
+        f'<span style="color:{color}">{label}:</span>'
+        f'<span style="color:{color}"><b>{_fmt_duration(value)}</b>'
+        f' ({delta}, {pct})</span>'
+        f'</div>'
+    )
 
 
 def _stats_html(stats: dict) -> str:
@@ -373,25 +418,14 @@ def _stats_html(stats: dict) -> str:
         <div style="color:#888;font-size:10px">
             Avg wait per stop: {stats['avg_wait']:.0f}s</div>
         <div style="border-top:1px solid #eee;margin:6px 0 4px"></div>
-        <div style="font-weight:bold;margin-bottom:2px;">Scenarios (total delay):</div>
+        <div style="font-weight:bold;margin-bottom:2px;">Trip duration scenarios:</div>
         <div style="display:flex;justify-content:space-between">
-            <span style="color:#2a2">Green wave: {stats['green_wave']:.0f}s</span>
-            <span style="color:#888">P25: {stats['p25_sum']:.0f}s</span>
+            <span>Current:</span>
+            <span><b>{_fmt_duration(stats['avg_trip_duration'])}</b></span>
         </div>
-        <div style="display:flex;justify-content:space-between">
-            <span style="color:#c33">Red wave: {stats['red_wave']:.0f}s</span>
-            <span style="color:#888">P75: {stats['p75_sum']:.0f}s</span>
-        </div>
-        <div style="border-top:1px solid #eee;margin:6px 0 4px"></div>
-        <div style="font-weight:bold;margin-bottom:2px;">Traffic light priority:</div>
-        <div style="display:flex;justify-content:space-between">
-            <span style="color:#888">Excl. bottlenecks:</span>
-            <span>-{stats['priority_savings_excl_bottlenecks']:.0f}s ({stats['priority_savings_excl_bottlenecks'] / stats['avg_trip_duration'] * 100 if stats['avg_trip_duration'] else 0:.1f}% faster)</span>
-        </div>
-        <div style="display:flex;justify-content:space-between">
-            <span style="color:#888">Incl. bottlenecks:</span>
-            <span>-{stats['priority_savings_incl_bottlenecks']:.0f}s ({stats['priority_savings_incl_bottlenecks'] / stats['avg_trip_duration'] * 100 if stats['avg_trip_duration'] else 0:.1f}% faster)</span>
-        </div>
+        {_scenario_row('#2a2', 'Green wave (TL priority)', stats['scenario_green_wave'], stats['avg_trip_duration'])}
+        {_scenario_row('#c33', 'Red wave (worst case)', stats['scenario_red_wave'], stats['avg_trip_duration'])}
+        {_scenario_row('#07a', 'Best case (no TL + no bottlenecks)', stats['scenario_best_case'], stats['avg_trip_duration'])}
     </div>
     """
 
