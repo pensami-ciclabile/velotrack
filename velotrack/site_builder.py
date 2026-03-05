@@ -94,12 +94,6 @@ def build_site(lines: list[LineInfo]) -> None:
         tmpl.render(grouped_lines=grouped_lines, lines=lines, root_path=".")
     )
 
-    # Render lines listing
-    tmpl = env.get_template("lines.html")
-    (LINES_DIR / "index.html").write_text(
-        tmpl.render(lines=lines, lines_json=json.dumps(lines_data), root_path="..")
-    )
-
     # Render line detail pages
     tmpl = env.get_template("line_detail.html")
     for li in lines:
