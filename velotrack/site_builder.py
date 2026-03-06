@@ -7,10 +7,14 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
+from markupsafe import Markup
+
+import pandas as pd
 
 from velotrack.config import (
     DAILY_TRIPS_JSON,
     DATA_DIR_SITE,
+    GTFS_DIR,
     LINES_DIR,
     MAPS_DIR,
     SITE_DIR,
@@ -101,20 +105,20 @@ def build_site(lines: list[LineInfo]) -> None:
     tl_lines_count = 0
     tl_total_lines = 17
     tl_breakdown = []
+    # Group directions by line number, averaging tl_wait across directions
+    line_tl_wait: dict[str, list[float]] = {}
+    line_directions: dict[str, list[str]] = {}
+    for li in lines:
+        match = re.search(r"line(\d+)", li.line_key)
+        if not match:
+            continue
+        line_num = match.group(1)
+        tl_wait = li.stats.get("tl_wait_total", 0)
+        if tl_wait > 0:
+            line_tl_wait.setdefault(line_num, []).append(tl_wait)
+            line_directions.setdefault(line_num, []).append(li.line_key)
     if DAILY_TRIPS_JSON.exists():
         daily_trips = json.loads(DAILY_TRIPS_JSON.read_text())
-        # Group directions by line number, averaging tl_wait across directions
-        line_tl_wait: dict[str, list[float]] = {}
-        line_directions: dict[str, list[str]] = {}
-        for li in lines:
-            match = re.search(r"line(\d+)", li.line_key)
-            if not match:
-                continue
-            line_num = match.group(1)
-            tl_wait = li.stats.get("tl_wait_total", 0)
-            if tl_wait > 0:
-                line_tl_wait.setdefault(line_num, []).append(tl_wait)
-                line_directions.setdefault(line_num, []).append(li.line_key)
         tl_hours = {}
         for day_type in ("weekday", "saturday", "sunday"):
             trip_counts = daily_trips.get(day_type, {})
@@ -145,6 +149,72 @@ def build_site(lines: list[LineInfo]) -> None:
                 "hours": round(trips * avg_wait / 3600, 1),
             })
 
+    # Compute extra rides that could be run with saved TL time
+    tl_extra_rides = None
+    if DAILY_TRIPS_JSON.exists() and line_tl_wait:
+        line_duration: dict[str, list[float]] = {}
+        for li in lines:
+            match = re.search(r"line(\d+)", li.line_key)
+            if not match:
+                continue
+            line_num = match.group(1)
+            dur = li.stats.get("avg_trip_duration", 0)
+            if dur > 0:
+                line_duration.setdefault(line_num, []).append(dur)
+
+        tl_extra_rides = {}
+        for day_type in ("weekday", "saturday", "sunday"):
+            trip_counts = daily_trips.get(day_type, {})
+            total_extra = 0.0
+            for line_num, waits in line_tl_wait.items():
+                if line_num in trip_counts and line_num in line_duration:
+                    avg_wait = sum(waits) / len(waits)
+                    avg_dur = sum(line_duration[line_num]) / len(line_duration[line_num])
+                    total_extra += (trip_counts[line_num] * avg_wait) / avg_dur
+            tl_extra_rides[day_type] = round(total_extra)
+
+    # Build commute calculator data with GTFS stop sequences
+    gtfs_stops_by_line: dict[int, list[str]] = {}
+    if (GTFS_DIR / "routes.txt").exists():
+        gtfs_routes = pd.read_csv(GTFS_DIR / "routes.txt", dtype={"route_id": str})
+        gtfs_trips = pd.read_csv(GTFS_DIR / "trips.txt", dtype=str)
+        gtfs_st = pd.read_csv(
+            GTFS_DIR / "stop_times.txt",
+            usecols=["trip_id", "stop_id", "stop_sequence"],
+            dtype=str,
+        )
+        gtfs_st["stop_sequence"] = gtfs_st["stop_sequence"].astype(int)
+        gtfs_all_stops = pd.read_csv(GTFS_DIR / "stops.txt", dtype={"stop_id": str})
+        tram_routes = gtfs_routes[gtfs_routes["route_type"] == 0]
+        for _, route in tram_routes.iterrows():
+            route_num = int(route["route_short_name"])
+            rt = gtfs_trips[gtfs_trips["route_id"] == route["route_id"]]
+            # Pick direction 0 (or first available) — longest trip
+            for dir_id in ["0", "1"]:
+                dt = rt[rt["direction_id"] == dir_id]
+                if dt.empty:
+                    continue
+                # Find the trip with the most stops
+                trip_stop_counts = gtfs_st[gtfs_st["trip_id"].isin(dt["trip_id"])].groupby("trip_id").size()
+                best_trip = trip_stop_counts.idxmax()
+                st = gtfs_st[gtfs_st["trip_id"] == best_trip].sort_values("stop_sequence")
+                stop_names = st.merge(
+                    gtfs_all_stops[["stop_id", "stop_name"]], on="stop_id"
+                )["stop_name"].tolist()
+                gtfs_stops_by_line[route_num] = stop_names
+                break  # use first direction found
+
+    commute_lines = []
+    for route_num in [1,2,3,4,5,7,9,10,12,14,15,16,19,24,27,31,33]:
+        num_str = str(route_num)
+        waits = line_tl_wait.get(num_str, [])
+        commute_lines.append({
+            "line": route_num,
+            "tl_wait": round(sum(waits)/len(waits), 1) if waits else None,
+            "stops": gtfs_stops_by_line.get(route_num, []),
+        })
+    commute_lines_json = Markup(json.dumps(commute_lines, ensure_ascii=False))
+
     # Setup Jinja2
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
     env.globals["destination_name"] = _destination_name
@@ -162,6 +232,8 @@ def build_site(lines: list[LineInfo]) -> None:
             tl_lines_count=tl_lines_count,
             tl_total_lines=tl_total_lines,
             tl_breakdown=tl_breakdown,
+            tl_extra_rides=tl_extra_rides,
+            commute_lines_json=commute_lines_json,
         )
     )
 

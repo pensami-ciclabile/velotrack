@@ -34,6 +34,71 @@
 </section>
 {% endif %}
 
+<script id="commute-data" type="application/json">{{ commute_lines_json }}</script>
+<section class="commute-highlight">
+    <div class="commute-text">
+        <p class="tl-main">
+            <span class="i18n-it">Il tuo tram è fermo al rosso. Per quanto tempo?</span>
+            <span class="i18n-en">Your tram is stuck at a red light. For how long?</span>
+        </p>
+        <p class="tl-sub">
+            <span class="i18n-it">Calcola quanto tempo il tuo tram perde ai semafori nel tragitto casa-lavoro</span>
+            <span class="i18n-en">Calculate how much time your tram loses at traffic lights on your commute</span>
+        </p>
+        <p class="tl-disclaimer">
+            <span class="i18n-it">Stima proporzionale · andata e ritorno<br>22 giorni lavorativi/mese</span>
+            <span class="i18n-en">Proportional estimate · round trip<br>22 workdays/month</span>
+        </p>
+    </div>
+    <div class="commute-controls">
+        <select id="commute-line-select" class="commute-select">
+            <option value="" disabled selected>-- Linea / Line --</option>
+        </select>
+        <div class="commute-stops-row">
+            <select id="commute-from-select" class="commute-select" disabled>
+                <option value="" disabled selected>Partenza / From</option>
+            </select>
+            <select id="commute-to-select" class="commute-select" disabled>
+                <option value="" disabled selected>Arrivo / To</option>
+            </select>
+        </div>
+        <div id="commute-nodata" class="commute-nodata" style="display:none;">
+            <span class="i18n-it">Dati non ancora disponibili per questa linea</span>
+            <span class="i18n-en">Data not yet available for this line</span>
+        </div>
+    </div>
+    <div class="tl-number commute-number">
+        <span class="tl-hours-value" id="commute-month-value">—</span>
+        <span class="tl-unit"><span class="i18n-it">min / mese</span><span class="i18n-en">min / month</span></span>
+    </div>
+</section>
+
+{% if tl_extra_rides %}
+<section class="tl-highlight"
+         data-rides-weekday="{{ tl_extra_rides.weekday }}"
+         data-rides-saturday="{{ tl_extra_rides.saturday }}"
+         data-rides-sunday="{{ tl_extra_rides.sunday }}">
+    <div class="tl-number">
+        <span class="tl-hours-value tl-rides-value">{{ tl_extra_rides.weekday }}</span>
+        <span class="tl-unit"><span class="i18n-it">corse in più</span><span class="i18n-en">extra rides</span></span>
+    </div>
+    <div class="tl-text">
+        <p class="tl-main">
+            <span class="i18n-it">Con la priorità semaforica, ATM potrebbe effettuare ogni giorno questo numero di corse in più — senza un solo tram o conducente aggiuntivo</span>
+            <span class="i18n-en">With tram priority at traffic lights, ATM could run this many extra rides every day — without a single extra tram or driver</span>
+        </p>
+        <p class="tl-sub">
+            <span class="i18n-it">Stessi tram, stessi conducenti, più corse. Il tempo risparmiato ai semafori si traduce direttamente in capacità extra.</span>
+            <span class="i18n-en">Same trams, same drivers, more rides. Time saved at traffic lights translates directly into extra capacity.</span>
+        </p>
+        <p class="tl-disclaimer">
+            <span class="i18n-it">Calcolato su {{ tl_lines_count }} linee misurate · tempo risparmiato ÷ durata media corsa</span>
+            <span class="i18n-en">Calculated from {{ tl_lines_count }} measured lines · time saved ÷ avg trip duration</span>
+        </p>
+    </div>
+</section>
+{% endif %}
+
 <section class="cards">
     {% for group in grouped_lines %}
     <h2 class="line-group-heading"><span class="i18n-it">Linea</span><span class="i18n-en">Line</span> {{ group.line_number }}</h2>
@@ -106,6 +171,24 @@
         <p class="tl-footnote-source">
             <span class="i18n-it">Corse giornaliere da GTFS ATM Milano. Attesa ai semafori da rilevamento GPS con classificazione automatica delle fermate.</span>
             <span class="i18n-en">Daily trips from ATM Milan GTFS. Traffic light wait from GPS tracking with automatic stop classification.</span>
+        </p>
+    </details>
+</section>
+
+<section class="tl-footnote">
+    <details>
+        <summary><span class="i18n-it">Come calcoliamo le corse in più</span><span class="i18n-en">How we calculate extra rides</span></summary>
+        <p>
+            <span class="i18n-it">Per ogni linea misurata, moltiplichiamo il tempo medio perso ai semafori per il numero di corse giornaliere: questo dà il tempo totale recuperabile. Dividiamo poi per la durata media di una corsa della stessa linea per ottenere quante corse aggiuntive si potrebbero effettuare. Il totale è la somma su tutte le linee misurate.</span>
+            <span class="i18n-en">For each measured line, we multiply the average traffic light wait by the number of daily trips: this gives the total recoverable time. We then divide by the average trip duration of that same line to get how many additional rides could be run. The total is the sum across all measured lines.</span>
+        </p>
+        <p class="tl-formula">
+            <span class="i18n-it">Formula: Σ (attesa semafori per corsa × corse giornaliere ÷ durata media corsa)</span>
+            <span class="i18n-en">Formula: Σ (TL wait per trip × daily trips ÷ avg trip duration)</span>
+        </p>
+        <p class="tl-footnote-source">
+            <span class="i18n-it">Durata media corsa e attesa ai semafori da rilevamento GPS. Corse giornaliere da GTFS ATM Milano. Il calcolo assume che il tempo risparmiato possa essere interamente riutilizzato per corse aggiuntive — una stima teorica ottimistica.</span>
+            <span class="i18n-en">Average trip duration and traffic light wait from GPS tracking. Daily trips from ATM Milan GTFS. The calculation assumes all saved time can be fully reused for additional rides — an optimistic theoretical estimate.</span>
         </p>
     </details>
 </section>
