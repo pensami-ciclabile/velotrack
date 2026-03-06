@@ -14,7 +14,7 @@
     <div class="direction-cards">
         {% for line in group.directions %}
         <a href="{{ root_path }}/lines/{{ line.line_key }}.html" class="card">
-            <h3><span class="i18n-it">Direzione {{ direction_name_it(line.line_key) }}</span><span class="i18n-en">{{ direction_name_bound(line.line_key) }}</span></h3>
+            <h3><span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span></h3>
             <div class="card-stats">
                 <div class="stat">
                     <span class="stat-value">{{ "%.1f"|format(line.stats.speed.avg_trip) }} <small>km/h</small></span>

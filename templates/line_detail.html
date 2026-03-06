@@ -8,12 +8,39 @@
 
 {% block content %}
 <section class="section">
-    <h1><span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name_bound(line.line_key) }}</span></h1>
+    <h1><span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span></h1>
     <p class="subtitle">{{ line.num_rides }} <span class="i18n-it">corsa{{ "e" if line.num_rides != 1 }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km</p>
 
     <div class="iframe-wrapper">
         <iframe src="{{ root_path }}/maps/{{ line.line_key }}.html" loading="lazy" allowfullscreen></iframe>
     </div>
+
+    {% set moving_time = line.stats.avg_trip_duration - line.stats.total_delay %}
+    {% set boarding_time = line.stats.boarding_total %}
+    {% set tl_time = line.stats.tl_wait_total %}
+    {% set bottleneck_time = line.stats.cat_total_avg.bottleneck|default(0) %}
+    {% set bar_total = moving_time + boarding_time + tl_time + bottleneck_time %}
+    {% if bar_total > 0 %}
+    {% set pct_moving = (moving_time / bar_total * 100)|round(1) %}
+    {% set pct_boarding = (boarding_time / bar_total * 100)|round(1) %}
+    {% set pct_tl = (tl_time / bar_total * 100)|round(1) %}
+    {% set pct_bottleneck = (100 - pct_moving - pct_boarding - pct_tl)|round(1) %}
+    <div class="stat-group">
+        <h3><span class="i18n-it">Ripartizione tempo</span><span class="i18n-en">Time breakdown</span></h3>
+        <div class="time-bar">
+            {% if pct_moving > 0 %}<div style="width:{{ pct_moving }}%;background:#598e47" title="Moving: {{ fmt_ms(moving_time) }}">&nbsp;</div>{% endif %}
+            {% if pct_boarding > 0 %}<div style="width:{{ pct_boarding }}%;background:#f4b256" title="Boarding: {{ fmt_ms(boarding_time) }}">&nbsp;</div>{% endif %}
+            {% if pct_tl > 0 %}<div style="width:{{ pct_tl }}%;background:#ed5f49" title="Traffic lights: {{ fmt_ms(tl_time) }}">&nbsp;</div>{% endif %}
+            {% if pct_bottleneck > 0 %}<div style="width:{{ pct_bottleneck }}%;background:#909090" title="Bottlenecks: {{ fmt_ms(bottleneck_time) }}">&nbsp;</div>{% endif %}
+        </div>
+        <div class="time-bar-legend">
+            <span><span class="time-bar-swatch" style="background:#598e47"></span> <span class="i18n-it">In movimento</span><span class="i18n-en">Moving</span> {{ fmt_ms(moving_time) }} ({{ pct_moving }}%)</span>
+            <span><span class="time-bar-swatch" style="background:#f4b256"></span> <span class="i18n-it">Fermate tram</span><span class="i18n-en">Boarding</span> {{ fmt_ms(boarding_time) }} ({{ pct_boarding }}%)</span>
+            <span><span class="time-bar-swatch" style="background:#ed5f49"></span> <span class="i18n-it">Semafori</span><span class="i18n-en">Traffic lights</span> {{ fmt_ms(tl_time) }} ({{ pct_tl }}%)</span>
+            {% if pct_bottleneck > 0 %}<span><span class="time-bar-swatch" style="background:#909090"></span> <span class="i18n-it">Colli di bottiglia</span><span class="i18n-en">Bottlenecks</span> {{ fmt_ms(bottleneck_time) }} ({{ pct_bottleneck }}%)</span>{% endif %}
+        </div>
+    </div>
+    {% endif %}
 
     <h2><span class="i18n-it">Statistiche</span><span class="i18n-en">Statistics</span></h2>
 

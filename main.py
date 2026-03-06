@@ -146,7 +146,7 @@ def _process_rides(gpx_paths: list[str] | None = None):
     files_by_line: dict[str, list[tuple[Path, str]]] = defaultdict(list)
     for p in gpx_paths:
         path = Path(p)
-        match = re.search(r"line(\d+)_(\w+?)_", path.name)
+        match = re.search(r"line(\d+)_([\w.\-]+?)_", path.name)
         line_key = f"line{match.group(1)}_{match.group(2)}" if match else path.stem
         files_by_line[line_key].append((path, path.name))
 
@@ -222,9 +222,14 @@ def cmd_build_site():
             df["dist"].sum() / 1000 for df in ride_dfs if not df.empty
         )
 
-        # Display name: line1_west → Line 1 West
-        parts = line_key.replace("line", "Line ").split("_")
-        display_name = " ".join(p.capitalize() if p[0].islower() else p for p in parts)
+        # Display name: line1_roserio → Line 1 — Roserio
+        match_dn = re.search(r"line(\d+)_(.*)", line_key)
+        if match_dn:
+            words = match_dn.group(2).replace("-", " ").split()
+            dest = " ".join(w[0].upper() + w[1:] for w in words)
+            display_name = f"Line {match_dn.group(1)} — {dest}"
+        else:
+            display_name = line_key
 
         line_infos.append(LineInfo(
             line_key=line_key,

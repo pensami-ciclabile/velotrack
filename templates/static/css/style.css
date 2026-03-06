@@ -193,6 +193,34 @@ main {
     margin-bottom: 0.25rem;
 }
 
+/* Time breakdown bar */
+.time-bar {
+    display: flex;
+    width: 100%;
+    height: 28px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+.time-bar > div {
+    min-width: 2px;
+}
+.time-bar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    font-size: 0.8rem;
+    color: #555;
+}
+.time-bar-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    vertical-align: middle;
+    margin-right: 0.2rem;
+}
+
 /* Stats table (kept for compatibility) */
 .stats-table {
     width: 100%;

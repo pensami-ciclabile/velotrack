@@ -288,6 +288,8 @@ def _compute_stats(
         "scenario_green_wave": scenario_green_wave,
         "scenario_red_wave": scenario_red_wave,
         "scenario_best_case": scenario_best_case,
+        "tl_wait_total": tl_wait_from_tl + tl_wait_from_combined,
+        "boarding_total": cat_total_avg.get("tram_stop", 0) + cat_total_avg.get("combined", 0) - tl_wait_from_combined,
     }
 
 

@@ -26,56 +26,29 @@ class LineInfo:
     total_distance_km: float
 
 
+def _destination_name(line_key: str) -> str:
+    """Extract destination from line_key, e.g. 'line1_roserio' → 'Roserio'."""
+    parts = line_key.split("_", 1)
+    if len(parts) > 1:
+        words = parts[1].replace("-", " ").split()
+        return " ".join(w[0].upper() + w[1:] for w in words)
+    return ""
+
+
 def _display_name(line_key: str) -> str:
-    """Convert 'line1_west' → 'Line 1 West'."""
-    parts = line_key.replace("line", "Line ").split("_")
-    return " ".join(p.capitalize() if p[0].islower() else p for p in parts)
-
-
-def _direction_name(line_key: str) -> str:
-    """Extract direction from line_key, e.g. 'line1_west' → 'West'."""
-    parts = line_key.split("_", 1)
-    if len(parts) > 1:
-        return parts[1].capitalize()
-    return ""
-
-
-_DIRECTION_BOUND = {"west": "Westbound", "east": "Eastbound", "north": "Northbound", "south": "Southbound"}
-_DIRECTION_IT = {"west": "Ovest", "east": "Est", "north": "Nord", "south": "Sud"}
-
-
-def _direction_name_bound(line_key: str) -> str:
-    """Extract bound direction, e.g. 'line1_west' → 'Westbound'."""
-    parts = line_key.split("_", 1)
-    if len(parts) > 1:
-        return _DIRECTION_BOUND.get(parts[1].lower(), parts[1].capitalize())
-    return ""
-
-
-def _display_name_bound(line_key: str) -> str:
-    """Convert 'line1_west' → 'Line 1 Westbound'."""
+    """Convert 'line1_roserio' → 'Line 1 — Roserio'."""
     match = re.search(r"line(\d+)", line_key)
     num = match.group(1) if match else ""
-    parts = line_key.split("_", 1)
-    direction = _DIRECTION_BOUND.get(parts[1].lower(), parts[1].capitalize()) if len(parts) > 1 else ""
-    return f"Line {num} {direction}".strip()
-
-
-def _direction_name_it(line_key: str) -> str:
-    """Extract Italian direction, e.g. 'line1_west' → 'Ovest'."""
-    parts = line_key.split("_", 1)
-    if len(parts) > 1:
-        return _DIRECTION_IT.get(parts[1].lower(), parts[1].capitalize())
-    return ""
+    dest = _destination_name(line_key)
+    return f"Line {num} — {dest}".strip(" —")
 
 
 def _display_name_it(line_key: str) -> str:
-    """Convert 'line1_west' → 'Linea 1 Ovest'."""
+    """Convert 'line1_roserio' → 'Linea 1 — Roserio'."""
     match = re.search(r"line(\d+)", line_key)
     num = match.group(1) if match else ""
-    parts = line_key.split("_", 1)
-    direction = _DIRECTION_IT.get(parts[1].lower(), parts[1].capitalize()) if len(parts) > 1 else ""
-    return f"Linea {num} {direction}".strip()
+    dest = _destination_name(line_key)
+    return f"Linea {num} — {dest}".strip(" —")
 
 
 def _group_lines(lines: list[LineInfo]) -> list[dict]:
@@ -124,10 +97,8 @@ def build_site(lines: list[LineInfo]) -> None:
 
     # Setup Jinja2
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
-    env.globals["direction_name"] = _direction_name
-    env.globals["direction_name_bound"] = _direction_name_bound
-    env.globals["display_name_bound"] = _display_name_bound
-    env.globals["direction_name_it"] = _direction_name_it
+    env.globals["destination_name"] = _destination_name
+    env.globals["display_name"] = _display_name
     env.globals["display_name_it"] = _display_name_it
 
     # Render home page
