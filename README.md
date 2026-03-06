@@ -44,8 +44,8 @@ When multiple rides share the same tram line, wait times and velocities are aver
 ```bash
 # 1. Place your GPX files in data/rides/
 #    (tram stop data is already included in data/tram_stops.csv)
-#    Naming convention: line<N>_<direction>_<description>.gpx
-#    Example: line1_west_repubblica_xxsettembre.gpx
+#    Naming convention: line<N>_<destination>_<description>.gpx
+#    Example: line1_roserio_repubblica_xxsettembre.gpx
 
 # 2. (Optional) Add traffic light locations
 uv run main.py template          # creates data/traffic_lights.csv
@@ -55,7 +55,7 @@ uv run main.py template          # creates data/traffic_lights.csv
 uv run main.py analyze
 
 # 4. Open the result
-open outputs/line1_west.html
+open outputs/line1_roserio.html
 ```
 
 ### Build the website
@@ -72,7 +72,7 @@ The site is also built and deployed to GitHub Pages automatically on every push 
 You can also analyze specific files:
 
 ```bash
-uv run main.py analyze data/rides/line1_repubblica_xxsettembre.gpx
+uv run main.py analyze data/rides/line1_roserio_repubblica_xxsettembre.gpx
 ```
 
 ## Managing data
@@ -92,12 +92,12 @@ To get accurate data, follow these rules when recording a tram ride with your GP
 Place `.gpx` files in `data/rides/`. The filename determines which tram line the ride belongs to:
 
 ```
-line1_west_repubblica_xxsettembre.gpx    → tram line 1, westbound
-line2_est_duomo_notte.gpx                → tram line 2, eastbound
-line15_north_morning_rush.gpx            → tram line 15, northbound
+line1_roserio_repubblica_xxsettembre.gpx          → Line 1 — Roserio
+line10_p.za-ventiquattro-maggio_notte.gpx         → Line 10 — P.za Ventiquattro Maggio
+line14_lorenteggio_morning_rush.gpx               → Line 14 — Lorenteggio
 ```
 
-The pattern is `line<N>_<direction>_<description>.gpx`. Files that don't match this pattern are processed individually. Multiple rides on the same line are grouped and averaged in the output map.
+The pattern is `line<N>_<destination>_<description>.gpx`. The destination is the terminus the tram is heading towards (use hyphens for multi-word names, e.g. `p.za-castelli`). Files that don't match this pattern are processed individually. Multiple rides on the same line and destination are grouped and averaged in the output map.
 
 To remove a ride, delete the GPX file and re-run `uv run main.py analyze`.
 
