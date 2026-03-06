@@ -8,6 +8,32 @@
     <p><span class="i18n-it">Analisi GPS delle corse tramviarie a Milano. Mappe di velocità, rilevamento fermate e monitoraggio ritardi ai semafori.</span><span class="i18n-en">GPS-based tram ride analysis for Milan. Velocity heatmaps, stop detection, and traffic light delay tracking.</span></p>
 </section>
 
+{% if tl_hours %}
+<section class="tl-highlight"
+         data-weekday="{{ tl_hours.weekday }}"
+         data-saturday="{{ tl_hours.saturday }}"
+         data-sunday="{{ tl_hours.sunday }}">
+    <div class="tl-number">
+        <span class="tl-hours-value">{{ tl_hours.weekday }}</span>
+        <span class="tl-unit"><span class="i18n-it">ore</span><span class="i18n-en">hours</span></span>
+    </div>
+    <div class="tl-text">
+        <p class="tl-main">
+            <span class="i18n-it">Solo oggi, ATM ha perso questo tempo aspettando i semafori milanesi</span>
+            <span class="i18n-en">Today alone, ATM lost this much time waiting at Milan's traffic lights</span>
+        </p>
+        <p class="tl-sub">
+            <span class="i18n-it">Tempo che avrebbe potuto usare per effettuare più corse, far lavorare più efficacemente i suoi lavoratori, ...</span>
+            <span class="i18n-en">Time that could have been used to run more trams, make its workers more productive, ...</span>
+        </p>
+        <p class="tl-disclaimer">
+            <span class="i18n-it">Basato su {{ tl_lines_count }} di {{ tl_total_lines }} linee tramviarie · oggi come <span class="tl-day-label">giorno feriale</span> ({{ tl_hours.weekday }} feriale, {{ tl_hours.saturday }} sabato, {{ tl_hours.sunday }} domenica)</span>
+            <span class="i18n-en">Based on {{ tl_lines_count }} of {{ tl_total_lines }} tram lines · today as a <span class="tl-day-label">weekday</span> ({{ tl_hours.weekday }} weekday, {{ tl_hours.saturday }} Saturday, {{ tl_hours.sunday }} Sunday)</span>
+        </p>
+    </div>
+</section>
+{% endif %}
+
 <section class="cards">
     {% for group in grouped_lines %}
     <h2 class="line-group-heading"><span class="i18n-it">Linea</span><span class="i18n-en">Line</span> {{ group.line_number }}</h2>
@@ -38,4 +64,50 @@
     </div>
     {% endfor %}
 </section>
+
+{% if tl_breakdown %}
+<section class="tl-footnote">
+    <details>
+        <summary><span class="i18n-it">Come calcoliamo le ore perse ai semafori</span><span class="i18n-en">How we calculate hours lost at traffic lights</span></summary>
+        <p>
+            <span class="i18n-it">Per ogni linea tramviaria misurata, rileviamo il tempo medio perso ai semafori per corsa tramite analisi GPS. Moltiplichiamo quel valore per il numero di corse giornaliere previste dal GTFS (orario ATM). Se abbiamo dati per entrambe le direzioni, usiamo la media. Il totale è la somma su tutte le linee misurate.</span>
+            <span class="i18n-en">For each measured tram line, we detect the average time lost at traffic lights per trip via GPS analysis. We multiply that value by the number of daily trips scheduled in GTFS (ATM timetable). If we have data for both directions, we use the average. The total is the sum across all measured lines.</span>
+        </p>
+        <p class="tl-formula">
+            <span class="i18n-it">Formula: Σ (attesa semafori per corsa × corse giornaliere) ÷ 3600</span>
+            <span class="i18n-en">Formula: Σ (traffic light wait per trip × daily trips) ÷ 3600</span>
+        </p>
+        <table class="tl-breakdown-table">
+            <thead>
+                <tr>
+                    <th><span class="i18n-it">Linea</span><span class="i18n-en">Line</span></th>
+                    <th><span class="i18n-it">Attesa semafori/corsa</span><span class="i18n-en">TL wait/trip</span></th>
+                    <th><span class="i18n-it">Dir.</span><span class="i18n-en">Dir.</span></th>
+                    <th><span class="i18n-it">Corse/giorno</span><span class="i18n-en">Trips/day</span></th>
+                    <th><span class="i18n-it">Ore perse</span><span class="i18n-en">Hours lost</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in tl_breakdown %}
+                <tr>
+                    <td>{{ row.line }}</td>
+                    <td>{{ row.tl_wait_s }}s</td>
+                    <td>{{ row.directions }}</td>
+                    <td>{{ row.trips }}</td>
+                    <td>{{ row.hours }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="tl-breakdown-total">
+                    <td colspan="4"><strong><span class="i18n-it">Totale (feriale)</span><span class="i18n-en">Total (weekday)</span></strong></td>
+                    <td><strong>{{ tl_hours.weekday }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="tl-footnote-source">
+            <span class="i18n-it">Corse giornaliere da GTFS ATM Milano. Attesa ai semafori da rilevamento GPS con classificazione automatica delle fermate.</span>
+            <span class="i18n-en">Daily trips from ATM Milan GTFS. Traffic light wait from GPS tracking with automatic stop classification.</span>
+        </p>
+    </details>
+</section>
+{% endif %}
 {% endblock %}

@@ -94,6 +94,110 @@ main {
 .hero h1 { font-size: 2rem; margin-bottom: 0.5rem; }
 .hero p { color: #555; max-width: 540px; margin: 0 auto; }
 
+/* Traffic light highlight */
+.tl-highlight {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2.5rem 0 1.5rem;
+}
+.tl-number {
+    flex-shrink: 0;
+    text-align: center;
+    line-height: 1;
+}
+.tl-hours-value {
+    font-size: 7rem;
+    font-weight: 800;
+    color: #e2722c;
+    display: block;
+}
+.tl-unit {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e2722c;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.tl-text {
+    min-width: 0;
+}
+.tl-main {
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #333;
+}
+.tl-sub {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.4rem;
+}
+.tl-disclaimer {
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-top: 0.6rem;
+}
+@media (max-width: 639px) {
+    .tl-highlight { flex-direction: column; text-align: center; gap: 1rem; padding: 2rem 0 1rem; }
+    .tl-hours-value { font-size: 5rem; }
+}
+
+/* Traffic light footnote */
+.tl-footnote {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #ddd;
+    margin-bottom: 1.5rem;
+}
+.tl-footnote summary {
+    font-size: 0.8rem;
+    color: #999;
+    cursor: pointer;
+}
+.tl-footnote summary:hover { color: #666; }
+.tl-footnote details[open] summary { margin-bottom: 0.75rem; }
+.tl-footnote p {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+}
+.tl-formula {
+    font-family: monospace;
+    font-size: 0.8rem !important;
+    color: #888 !important;
+    background: #f5f5f5;
+    padding: 0.4rem 0.75rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+.tl-breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+}
+.tl-breakdown-table th,
+.tl-breakdown-table td {
+    padding: 0.3rem 0.6rem;
+    text-align: right;
+    border-bottom: 1px solid #eee;
+}
+.tl-breakdown-table th {
+    text-align: right;
+    font-weight: 600;
+    color: #666;
+    border-bottom: 2px solid #ddd;
+}
+.tl-breakdown-table th:first-child,
+.tl-breakdown-table td:first-child { text-align: left; }
+.tl-breakdown-total td { border-top: 2px solid #ddd; border-bottom: none; }
+.tl-footnote-source {
+    font-size: 0.75rem !important;
+    color: #aaa !important;
+}
+
 /* Line group headings */
 .line-group-heading {
     font-size: 1.25rem;

@@ -9,6 +9,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from velotrack.config import (
+    DAILY_TRIPS_JSON,
     DATA_DIR_SITE,
     LINES_DIR,
     MAPS_DIR,
@@ -95,6 +96,55 @@ def build_site(lines: list[LineInfo]) -> None:
     # Group lines by number for home page
     grouped_lines = _group_lines(lines)
 
+    # Compute traffic light hours lost (if trip counts available)
+    tl_hours = None
+    tl_lines_count = 0
+    tl_total_lines = 17
+    tl_breakdown = []
+    if DAILY_TRIPS_JSON.exists():
+        daily_trips = json.loads(DAILY_TRIPS_JSON.read_text())
+        # Group directions by line number, averaging tl_wait across directions
+        line_tl_wait: dict[str, list[float]] = {}
+        line_directions: dict[str, list[str]] = {}
+        for li in lines:
+            match = re.search(r"line(\d+)", li.line_key)
+            if not match:
+                continue
+            line_num = match.group(1)
+            tl_wait = li.stats.get("tl_wait_total", 0)
+            if tl_wait > 0:
+                line_tl_wait.setdefault(line_num, []).append(tl_wait)
+                line_directions.setdefault(line_num, []).append(li.line_key)
+        tl_hours = {}
+        for day_type in ("weekday", "saturday", "sunday"):
+            trip_counts = daily_trips.get(day_type, {})
+            total_seconds = 0.0
+            matched_lines = set()
+            for line_num, waits in line_tl_wait.items():
+                if line_num in trip_counts:
+                    avg_wait = sum(waits) / len(waits)
+                    total_seconds += trip_counts[line_num] * avg_wait
+                    matched_lines.add(line_num)
+            tl_hours[day_type] = round(total_seconds / 3600, 1)
+            if day_type == "weekday":
+                tl_lines_count = len(matched_lines)
+        # Build per-line breakdown for footnote (weekday)
+        weekday_trips = daily_trips.get("weekday", {})
+        for line_num in sorted(line_tl_wait, key=int):
+            if line_num not in weekday_trips:
+                continue
+            waits = line_tl_wait[line_num]
+            avg_wait = sum(waits) / len(waits)
+            trips = weekday_trips[line_num]
+            dirs = line_directions[line_num]
+            tl_breakdown.append({
+                "line": line_num,
+                "tl_wait_s": round(avg_wait, 1),
+                "directions": len(dirs),
+                "trips": trips,
+                "hours": round(trips * avg_wait / 3600, 1),
+            })
+
     # Setup Jinja2
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
     env.globals["destination_name"] = _destination_name
@@ -104,7 +154,15 @@ def build_site(lines: list[LineInfo]) -> None:
     # Render home page
     tmpl = env.get_template("home.html")
     (SITE_DIR / "index.html").write_text(
-        tmpl.render(grouped_lines=grouped_lines, lines=lines, root_path=".")
+        tmpl.render(
+            grouped_lines=grouped_lines,
+            lines=lines,
+            root_path=".",
+            tl_hours=tl_hours,
+            tl_lines_count=tl_lines_count,
+            tl_total_lines=tl_total_lines,
+            tl_breakdown=tl_breakdown,
+        )
     )
 
     # Render line detail pages

@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from velotrack.config import GTFS_DIR, GTFS_URL, TRAM_STOPS_CSV
+from velotrack.config import DAILY_TRIPS_JSON, GTFS_DIR, GTFS_URL, TRAM_STOPS_CSV
 
 
 def _extract_tram_stops_from_gtfs() -> pd.DataFrame:
@@ -51,6 +51,60 @@ def download_gtfs() -> Path:
     print(f"Exported {len(tram_stops)} tram stops to {TRAM_STOPS_CSV}")
 
     return GTFS_DIR
+
+
+def extract_daily_trips() -> None:
+    """Extract daily trip counts per tram line from GTFS, grouped by day type."""
+    import json
+
+    routes = pd.read_csv(GTFS_DIR / "routes.txt", dtype={"route_id": str})
+    tram_routes = routes[routes["route_type"] == 0][["route_id", "route_short_name"]]
+    tram_route_ids = set(tram_routes["route_id"])
+    # Map route_id -> line number (e.g. "T1" -> "1")
+    route_to_line = dict(zip(tram_routes["route_id"], tram_routes["route_short_name"]))
+
+    trips = pd.read_csv(
+        GTFS_DIR / "trips.txt", usecols=["route_id", "service_id"], dtype=str
+    )
+    trips = trips[trips["route_id"].isin(tram_route_ids)].copy()
+    trips["line"] = trips["route_id"].map(route_to_line)
+
+    cal = pd.read_csv(GTFS_DIR / "calendar_dates.txt", dtype=str)
+    cal = cal[cal["exception_type"] == "1"].copy()
+    cal["date"] = pd.to_datetime(cal["date"], format="%Y%m%d")
+    cal["dow"] = cal["date"].dt.dayofweek  # 0=Mon, 6=Sun
+
+    # Pick one representative date per day type
+    weekday_dates = cal[cal["dow"] < 5]["date"].unique()
+    saturday_dates = cal[cal["dow"] == 5]["date"].unique()
+    sunday_dates = cal[cal["dow"] == 6]["date"].unique()
+
+    # Use median date for each type (middle of the schedule period)
+    def pick_date(dates):
+        if len(dates) == 0:
+            return None
+        s = sorted(dates)
+        return s[len(s) // 2]
+
+    result = {"source": "gtfs"}
+    for day_type, dates in [
+        ("weekday", weekday_dates),
+        ("saturday", saturday_dates),
+        ("sunday", sunday_dates),
+    ]:
+        date = pick_date(dates)
+        if date is None:
+            result[day_type] = {}
+            continue
+        active_services = set(cal[cal["date"] == date]["service_id"])
+        day_trips = trips[trips["service_id"].isin(active_services)]
+        counts = day_trips.groupby("line").size().to_dict()
+        result[day_type] = {k: int(v) for k, v in counts.items()}
+        print(f"  {day_type} ({pd.Timestamp(date).strftime('%Y-%m-%d')}): {sum(counts.values())} tram trips across {len(counts)} lines")
+
+    DAILY_TRIPS_JSON.parent.mkdir(parents=True, exist_ok=True)
+    DAILY_TRIPS_JSON.write_text(json.dumps(result, indent=2))
+    print(f"Saved: {DAILY_TRIPS_JSON}")
 
 
 def load_tram_stops() -> pd.DataFrame:

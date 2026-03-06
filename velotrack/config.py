@@ -14,6 +14,7 @@ SITE_DIR = PROJECT_ROOT / "site"
 MAPS_DIR = SITE_DIR / "maps"
 LINES_DIR = SITE_DIR / "lines"
 DATA_DIR_SITE = SITE_DIR / "data"
+DAILY_TRIPS_JSON = DATA_DIR_SITE / "daily_trips.json"
 TEMPLATES_DIR = PROJECT_ROOT / "templates"
 
 # GTFS

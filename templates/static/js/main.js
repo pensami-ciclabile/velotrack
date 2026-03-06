@@ -1,3 +1,22 @@
+/* Traffic light hours highlight — pick value based on day of week */
+document.addEventListener("DOMContentLoaded", function () {
+    var el = document.querySelector(".tl-highlight");
+    if (!el) return;
+    var day = new Date().getDay(); // 0=Sun, 6=Sat
+    var key = day === 0 ? "sunday" : day === 6 ? "saturday" : "weekday";
+    var hours = el.getAttribute("data-" + key);
+    if (!hours) return;
+    var span = el.querySelector(".tl-hours-value");
+    if (span) span.textContent = hours;
+    var labels = el.querySelectorAll(".tl-day-label");
+    var labelIt = key === "sunday" ? "domenica" : key === "saturday" ? "sabato" : "giorno feriale";
+    var labelEn = key === "sunday" ? "Sunday" : key === "saturday" ? "Saturday" : "weekday";
+    for (var i = 0; i < labels.length; i++) {
+        var parent = labels[i].closest("[class*='i18n-']");
+        labels[i].textContent = parent && parent.classList.contains("i18n-en") ? labelEn : labelIt;
+    }
+});
+
 /* Comparison chart for the lines page. */
 document.addEventListener("DOMContentLoaded", function () {
     var canvas = document.getElementById("comparison-chart");

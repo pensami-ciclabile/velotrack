@@ -196,6 +196,11 @@ def cmd_analyze(gpx_paths: list[str]):
     print("\nDone!")
 
 
+def cmd_extract_trips():
+    from velotrack.gtfs import extract_daily_trips
+    extract_daily_trips()
+
+
 def cmd_build_site():
     from velotrack.site_builder import LineInfo, build_site
 
@@ -257,6 +262,7 @@ def main():
         print("  uv run main.py template                Create traffic_lights.csv template")
         print("  uv run main.py traffic-lights [--watch]     View traffic lights on a map")
         print("  uv run main.py analyze [files]         Analyze GPX rides and generate maps")
+        print("  uv run main.py extract-trips           Extract daily trip counts from GTFS")
         print("  uv run main.py build-site              Build static website for GitHub Pages")
         sys.exit(1)
 
@@ -273,6 +279,8 @@ def main():
             cmd_traffic_lights()
     elif cmd == "analyze":
         cmd_analyze(sys.argv[2:])
+    elif cmd == "extract-trips":
+        cmd_extract_trips()
     elif cmd == "build-site":
         cmd_build_site()
     else:
