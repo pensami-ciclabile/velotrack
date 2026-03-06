@@ -34,8 +34,38 @@
 </section>
 {% endif %}
 
+{% if tl_extra_rides %}
+<section class="tl-highlight"
+         data-rides-weekday="{{ tl_extra_rides.weekday }}"
+         data-rides-saturday="{{ tl_extra_rides.saturday }}"
+         data-rides-sunday="{{ tl_extra_rides.sunday }}">
+    <div class="tl-text">
+        <p class="tl-main">
+            <span class="i18n-it">Con la priorità semaforica, ATM potrebbe effettuare ogni giorno questo numero di corse in più — senza un solo tram o conducente aggiuntivo</span>
+            <span class="i18n-en">With tram priority at traffic lights, ATM could run this many extra rides every day — without a single extra tram or driver</span>
+        </p>
+        <p class="tl-sub">
+            <span class="i18n-it">Stessi tram, stessi conducenti, più corse. Il tempo risparmiato ai semafori si traduce direttamente in capacità extra.</span>
+            <span class="i18n-en">Same trams, same drivers, more rides. Time saved at traffic lights translates directly into extra capacity.</span>
+        </p>
+        <p class="tl-disclaimer">
+            <span class="i18n-it">Calcolato su {{ tl_lines_count }} linee misurate · tempo risparmiato ÷ durata media corsa</span>
+            <span class="i18n-en">Calculated from {{ tl_lines_count }} measured lines · time saved ÷ avg trip duration</span>
+        </p>
+    </div>
+    <div class="tl-number">
+        <span class="tl-hours-value tl-rides-value">{{ tl_extra_rides.weekday }}</span>
+        <span class="tl-unit"><span class="i18n-it">corse in più</span><span class="i18n-en">extra rides</span></span>
+    </div>
+</section>
+{% endif %}
+
 <script id="commute-data" type="application/json">{{ commute_lines_json }}</script>
 <section class="commute-highlight">
+    <div class="tl-number commute-number">
+        <span class="tl-hours-value" id="commute-month-value">—</span>
+        <span class="tl-unit"><span class="i18n-it">min / mese</span><span class="i18n-en">min / month</span></span>
+    </div>
     <div class="commute-text">
         <p class="tl-main">
             <span class="i18n-it">Il tuo tram è fermo al rosso. Per quanto tempo?</span>
@@ -67,37 +97,7 @@
             <span class="i18n-en">Data not yet available for this line</span>
         </div>
     </div>
-    <div class="tl-number commute-number">
-        <span class="tl-hours-value" id="commute-month-value">—</span>
-        <span class="tl-unit"><span class="i18n-it">min / mese</span><span class="i18n-en">min / month</span></span>
-    </div>
 </section>
-
-{% if tl_extra_rides %}
-<section class="tl-highlight"
-         data-rides-weekday="{{ tl_extra_rides.weekday }}"
-         data-rides-saturday="{{ tl_extra_rides.saturday }}"
-         data-rides-sunday="{{ tl_extra_rides.sunday }}">
-    <div class="tl-number">
-        <span class="tl-hours-value tl-rides-value">{{ tl_extra_rides.weekday }}</span>
-        <span class="tl-unit"><span class="i18n-it">corse in più</span><span class="i18n-en">extra rides</span></span>
-    </div>
-    <div class="tl-text">
-        <p class="tl-main">
-            <span class="i18n-it">Con la priorità semaforica, ATM potrebbe effettuare ogni giorno questo numero di corse in più — senza un solo tram o conducente aggiuntivo</span>
-            <span class="i18n-en">With tram priority at traffic lights, ATM could run this many extra rides every day — without a single extra tram or driver</span>
-        </p>
-        <p class="tl-sub">
-            <span class="i18n-it">Stessi tram, stessi conducenti, più corse. Il tempo risparmiato ai semafori si traduce direttamente in capacità extra.</span>
-            <span class="i18n-en">Same trams, same drivers, more rides. Time saved at traffic lights translates directly into extra capacity.</span>
-        </p>
-        <p class="tl-disclaimer">
-            <span class="i18n-it">Calcolato su {{ tl_lines_count }} linee misurate · tempo risparmiato ÷ durata media corsa</span>
-            <span class="i18n-en">Calculated from {{ tl_lines_count }} measured lines · time saved ÷ avg trip duration</span>
-        </p>
-    </div>
-</section>
-{% endif %}
 
 <section class="cards">
     {% for group in grouped_lines %}
