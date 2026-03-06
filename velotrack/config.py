@@ -8,13 +8,14 @@ GTFS_DIR = DATA_DIR / "gtfs"
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 TRAFFIC_LIGHTS_CSV = DATA_DIR / "traffic_lights.csv"
 TRAM_STOPS_CSV = DATA_DIR / "tram_stops.csv"
+DAILY_TRIPS_JSON = DATA_DIR / "daily_trips.json"
+GTFS_STOPS_JSON = DATA_DIR / "gtfs_stops.json"
 
 # Site generation
 SITE_DIR = PROJECT_ROOT / "site"
 MAPS_DIR = SITE_DIR / "maps"
 LINES_DIR = SITE_DIR / "lines"
 DATA_DIR_SITE = SITE_DIR / "data"
-DAILY_TRIPS_JSON = DATA_DIR_SITE / "daily_trips.json"
 TEMPLATES_DIR = PROJECT_ROOT / "templates"
 
 # GTFS

@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from velotrack.config import DAILY_TRIPS_JSON, GTFS_DIR, GTFS_URL, TRAM_STOPS_CSV
+from velotrack.config import DAILY_TRIPS_JSON, GTFS_DIR, GTFS_STOPS_JSON, GTFS_URL, TRAM_STOPS_CSV
 
 
 def _extract_tram_stops_from_gtfs() -> pd.DataFrame:
@@ -50,7 +50,46 @@ def download_gtfs() -> Path:
     tram_stops.to_csv(TRAM_STOPS_CSV, index=False)
     print(f"Exported {len(tram_stops)} tram stops to {TRAM_STOPS_CSV}")
 
+    extract_gtfs_stops()
+    extract_daily_trips()
+
     return GTFS_DIR
+
+
+def extract_gtfs_stops() -> None:
+    """Extract tram stop sequences per line from GTFS and save to gtfs_stops.json cache."""
+    import json
+
+    routes = pd.read_csv(GTFS_DIR / "routes.txt", dtype={"route_id": str})
+    trips = pd.read_csv(GTFS_DIR / "trips.txt", dtype=str)
+    stop_times = pd.read_csv(
+        GTFS_DIR / "stop_times.txt",
+        usecols=["trip_id", "stop_id", "stop_sequence"],
+        dtype=str,
+    )
+    stop_times["stop_sequence"] = stop_times["stop_sequence"].astype(int)
+    all_stops = pd.read_csv(GTFS_DIR / "stops.txt", dtype={"stop_id": str})
+
+    tram_routes = routes[routes["route_type"] == 0]
+    stops_by_line: dict[str, list[str]] = {}
+    for _, route in tram_routes.iterrows():
+        route_num = route["route_short_name"]
+        rt = trips[trips["route_id"] == route["route_id"]]
+        for dir_id in ["0", "1"]:
+            dt = rt[rt["direction_id"] == dir_id]
+            if dt.empty:
+                continue
+            trip_stop_counts = stop_times[stop_times["trip_id"].isin(dt["trip_id"])].groupby("trip_id").size()
+            best_trip = trip_stop_counts.idxmax()
+            st = stop_times[stop_times["trip_id"] == best_trip].sort_values("stop_sequence")
+            stop_names = st.merge(
+                all_stops[["stop_id", "stop_name"]], on="stop_id"
+            )["stop_name"].tolist()
+            stops_by_line[str(route_num)] = stop_names
+            break
+
+    GTFS_STOPS_JSON.write_text(json.dumps(stops_by_line, ensure_ascii=False, indent=2))
+    print(f"Exported stop sequences for {len(stops_by_line)} lines to {GTFS_STOPS_JSON}")
 
 
 def extract_daily_trips() -> None:

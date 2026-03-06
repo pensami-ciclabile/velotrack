@@ -4,17 +4,14 @@ import json
 import re
 import shutil
 from dataclasses import dataclass, asdict
-from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 from markupsafe import Markup
 
-import pandas as pd
-
 from velotrack.config import (
     DAILY_TRIPS_JSON,
     DATA_DIR_SITE,
-    GTFS_DIR,
+    GTFS_STOPS_JSON,
     LINES_DIR,
     MAPS_DIR,
     SITE_DIR,
@@ -173,36 +170,11 @@ def build_site(lines: list[LineInfo]) -> None:
                     total_extra += (trip_counts[line_num] * avg_wait) / avg_dur
             tl_extra_rides[day_type] = round(total_extra)
 
-    # Build commute calculator data with GTFS stop sequences
+    # Load GTFS stop sequences from cache file
     gtfs_stops_by_line: dict[int, list[str]] = {}
-    if (GTFS_DIR / "routes.txt").exists():
-        gtfs_routes = pd.read_csv(GTFS_DIR / "routes.txt", dtype={"route_id": str})
-        gtfs_trips = pd.read_csv(GTFS_DIR / "trips.txt", dtype=str)
-        gtfs_st = pd.read_csv(
-            GTFS_DIR / "stop_times.txt",
-            usecols=["trip_id", "stop_id", "stop_sequence"],
-            dtype=str,
-        )
-        gtfs_st["stop_sequence"] = gtfs_st["stop_sequence"].astype(int)
-        gtfs_all_stops = pd.read_csv(GTFS_DIR / "stops.txt", dtype={"stop_id": str})
-        tram_routes = gtfs_routes[gtfs_routes["route_type"] == 0]
-        for _, route in tram_routes.iterrows():
-            route_num = int(route["route_short_name"])
-            rt = gtfs_trips[gtfs_trips["route_id"] == route["route_id"]]
-            # Pick direction 0 (or first available) — longest trip
-            for dir_id in ["0", "1"]:
-                dt = rt[rt["direction_id"] == dir_id]
-                if dt.empty:
-                    continue
-                # Find the trip with the most stops
-                trip_stop_counts = gtfs_st[gtfs_st["trip_id"].isin(dt["trip_id"])].groupby("trip_id").size()
-                best_trip = trip_stop_counts.idxmax()
-                st = gtfs_st[gtfs_st["trip_id"] == best_trip].sort_values("stop_sequence")
-                stop_names = st.merge(
-                    gtfs_all_stops[["stop_id", "stop_name"]], on="stop_id"
-                )["stop_name"].tolist()
-                gtfs_stops_by_line[route_num] = stop_names
-                break  # use first direction found
+    if GTFS_STOPS_JSON.exists():
+        raw = json.loads(GTFS_STOPS_JSON.read_text())
+        gtfs_stops_by_line = {int(k): v for k, v in raw.items()}
 
     commute_lines = []
     for route_num in [1,2,3,4,5,7,9,10,12,14,15,16,19,24,27,31,33]:
