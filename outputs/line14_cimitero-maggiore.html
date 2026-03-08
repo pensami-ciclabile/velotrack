@@ -1,0 +1,3644 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_c9da45db00ac894d54638b0486f20cc7 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+    <div id="layer-panel" style="
+        position:fixed; top:10px; right:10px; z-index:9999;
+        background:rgba(255,255,255,0.92); border-radius:8px;
+        padding:10px 14px; font-family:'Menlo','Consolas',monospace;
+        font-size:11px; line-height:1.8; color:#222;
+        box-shadow:0 2px 8px rgba(0,0,0,0.18); border:1px solid #ddd;
+        pointer-events:auto;
+    ">
+        <div style="font-weight:bold;margin-bottom:4px;">Layers</div>
+
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" checked data-layer="route_velocity" style="margin:0">
+            <span style="display:inline-block;width:20px;height:4px;border-radius:2px;
+                         background:linear-gradient(to right, #d73027, #f46d43, #fdae61, #fee08b, #d9ef8b, #a6d96a, #1a9850)"></span>
+            Route
+        </label>
+
+        <div style="font-weight:600;margin:6px 0 2px;color:#888;font-size:10px;
+                     text-transform:uppercase;letter-spacing:0.5px">Stops</div>
+
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" checked data-layer="stops_tram_stop" style="margin:0">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
+                         background:green;opacity:0.8"></span>
+            Tram stops
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" checked data-layer="stops_traffic_light" style="margin:0">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
+                         background:red;opacity:0.8"></span>
+            Traffic lights
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" checked data-layer="stops_combined" style="margin:0">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
+                         background:orange;opacity:0.8"></span>
+            Combined
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" checked data-layer="stops_bottleneck" style="margin:0">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
+                         background:gray;opacity:0.8"></span>
+            Bottlenecks
+        </label>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var nameToVar = {"route_velocity": "feature_group_2ac33ce37c583ec1f5c82469e11ad02c", "stops_tram_stop": "feature_group_450fb2579443d9a358ed4a3630ae871c", "stops_traffic_light": "feature_group_50295c85750c5e061f8aec216e825fde", "stops_combined": "feature_group_b45f83af6da320b04be7a38877196fe5", "stops_bottleneck": "feature_group_074dd6fe1913b54b868a85e06da2332c"};
+        // Find the Leaflet map
+        var map;
+        for (var key in window) {
+            if (window[key] instanceof L.Map) { map = window[key]; break; }
+        }
+        if (!map) return;
+
+        document.querySelectorAll('#layer-panel input[data-layer]').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                var jsVar = nameToVar[cb.getAttribute('data-layer')];
+                if (!jsVar) return;
+                var layer = window[jsVar];
+                if (!layer) return;
+                if (cb.checked) { map.addLayer(layer); }
+                else { map.removeLayer(layer); }
+            });
+        });
+    });
+    </script>
+    
+    
+    <style>
+    @media (max-width: 639px) {
+        #stats-panel {
+            left: 5px !important; right: 5px !important;
+            max-height: 60vh; overflow-y: auto;
+            white-space: normal !important; font-size: 10px !important;
+        }
+        #stats-toggle { left: 5px !important; }
+        #ssd-panel {
+            left: 5px !important; right: 5px !important;
+            width: auto !important; height: 250px !important;
+        }
+        #ssd-toggle { right: 5px !important; }
+        #layer-panel {
+            top: 5px !important; right: 5px !important;
+            font-size: 10px !important; padding: 8px 10px !important;
+        }
+    }
+    </style>
+    <div id="stats-toggle" style="
+        position:fixed; bottom:10px; left:10px; z-index:10000;
+        background:rgba(253,249,219,0.95); border-radius:8px;
+        padding:6px 12px; font-family:'Menlo','Consolas',monospace;
+        font-size:11px; color:#222; cursor:pointer;
+        box-shadow:0 2px 8px rgba(0,0,0,0.18); border:1px solid #ddd;
+        pointer-events:auto;
+    " onclick="document.getElementById('stats-panel').style.display =
+        document.getElementById('stats-panel').style.display === 'none' ? 'block' : 'none'">
+        Line Statistics
+    </div>
+    <div id="stats-panel" style="
+        position: fixed; bottom: 40px; left: 10px; z-index: 9999;
+        background: rgba(255,255,255,0.92); border-radius: 8px;
+        padding: 12px 16px; font-family: 'Menlo','Consolas',monospace;
+        font-size: 11px; line-height: 1.6; color: #222;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        border: 1px solid #ddd; pointer-events: auto; white-space: nowrap;
+    ">
+        <div style="font-weight:bold;text-align:center;margin-bottom:6px;
+                     border-bottom:1px solid #ccc;padding-bottom:4px;">
+            Line Statistics
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:16px">
+            <span>Avg moving: <b>17.9</b> km/h</span>
+            <span>Avg trip: <b>8.5</b> km/h</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:16px">
+            <span>Median moving: <b>15.3</b> km/h</span>
+            <span>Median trip: <b>3.2</b> km/h</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:16px">
+            <span>Peak: <b>20.9</b> km/h</span>
+            <span style="color:#888">P25: 11.5 · P75: 22.9</span>
+        </div>
+        <div style="border-top:1px solid #eee;margin:6px 0 4px"></div>
+        <div style="display:flex;justify-content:space-between">
+            <span>Stops: <b>12</b> total</span>
+            <span>Total delay: <b>326s</b></span>
+        </div>
+        <div style="display:flex;justify-content:space-between"><span style="color:#888">Tram stops:</span><span>2 &times; avg 29s = 58s</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:#888">Traffic lights:</span><span>1 &times; avg 6s = 6s</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:#888">Combined:</span><span>2 &times; avg 44s = 89s</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:#888">Bottlenecks:</span><span>7 &times; avg 25s = 173s</span></div>
+
+        <div style="color:#888;font-size:10px">
+            Avg wait per stop: 27s</div>
+        <div style="border-top:1px solid #eee;margin:6px 0 4px"></div>
+        <div style="font-weight:bold;margin-bottom:2px;">Trip duration scenarios:</div>
+        <div style="display:flex;justify-content:space-between">
+            <span>Current:</span>
+            <span><b>9:15</b></span>
+        </div>
+        <div style="display:flex;justify-content:space-between"><span style="color:#2a2">Green wave (TL priority):</span><span style="color:#2a2"><b>8:31</b> (-0:44, -7.9%)</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:#c33">Red wave (worst case):</span><span style="color:#c33"><b>9:15</b> (+0:00, +0.0%)</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:#07a">Best case (no TL + no bottlenecks):</span><span style="color:#07a"><b>5:38</b> (-3:37, -39.1%)</span></div>
+    </div>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <div id="ssd-toggle" style="
+        position:fixed; bottom:30px; right:10px; z-index:9999;
+        background:rgba(255,255,255,0.92); border-radius:8px;
+        padding:6px 12px; font-family:'Menlo','Consolas',monospace;
+        font-size:11px; color:#222; cursor:pointer;
+        box-shadow:0 2px 8px rgba(0,0,0,0.18); border:1px solid #ddd;
+        pointer-events:auto;
+    " onclick="document.getElementById('ssd-panel').style.display =
+        document.getElementById('ssd-panel').style.display === 'none' ? 'block' : 'none'">
+        Speed-Space Diagram
+    </div>
+    <div id="ssd-panel" style="
+        display:none; position:fixed; bottom:60px; right:10px; z-index:9998;
+        background:rgba(255,255,255,0.96); border-radius:8px;
+        padding:12px; font-family:'Menlo','Consolas',monospace;
+        box-shadow:0 2px 8px rgba(0,0,0,0.18); border:1px solid #ddd;
+        pointer-events:auto; width:520px; height:320px;
+    ">
+        <canvas id="ssd-canvas"></canvas>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('ssd-canvas').getContext('2d');
+        new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+            label: 'Ride 1',
+            data: [{"x": 0.0, "y": 0.0}, {"x": 0.0, "y": 0.0}, {"x": 0.0011, "y": 4.0}, {"x": 0.0011, "y": 0.0}, {"x": 0.0154, "y": 3.2}, {"x": 0.0154, "y": 0.0}, {"x": 0.0271, "y": 14.1}, {"x": 0.0271, "y": 0.0}, {"x": 0.0448, "y": 21.2}, {"x": 0.0448, "y": 0.0}, {"x": 0.0567, "y": 21.5}, {"x": 0.0567, "y": 0.0}, {"x": 0.0678, "y": 39.9}, {"x": 0.0678, "y": 0.0}, {"x": 0.0839, "y": 29.0}, {"x": 0.0839, "y": 0.0}, {"x": 0.0946, "y": 38.4}, {"x": 0.0946, "y": 0.0}, {"x": 0.1057, "y": 40.3}, {"x": 0.1057, "y": 0.0}, {"x": 0.1173, "y": 41.5}, {"x": 0.1173, "y": 0.0}, {"x": 0.1289, "y": 42.0}, {"x": 0.1289, "y": 0.0}, {"x": 0.141, "y": 43.4}, {"x": 0.141, "y": 0.0}, {"x": 0.1513, "y": 37.3}, {"x": 0.1513, "y": 0.0}, {"x": 0.1618, "y": 37.6}, {"x": 0.1618, "y": 0.0}, {"x": 0.1718, "y": 36.2}, {"x": 0.1718, "y": 0.0}, {"x": 0.1833, "y": 41.1}, {"x": 0.1833, "y": 0.0}, {"x": 0.1998, "y": 29.8}, {"x": 0.1998, "y": 0.0}, {"x": 0.2189, "y": 34.4}, {"x": 0.2189, "y": 0.0}, {"x": 0.2388, "y": 35.7}, {"x": 0.2388, "y": 0.0}, {"x": 0.256, "y": 30.9}, {"x": 0.256, "y": 0.0}, {"x": 0.2677, "y": 14.0}, {"x": 0.2677, "y": 0.0}, {"x": 0.2804, "y": 15.3}, {"x": 0.2804, "y": 0.0}, {"x": 0.2917, "y": 8.2}, {"x": 0.2917, "y": 0.0}, {"x": 0.3038, "y": 10.9}, {"x": 0.3038, "y": 0.0}, {"x": 0.315, "y": 20.0}, {"x": 0.315, "y": 0.0}, {"x": 0.3272, "y": 22.0}, {"x": 0.3272, "y": 0.0}, {"x": 0.343, "y": 28.5}, {"x": 0.343, "y": 0.0}, {"x": 0.3568, "y": 24.7}, {"x": 0.3568, "y": 0.0}, {"x": 0.3684, "y": 13.9}, {"x": 0.3684, "y": 0.0}, {"x": 0.3808, "y": 1.4}, {"x": 0.3808, "y": 0.0}, {"x": 0.3914, "y": 9.6}, {"x": 0.3914, "y": 0.0}, {"x": 0.4061, "y": 17.7}, {"x": 0.4061, "y": 0.0}, {"x": 0.4181, "y": 21.5}, {"x": 0.4181, "y": 0.0}, {"x": 0.4296, "y": 20.7}, {"x": 0.4296, "y": 0.0}, {"x": 0.4493, "y": 35.5}, {"x": 0.4493, "y": 0.0}, {"x": 0.4644, "y": 27.2}, {"x": 0.4644, "y": 0.0}, {"x": 0.4821, "y": 31.8}, {"x": 0.4821, "y": 0.0}, {"x": 0.4985, "y": 29.6}, {"x": 0.4985, "y": 0.0}, {"x": 0.5149, "y": 29.5}, {"x": 0.5149, "y": 0.0}, {"x": 0.5315, "y": 30.0}, {"x": 0.5315, "y": 0.0}, {"x": 0.5485, "y": 30.5}, {"x": 0.5485, "y": 0.0}, {"x": 0.5618, "y": 24.0}, {"x": 0.5618, "y": 0.0}, {"x": 0.5756, "y": 16.5}, {"x": 0.5756, "y": 0.0}, {"x": 0.5908, "y": 18.2}, {"x": 0.5908, "y": 0.0}, {"x": 0.6048, "y": 25.3}, {"x": 0.6048, "y": 0.0}, {"x": 0.6192, "y": 25.8}, {"x": 0.6192, "y": 0.0}, {"x": 0.6345, "y": 18.3}, {"x": 0.6345, "y": 0.0}, {"x": 0.6454, "y": 19.8}, {"x": 0.6454, "y": 0.0}, {"x": 0.6557, "y": 1.4}, {"x": 0.6557, "y": 0.0}, {"x": 0.669, "y": 12.0}, {"x": 0.669, "y": 0.0}, {"x": 0.6829, "y": 25.0}, {"x": 0.6829, "y": 0.0}, {"x": 0.694, "y": 20.0}, {"x": 0.694, "y": 0.0}, {"x": 0.7043, "y": 18.6}, {"x": 0.7043, "y": 0.0}, {"x": 0.7163, "y": 14.4}, {"x": 0.7163, "y": 0.0}, {"x": 0.7283, "y": 10.8}, {"x": 0.7283, "y": 0.0}, {"x": 0.7394, "y": 10.0}, {"x": 0.7394, "y": 0.0}, {"x": 0.7498, "y": 5.3}, {"x": 0.7498, "y": 0.0}, {"x": 0.7606, "y": 2.8}, {"x": 0.7606, "y": 0.0}, {"x": 0.7737, "y": 15.8}, {"x": 0.7737, "y": 0.0}, {"x": 0.7871, "y": 12.1}, {"x": 0.7871, "y": 0.0}, {"x": 0.8002, "y": 9.4}, {"x": 0.8002, "y": 0.0}, {"x": 0.8104, "y": 1.9}, {"x": 0.8104, "y": 0.0}, {"x": 0.8211, "y": 1.4}, {"x": 0.8211, "y": 0.0}, {"x": 0.8336, "y": 15.1}, {"x": 0.8336, "y": 0.0}, {"x": 0.8462, "y": 15.1}, {"x": 0.8462, "y": 0.0}, {"x": 0.8618, "y": 14.0}, {"x": 0.8618, "y": 0.0}, {"x": 0.8728, "y": 19.9}, {"x": 0.8728, "y": 0.0}, {"x": 0.8831, "y": 12.3}, {"x": 0.8831, "y": 0.0}, {"x": 0.8965, "y": 6.0}, {"x": 0.8965, "y": 0.0}, {"x": 0.9096, "y": 15.8}, {"x": 0.9096, "y": 0.0}, {"x": 0.9215, "y": 6.1}, {"x": 0.9215, "y": 0.0}, {"x": 0.9375, "y": 50.0}, {"x": 0.9375, "y": 0.0}, {"x": 0.9583, "y": 12.5}, {"x": 0.9583, "y": 0.0}, {"x": 0.9686, "y": 1.1}, {"x": 0.9686, "y": 0.0}, {"x": 0.9792, "y": 1.5}, {"x": 0.9792, "y": 0.0}, {"x": 0.992, "y": 11.5}, {"x": 0.992, "y": 0.0}, {"x": 1.0032, "y": 6.7}, {"x": 1.0032, "y": 0.0}, {"x": 1.015, "y": 21.2}, {"x": 1.015, "y": 0.0}, {"x": 1.0281, "y": 23.7}, {"x": 1.0281, "y": 0.0}, {"x": 1.0401, "y": 21.6}, {"x": 1.0401, "y": 0.0}, {"x": 1.0508, "y": 19.2}, {"x": 1.0508, "y": 0.0}, {"x": 1.0616, "y": 19.4}, {"x": 1.0616, "y": 0.0}, {"x": 1.0743, "y": 22.9}, {"x": 1.0743, "y": 0.0}, {"x": 1.0886, "y": 25.7}, {"x": 1.0886, "y": 0.0}, {"x": 1.1005, "y": 14.3}, {"x": 1.1005, "y": 0.0}, {"x": 1.1106, "y": 4.6}, {"x": 1.1106, "y": 0.0}, {"x": 1.1286, "y": 32.4}, {"x": 1.1286, "y": 0.0}, {"x": 1.1394, "y": 39.0}, {"x": 1.1394, "y": 0.0}, {"x": 1.1557, "y": 29.2}, {"x": 1.1557, "y": 0.0}, {"x": 1.1684, "y": 15.3}, {"x": 1.1684, "y": 0.0}, {"x": 1.1818, "y": 9.6}, {"x": 1.1818, "y": 0.0}, {"x": 1.1928, "y": 1.7}, {"x": 1.1928, "y": 0.0}, {"x": 1.2038, "y": 19.8}, {"x": 1.2038, "y": 0.0}, {"x": 1.2138, "y": 12.0}, {"x": 1.2138, "y": 0.0}, {"x": 1.2251, "y": 13.6}, {"x": 1.2251, "y": 0.0}, {"x": 1.2352, "y": 9.1}, {"x": 1.2352, "y": 0.0}, {"x": 1.2461, "y": 0.5}, {"x": 1.2461, "y": 0.0}, {"x": 1.2619, "y": 4.7}, {"x": 1.2619, "y": 0.0}, {"x": 1.2749, "y": 11.6}, {"x": 1.2749, "y": 0.0}, {"x": 1.2855, "y": 9.6}, {"x": 1.2855, "y": 0.0}, {"x": 1.2996, "y": 16.9}, {"x": 1.2996, "y": 0.0}, {"x": 1.3098, "y": 7.4}, {"x": 1.3098, "y": 0.0}, {"x": 1.3098, "y": 0.0}, {"x": 1.3098, "y": 0.0}],
+            borderColor: 'rgba(100,149,237,0.25)',
+            borderWidth: 1,
+            pointRadius: 0,
+            fill: false,
+            tension: 0.3,
+            showLine: true,
+        },
+                    {
+                        label: 'Average',
+                        data: [{"x": 0.025, "y": 4.2}, {"x": 0.075, "y": 16.1}, {"x": 0.125, "y": 20.9}, {"x": 0.175, "y": 18.2}, {"x": 0.225, "y": 17.5}, {"x": 0.275, "y": 8.6}, {"x": 0.325, "y": 10.2}, {"x": 0.375, "y": 6.2}, {"x": 0.425, "y": 11.9}, {"x": 0.475, "y": 14.8}, {"x": 0.525, "y": 15.0}, {"x": 0.575, "y": 9.8}, {"x": 0.625, "y": 11.2}, {"x": 0.675, "y": 7.3}, {"x": 0.725, "y": 5.9}, {"x": 0.775, "y": 5.1}, {"x": 0.825, "y": 4.3}, {"x": 0.875, "y": 6.5}, {"x": 0.925, "y": 12.0}, {"x": 0.975, "y": 3.3}, {"x": 1.025, "y": 9.2}, {"x": 1.075, "y": 10.9}, {"x": 1.125, "y": 11.3}, {"x": 1.175, "y": 7.0}, {"x": 1.225, "y": 5.5}, {"x": 1.275, "y": 5.4}, {"x": 1.325, "y": 1.8}],
+                        borderColor: 'rgba(220,60,60,0.9)',
+                        borderWidth: 2.5,
+                        pointRadius: 0,
+                        fill: false,
+                        tension: 0.3,
+                        showLine: true,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'nearest',
+                        intersect: false,
+                        callbacks: {
+                            label: function(ctx) {
+                                return ctx.dataset.label + ': ' +
+                                    ctx.parsed.y.toFixed(1) + ' km/h @ ' +
+                                    ctx.parsed.x.toFixed(2) + ' km';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        title: { display: true, text: 'Distance (km)' },
+                        ticks: { maxTicksLimit: 12 }
+                    },
+                    y: {
+                        title: { display: true, text: 'Speed (km/h)' },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+    </script>
+    
+    
+            <div class="folium-map" id="map_c9da45db00ac894d54638b0486f20cc7" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_c9da45db00ac894d54638b0486f20cc7 = L.map(
+                "map_c9da45db00ac894d54638b0486f20cc7",
+                {
+                    center: [45.455750628658926, 9.166006235391684],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 14,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_af4787d20a70e724d5eb990777fe79cb = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_af4787d20a70e724d5eb990777fe79cb.addTo(map_c9da45db00ac894d54638b0486f20cc7);
+        
+    
+            var feature_group_2ac33ce37c583ec1f5c82469e11ad02c = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var poly_line_3b91f163c298717007e767b060269059 = L.polyline(
+                [[45.45384642831463, 9.15861129385514], [45.4538962199892, 9.15869186495814]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_a1264a9ec691d3ae00dcb16e6295a6cd = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_da09e23dc419f579093a9dad0dd7b0ef = $(`<div id="html_da09e23dc419f579093a9dad0dd7b0ef" style="width: 100.0%; height: 100.0%;"><b>2.0 km/h</b> (avg)<br>Median: 2.0 km/h<br>P25–P75: 2.0–2.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_a1264a9ec691d3ae00dcb16e6295a6cd.setContent(html_da09e23dc419f579093a9dad0dd7b0ef);
+            
+        
+
+        poly_line_3b91f163c298717007e767b060269059.bindPopup(popup_a1264a9ec691d3ae00dcb16e6295a6cd)
+        ;
+
+        
+    
+    
+            var poly_line_c3ffd5706a66f496e0146454e62be2ec = L.polyline(
+                [[45.4538962199892, 9.15869186495814], [45.45393695265358, 9.158804636470144]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_2587002915959bd993f5a109c864445b = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_fe76c9075f936bbaa26d3fb2a7573e17 = $(`<div id="html_fe76c9075f936bbaa26d3fb2a7573e17" style="width: 100.0%; height: 100.0%;"><b>5.5 km/h</b> (avg)<br>Median: 5.5 km/h<br>P25–P75: 5.5–5.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_2587002915959bd993f5a109c864445b.setContent(html_fe76c9075f936bbaa26d3fb2a7573e17);
+            
+        
+
+        poly_line_c3ffd5706a66f496e0146454e62be2ec.bindPopup(popup_2587002915959bd993f5a109c864445b)
+        ;
+
+        
+    
+    
+            var poly_line_f73902f379b3894d9e6022683462b2a3 = L.polyline(
+                [[45.45393695265358, 9.158804636470144], [45.45396418061767, 9.158926804954731]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_61922a9ab388867c8e702a3fa8d62275 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_570b36eff46b84820543ab3e1721122d = $(`<div id="html_570b36eff46b84820543ab3e1721122d" style="width: 100.0%; height: 100.0%;"><b>3.5 km/h</b> (avg)<br>Median: 3.5 km/h<br>P25–P75: 3.5–3.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_61922a9ab388867c8e702a3fa8d62275.setContent(html_570b36eff46b84820543ab3e1721122d);
+            
+        
+
+        poly_line_f73902f379b3894d9e6022683462b2a3.bindPopup(popup_61922a9ab388867c8e702a3fa8d62275)
+        ;
+
+        
+    
+    
+            var poly_line_363872eae3ce5fcceb98b96d305a29c3 = L.polyline(
+                [[45.45396418061767, 9.158926804954731], [45.45398923603762, 9.159049932008985]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_1cb5b751350ef51207a3175f7781d4db = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_3532991ad69b2521cf9c306689642fa6 = $(`<div id="html_3532991ad69b2521cf9c306689642fa6" style="width: 100.0%; height: 100.0%;"><b>15.5 km/h</b> (avg)<br>Median: 15.5 km/h<br>P25–P75: 15.5–15.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_1cb5b751350ef51207a3175f7781d4db.setContent(html_3532991ad69b2521cf9c306689642fa6);
+            
+        
+
+        poly_line_363872eae3ce5fcceb98b96d305a29c3.bindPopup(popup_1cb5b751350ef51207a3175f7781d4db)
+        ;
+
+        
+    
+    
+            var poly_line_32d27230ec5f581aaa80c11ac5cd4512 = L.polyline(
+                [[45.45398923603762, 9.159049932008985], [45.45402601316104, 9.159165624085176]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_4f2d29496ad7ba7cdb2781860809c0a0 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_8534642e4f017ace506a4452b79c373d = $(`<div id="html_8534642e4f017ace506a4452b79c373d" style="width: 100.0%; height: 100.0%;"><b>9.4 km/h</b> (avg)<br>Median: 9.4 km/h<br>P25–P75: 9.4–9.4 km/h<br>Rides: 1/1</div>`)[0];
+                popup_4f2d29496ad7ba7cdb2781860809c0a0.setContent(html_8534642e4f017ace506a4452b79c373d);
+            
+        
+
+        poly_line_32d27230ec5f581aaa80c11ac5cd4512.bindPopup(popup_4f2d29496ad7ba7cdb2781860809c0a0)
+        ;
+
+        
+    
+    
+            var poly_line_7ca7e5ba30111a14fdd8f05b80e3d66e = L.polyline(
+                [[45.45402601316104, 9.159165624085176], [45.454069863981275, 9.159277260119353]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_b68cfc4dc4f958c610b19fb22d822979 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_08a816f5491a6c531def580bbdd37c5c = $(`<div id="html_08a816f5491a6c531def580bbdd37c5c" style="width: 100.0%; height: 100.0%;"><b>11.9 km/h</b> (avg)<br>Median: 11.9 km/h<br>P25–P75: 11.9–11.9 km/h<br>Rides: 1/1</div>`)[0];
+                popup_b68cfc4dc4f958c610b19fb22d822979.setContent(html_08a816f5491a6c531def580bbdd37c5c);
+            
+        
+
+        poly_line_7ca7e5ba30111a14fdd8f05b80e3d66e.bindPopup(popup_b68cfc4dc4f958c610b19fb22d822979)
+        ;
+
+        
+    
+    
+            var poly_line_c4098c23378106da067ac1b8113a6528 = L.polyline(
+                [[45.454069863981275, 9.159277260119353], [45.454106482435485, 9.159394354182469]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_5ef9daecfb3177eaae5bc9cb51bfed5e = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_1103d961b786e92d0e555961c9e6e980 = $(`<div id="html_1103d961b786e92d0e555961c9e6e980" style="width: 100.0%; height: 100.0%;"><b>4.0 km/h</b> (avg)<br>Median: 4.0 km/h<br>P25–P75: 4.0–4.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_5ef9daecfb3177eaae5bc9cb51bfed5e.setContent(html_1103d961b786e92d0e555961c9e6e980);
+            
+        
+
+        poly_line_c4098c23378106da067ac1b8113a6528.bindPopup(popup_5ef9daecfb3177eaae5bc9cb51bfed5e)
+        ;
+
+        
+    
+    
+            var poly_line_63d632bc96a28b33f47a9cee3d155ad3 = L.polyline(
+                [[45.454106482435485, 9.159394354182469], [45.45414279253279, 9.15951164358971]],
+                {"bubblingMouseEvents": true, "color": "#d9ef8b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d9ef8b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_22866cbb74c20e275c89db446fe19053 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_9aa73ef8231676d574481c60debc692a = $(`<div id="html_9aa73ef8231676d574481c60debc692a" style="width: 100.0%; height: 100.0%;"><b>22.0 km/h</b> (avg)<br>Median: 22.0 km/h<br>P25–P75: 22.0–22.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_22866cbb74c20e275c89db446fe19053.setContent(html_9aa73ef8231676d574481c60debc692a);
+            
+        
+
+        poly_line_63d632bc96a28b33f47a9cee3d155ad3.bindPopup(popup_22866cbb74c20e275c89db446fe19053)
+        ;
+
+        
+    
+    
+            var poly_line_156b0d868dbfbe07581665710e0b712b = L.polyline(
+                [[45.45414279253279, 9.15951164358971], [45.454181040464526, 9.15962764920408]],
+                {"bubblingMouseEvents": true, "color": "#d9ef8b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d9ef8b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_feb350c8ca972cb43fa69489beaa279c = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_088b143544d4bd500151a9fe8ea2c0da = $(`<div id="html_088b143544d4bd500151a9fe8ea2c0da" style="width: 100.0%; height: 100.0%;"><b>22.0 km/h</b> (avg)<br>Median: 22.0 km/h<br>P25–P75: 22.0–22.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_feb350c8ca972cb43fa69489beaa279c.setContent(html_088b143544d4bd500151a9fe8ea2c0da);
+            
+        
+
+        poly_line_156b0d868dbfbe07581665710e0b712b.bindPopup(popup_feb350c8ca972cb43fa69489beaa279c)
+        ;
+
+        
+    
+    
+            var poly_line_6ae3e15e877a99f4544c66bfaf344c3c = L.polyline(
+                [[45.454181040464526, 9.15962764920408], [45.45422378936198, 9.159740339062907]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_1fed0fc4a03664230d79daa0f2e86647 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_105b040ca9f4b43c8a8bf5692c3572aa = $(`<div id="html_105b040ca9f4b43c8a8bf5692c3572aa" style="width: 100.0%; height: 100.0%;"><b>19.6 km/h</b> (avg)<br>Median: 19.6 km/h<br>P25–P75: 19.6–19.6 km/h<br>Rides: 1/1</div>`)[0];
+                popup_1fed0fc4a03664230d79daa0f2e86647.setContent(html_105b040ca9f4b43c8a8bf5692c3572aa);
+            
+        
+
+        poly_line_6ae3e15e877a99f4544c66bfaf344c3c.bindPopup(popup_1fed0fc4a03664230d79daa0f2e86647)
+        ;
+
+        
+    
+    
+            var poly_line_6f6dbe3e95150f2371ba3e161f858f51 = L.polyline(
+                [[45.45422378936198, 9.159740339062907], [45.4542660455209, 9.159853349280827]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_7721f18404dc082bb21d3d500d64ca6f = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_b3b95ebd2b2ad825b92183389091ff44 = $(`<div id="html_b3b95ebd2b2ad825b92183389091ff44" style="width: 100.0%; height: 100.0%;"><b>15.3 km/h</b> (avg)<br>Median: 15.3 km/h<br>P25–P75: 15.3–15.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_7721f18404dc082bb21d3d500d64ca6f.setContent(html_b3b95ebd2b2ad825b92183389091ff44);
+            
+        
+
+        poly_line_6f6dbe3e95150f2371ba3e161f858f51.bindPopup(popup_7721f18404dc082bb21d3d500d64ca6f)
+        ;
+
+        
+    
+    
+            var poly_line_2bd1ffd25583b89935d9ff28e488fecc = L.polyline(
+                [[45.4542660455209, 9.159853349280827], [45.45430365769169, 9.159969799478647]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_e6d4a477f190c2ab89ed56726d6303b0 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_0f29bcc43b07d0fe22970c3acee8ad27 = $(`<div id="html_0f29bcc43b07d0fe22970c3acee8ad27" style="width: 100.0%; height: 100.0%;"><b>9.8 km/h</b> (avg)<br>Median: 9.8 km/h<br>P25–P75: 9.8–9.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_e6d4a477f190c2ab89ed56726d6303b0.setContent(html_0f29bcc43b07d0fe22970c3acee8ad27);
+            
+        
+
+        poly_line_2bd1ffd25583b89935d9ff28e488fecc.bindPopup(popup_e6d4a477f190c2ab89ed56726d6303b0)
+        ;
+
+        
+    
+    
+            var poly_line_b65df2dcd42bd08a0394884539904f7e = L.polyline(
+                [[45.45430365769169, 9.159969799478647], [45.45434116417096, 9.160086274385245]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_f9be542c2ca24d3b17ba0592855eb18e = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_92d57ea7ca827b8c8f3a1c11eabdff8b = $(`<div id="html_92d57ea7ca827b8c8f3a1c11eabdff8b" style="width: 100.0%; height: 100.0%;"><b>3.8 km/h</b> (avg)<br>Median: 3.8 km/h<br>P25–P75: 3.8–3.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_f9be542c2ca24d3b17ba0592855eb18e.setContent(html_92d57ea7ca827b8c8f3a1c11eabdff8b);
+            
+        
+
+        poly_line_b65df2dcd42bd08a0394884539904f7e.bindPopup(popup_f9be542c2ca24d3b17ba0592855eb18e)
+        ;
+
+        
+    
+    
+            var poly_line_0423ae77746c76ada7de373b58bc46b7 = L.polyline(
+                [[45.45434116417096, 9.160086274385245], [45.45438470276963, 9.16019845256508]],
+                {"bubblingMouseEvents": true, "color": "#66bd63", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#66bd63", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_9ec2e7835ee66f93094baaa3f3fa0069 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_772e6e84e70d75c9e9eac0dbf59026f3 = $(`<div id="html_772e6e84e70d75c9e9eac0dbf59026f3" style="width: 100.0%; height: 100.0%;"><b>39.8 km/h</b> (avg)<br>Median: 39.8 km/h<br>P25–P75: 39.8–39.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_9ec2e7835ee66f93094baaa3f3fa0069.setContent(html_772e6e84e70d75c9e9eac0dbf59026f3);
+            
+        
+
+        poly_line_0423ae77746c76ada7de373b58bc46b7.bindPopup(popup_9ec2e7835ee66f93094baaa3f3fa0069)
+        ;
+
+        
+    
+    
+            var poly_line_6d96349fc6217de8e7fd990ffd74630a = L.polyline(
+                [[45.45438470276963, 9.16019845256508], [45.45442258101714, 9.160314691811115]],
+                {"bubblingMouseEvents": true, "color": "#66bd63", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#66bd63", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_b9ce5b85ba97009b62d05a10c6fb3d76 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_6e90175b186412633ad3730062bf789c = $(`<div id="html_6e90175b186412633ad3730062bf789c" style="width: 100.0%; height: 100.0%;"><b>32.4 km/h</b> (avg)<br>Median: 32.4 km/h<br>P25–P75: 32.4–32.4 km/h<br>Rides: 1/1</div>`)[0];
+                popup_b9ce5b85ba97009b62d05a10c6fb3d76.setContent(html_6e90175b186412633ad3730062bf789c);
+            
+        
+
+        poly_line_6d96349fc6217de8e7fd990ffd74630a.bindPopup(popup_b9ce5b85ba97009b62d05a10c6fb3d76)
+        ;
+
+        
+    
+    
+            var poly_line_ed21021dd4f18bc790e8585711341c08 = L.polyline(
+                [[45.45442258101714, 9.160314691811115], [45.454461240064795, 9.160430442971247]],
+                {"bubblingMouseEvents": true, "color": "#66bd63", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#66bd63", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_2599979cf3d97543ced0cc4a599e93da = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_03d651ec65295db0f61c98b2eb456470 = $(`<div id="html_03d651ec65295db0f61c98b2eb456470" style="width: 100.0%; height: 100.0%;"><b>31.2 km/h</b> (avg)<br>Median: 31.2 km/h<br>P25–P75: 31.2–31.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_2599979cf3d97543ced0cc4a599e93da.setContent(html_03d651ec65295db0f61c98b2eb456470);
+            
+        
+
+        poly_line_ed21021dd4f18bc790e8585711341c08.bindPopup(popup_2599979cf3d97543ced0cc4a599e93da)
+        ;
+
+        
+    
+    
+            var poly_line_1a0bc42bd1b724dc47e94e78d74b1af6 = L.polyline(
+                [[45.454461240064795, 9.160430442971247], [45.454492600229905, 9.160550477516145]],
+                {"bubblingMouseEvents": true, "color": "#a6d96a", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#a6d96a", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_e82751532b674bb3f1657acc3dbba591 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_63bcca91ad5d7c8c3da3f24d5aee2b48 = $(`<div id="html_63bcca91ad5d7c8c3da3f24d5aee2b48" style="width: 100.0%; height: 100.0%;"><b>29.5 km/h</b> (avg)<br>Median: 29.5 km/h<br>P25–P75: 29.5–29.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_e82751532b674bb3f1657acc3dbba591.setContent(html_63bcca91ad5d7c8c3da3f24d5aee2b48);
+            
+        
+
+        poly_line_1a0bc42bd1b724dc47e94e78d74b1af6.bindPopup(popup_e82751532b674bb3f1657acc3dbba591)
+        ;
+
+        
+    
+    
+            var poly_line_3cee041c529504e4dff0c04a9def7de3 = L.polyline(
+                [[45.454492600229905, 9.160550477516145], [45.45452137610618, 9.160671939818865]],
+                {"bubblingMouseEvents": true, "color": "#a6d96a", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#a6d96a", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_727dcb497b300c29314553eaee3d7302 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_cec20e107d0a29a9dafd6a57a90aef8e = $(`<div id="html_cec20e107d0a29a9dafd6a57a90aef8e" style="width: 100.0%; height: 100.0%;"><b>29.4 km/h</b> (avg)<br>Median: 29.4 km/h<br>P25–P75: 29.4–29.4 km/h<br>Rides: 1/1</div>`)[0];
+                popup_727dcb497b300c29314553eaee3d7302.setContent(html_cec20e107d0a29a9dafd6a57a90aef8e);
+            
+        
+
+        poly_line_3cee041c529504e4dff0c04a9def7de3.bindPopup(popup_727dcb497b300c29314553eaee3d7302)
+        ;
+
+        
+    
+    
+            var poly_line_87cc71b802b1911fc7565c12b4e7f218 = L.polyline(
+                [[45.45452137610618, 9.160671939818865], [45.45455296027394, 9.160791935247277]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_1bb14dba64d70bd7307a54da0ed060f5 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_e76dafb16de70b6b9c22d0716cd1f502 = $(`<div id="html_e76dafb16de70b6b9c22d0716cd1f502" style="width: 100.0%; height: 100.0%;"><b>12.1 km/h</b> (avg)<br>Median: 12.1 km/h<br>P25–P75: 12.1–12.1 km/h<br>Rides: 1/1</div>`)[0];
+                popup_1bb14dba64d70bd7307a54da0ed060f5.setContent(html_e76dafb16de70b6b9c22d0716cd1f502);
+            
+        
+
+        poly_line_87cc71b802b1911fc7565c12b4e7f218.bindPopup(popup_1bb14dba64d70bd7307a54da0ed060f5)
+        ;
+
+        
+    
+    
+            var poly_line_764fbda76d2061930197a93beeb72b0b = L.polyline(
+                [[45.45455296027394, 9.160791935247277], [45.45458600880911, 9.160911169238279]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_0c32104ce97ea4e08fe944dc584e680e = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_4fa5ab5c5d9bab2f631e4a9800a3793a = $(`<div id="html_4fa5ab5c5d9bab2f631e4a9800a3793a" style="width: 100.0%; height: 100.0%;"><b>0.3 km/h</b> (avg)<br>Median: 0.3 km/h<br>P25–P75: 0.3–0.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_0c32104ce97ea4e08fe944dc584e680e.setContent(html_4fa5ab5c5d9bab2f631e4a9800a3793a);
+            
+        
+
+        poly_line_764fbda76d2061930197a93beeb72b0b.bindPopup(popup_0c32104ce97ea4e08fe944dc584e680e)
+        ;
+
+        
+    
+    
+            var poly_line_105d7051ad17a0b7cbab26ec2b06409b = L.polyline(
+                [[45.45458600880911, 9.160911169238279], [45.45461912511508, 9.161030365133035]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_a9152f1090ea2dfcdee29337fb835b09 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_5f80a4972e8540516b71e69346c5e205 = $(`<div id="html_5f80a4972e8540516b71e69346c5e205" style="width: 100.0%; height: 100.0%;"><b>18.3 km/h</b> (avg)<br>Median: 18.3 km/h<br>P25–P75: 18.3–18.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_a9152f1090ea2dfcdee29337fb835b09.setContent(html_5f80a4972e8540516b71e69346c5e205);
+            
+        
+
+        poly_line_105d7051ad17a0b7cbab26ec2b06409b.bindPopup(popup_a9152f1090ea2dfcdee29337fb835b09)
+        ;
+
+        
+    
+    
+            var poly_line_6a0cfd65e29e88aa3bd183ff15225f33 = L.polyline(
+                [[45.45461912511508, 9.161030365133035], [45.45465332767448, 9.16114883144833]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_a6fa6081236283a961e8895f10835d41 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_3f7d18c5e79f2ebfd20b827c0e0ef10e = $(`<div id="html_3f7d18c5e79f2ebfd20b827c0e0ef10e" style="width: 100.0%; height: 100.0%;"><b>1.9 km/h</b> (avg)<br>Median: 1.9 km/h<br>P25–P75: 1.9–1.9 km/h<br>Rides: 1/1</div>`)[0];
+                popup_a6fa6081236283a961e8895f10835d41.setContent(html_3f7d18c5e79f2ebfd20b827c0e0ef10e);
+            
+        
+
+        poly_line_6a0cfd65e29e88aa3bd183ff15225f33.bindPopup(popup_a6fa6081236283a961e8895f10835d41)
+        ;
+
+        
+    
+    
+            var poly_line_f1f2518388cada8430a58ffc924580ae = L.polyline(
+                [[45.45465332767448, 9.16114883144833], [45.45469671932739, 9.161261125931436]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_1ce613b5daad5e05d5b7baf4fde94cd2 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_822a95b8442843fee7b7ad096cc7d6d3 = $(`<div id="html_822a95b8442843fee7b7ad096cc7d6d3" style="width: 100.0%; height: 100.0%;"><b>19.9 km/h</b> (avg)<br>Median: 19.9 km/h<br>P25–P75: 19.9–19.9 km/h<br>Rides: 1/1</div>`)[0];
+                popup_1ce613b5daad5e05d5b7baf4fde94cd2.setContent(html_822a95b8442843fee7b7ad096cc7d6d3);
+            
+        
+
+        poly_line_f1f2518388cada8430a58ffc924580ae.bindPopup(popup_1ce613b5daad5e05d5b7baf4fde94cd2)
+        ;
+
+        
+    
+    
+            var poly_line_67a0306cd42ba52ad29cb38d02e9b40b = L.polyline(
+                [[45.45469671932739, 9.161261125931436], [45.45474016428249, 9.16137337830351]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_5937eca7b2f92d38bba262aa33cb319d = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_ea7474c9f80eb27e3a5549b0097f64df = $(`<div id="html_ea7474c9f80eb27e3a5549b0097f64df" style="width: 100.0%; height: 100.0%;"><b>2.2 km/h</b> (avg)<br>Median: 2.2 km/h<br>P25–P75: 2.2–2.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_5937eca7b2f92d38bba262aa33cb319d.setContent(html_ea7474c9f80eb27e3a5549b0097f64df);
+            
+        
+
+        poly_line_67a0306cd42ba52ad29cb38d02e9b40b.bindPopup(popup_5937eca7b2f92d38bba262aa33cb319d)
+        ;
+
+        
+    
+    
+            var poly_line_75f2d6e0589716484b0ecdb907ca88b7 = L.polyline(
+                [[45.45474016428249, 9.16137337830351], [45.454783989591085, 9.161485330179891]],
+                {"bubblingMouseEvents": true, "color": "#d9ef8b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d9ef8b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_0cae56f3c49054a397349d1be9ef872b = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_15fb901f05c8c2c585547646638338d7 = $(`<div id="html_15fb901f05c8c2c585547646638338d7" style="width: 100.0%; height: 100.0%;"><b>20.2 km/h</b> (avg)<br>Median: 20.2 km/h<br>P25–P75: 20.2–20.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_0cae56f3c49054a397349d1be9ef872b.setContent(html_15fb901f05c8c2c585547646638338d7);
+            
+        
+
+        poly_line_75f2d6e0589716484b0ecdb907ca88b7.bindPopup(popup_0cae56f3c49054a397349d1be9ef872b)
+        ;
+
+        
+    
+    
+            var poly_line_3707a4bac82a1bddfa7ba984faa5af91 = L.polyline(
+                [[45.454783989591085, 9.161485330179891], [45.45483034481194, 9.161595071340239]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_b65f76fdde45afc36577e7591514a010 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_26c9cd86baca551dece528549c565609 = $(`<div id="html_26c9cd86baca551dece528549c565609" style="width: 100.0%; height: 100.0%;"><b>4.8 km/h</b> (avg)<br>Median: 4.8 km/h<br>P25–P75: 4.8–4.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_b65f76fdde45afc36577e7591514a010.setContent(html_26c9cd86baca551dece528549c565609);
+            
+        
+
+        poly_line_3707a4bac82a1bddfa7ba984faa5af91.bindPopup(popup_b65f76fdde45afc36577e7591514a010)
+        ;
+
+        
+    
+    
+            var poly_line_475ccbd67592166bed2fede923c9dd71 = L.polyline(
+                [[45.45483034481194, 9.161595071340239], [45.45487494513586, 9.161705279247014]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_32d15d85f4a0980c578516b6f9b03509 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_d0ae7729832b8b3b615e3a5a7d06f5be = $(`<div id="html_d0ae7729832b8b3b615e3a5a7d06f5be" style="width: 100.0%; height: 100.0%;"><b>2.8 km/h</b> (avg)<br>Median: 2.8 km/h<br>P25–P75: 2.8–2.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_32d15d85f4a0980c578516b6f9b03509.setContent(html_d0ae7729832b8b3b615e3a5a7d06f5be);
+            
+        
+
+        poly_line_475ccbd67592166bed2fede923c9dd71.bindPopup(popup_32d15d85f4a0980c578516b6f9b03509)
+        ;
+
+        
+    
+    
+            var poly_line_336facbcb853bf1c405849caa86319b5 = L.polyline(
+                [[45.45487494513586, 9.161705279247014], [45.4549014358491, 9.161827796200871]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_772b9e6ed1b5f123030b485e67b69c13 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_052fd449655abdc64e3702455fb6de15 = $(`<div id="html_052fd449655abdc64e3702455fb6de15" style="width: 100.0%; height: 100.0%;"><b>14.8 km/h</b> (avg)<br>Median: 14.8 km/h<br>P25–P75: 14.8–14.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_772b9e6ed1b5f123030b485e67b69c13.setContent(html_052fd449655abdc64e3702455fb6de15);
+            
+        
+
+        poly_line_336facbcb853bf1c405849caa86319b5.bindPopup(popup_772b9e6ed1b5f123030b485e67b69c13)
+        ;
+
+        
+    
+    
+            var poly_line_3dde64f6f445615be50cb1bf625abc05 = L.polyline(
+                [[45.4549014358491, 9.161827796200871], [45.45493061169205, 9.161949064472]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_2305d2d211a667ac653768ea6fa0c8b5 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_0afff94c429069a8e9dcad8c38b416e3 = $(`<div id="html_0afff94c429069a8e9dcad8c38b416e3" style="width: 100.0%; height: 100.0%;"><b>6.9 km/h</b> (avg)<br>Median: 6.9 km/h<br>P25–P75: 6.9–6.9 km/h<br>Rides: 1/1</div>`)[0];
+                popup_2305d2d211a667ac653768ea6fa0c8b5.setContent(html_0afff94c429069a8e9dcad8c38b416e3);
+            
+        
+
+        poly_line_3dde64f6f445615be50cb1bf625abc05.bindPopup(popup_2305d2d211a667ac653768ea6fa0c8b5)
+        ;
+
+        
+    
+    
+            var poly_line_7396cb670fe76cfb59e8eb0f8e0cba60 = L.polyline(
+                [[45.45493061169205, 9.161949064472], [45.45496675580401, 9.162066360780395]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_16afafe0a5f9cab3e0d9aa76a382af04 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_a3d26de69711d1fded8a05e376de0d0c = $(`<div id="html_a3d26de69711d1fded8a05e376de0d0c" style="width: 100.0%; height: 100.0%;"><b>7.4 km/h</b> (avg)<br>Median: 7.4 km/h<br>P25–P75: 7.4–7.4 km/h<br>Rides: 1/1</div>`)[0];
+                popup_16afafe0a5f9cab3e0d9aa76a382af04.setContent(html_a3d26de69711d1fded8a05e376de0d0c);
+            
+        
+
+        poly_line_7396cb670fe76cfb59e8eb0f8e0cba60.bindPopup(popup_16afafe0a5f9cab3e0d9aa76a382af04)
+        ;
+
+        
+    
+    
+            var poly_line_416bc42ab007c61593252da9c5f3435d = L.polyline(
+                [[45.45496675580401, 9.162066360780395], [45.455008234339424, 9.162180008778389]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_7ec1edf1164cdc769e751c6baf834683 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_36806f8aeea29e0106594b8ce4b49383 = $(`<div id="html_36806f8aeea29e0106594b8ce4b49383" style="width: 100.0%; height: 100.0%;"><b>11.1 km/h</b> (avg)<br>Median: 11.1 km/h<br>P25–P75: 11.1–11.1 km/h<br>Rides: 1/1</div>`)[0];
+                popup_7ec1edf1164cdc769e751c6baf834683.setContent(html_36806f8aeea29e0106594b8ce4b49383);
+            
+        
+
+        poly_line_416bc42ab007c61593252da9c5f3435d.bindPopup(popup_7ec1edf1164cdc769e751c6baf834683)
+        ;
+
+        
+    
+    
+            var poly_line_7d5c1ecbbe0d97c0baffc494d9667b1e = L.polyline(
+                [[45.455008234339424, 9.162180008778389], [45.455046191545065, 9.162295863183997]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_fd1e9b99dd96cb79c6674e7e7b6cd8f6 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_539a2fea8d035913f9bf326f27fcdd76 = $(`<div id="html_539a2fea8d035913f9bf326f27fcdd76" style="width: 100.0%; height: 100.0%;"><b>9.1 km/h</b> (avg)<br>Median: 9.1 km/h<br>P25–P75: 9.1–9.1 km/h<br>Rides: 1/1</div>`)[0];
+                popup_fd1e9b99dd96cb79c6674e7e7b6cd8f6.setContent(html_539a2fea8d035913f9bf326f27fcdd76);
+            
+        
+
+        poly_line_7d5c1ecbbe0d97c0baffc494d9667b1e.bindPopup(popup_fd1e9b99dd96cb79c6674e7e7b6cd8f6)
+        ;
+
+        
+    
+    
+            var poly_line_659ee986b8778041d08506b3e5e4d704 = L.polyline(
+                [[45.455046191545065, 9.162295863183997], [45.45507969033953, 9.162414792899336]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_db522fcac702257f347fcf28762f1778 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_70586bbee8f582a95ce66c421c3ed4ed = $(`<div id="html_70586bbee8f582a95ce66c421c3ed4ed" style="width: 100.0%; height: 100.0%;"><b>5.1 km/h</b> (avg)<br>Median: 5.1 km/h<br>P25–P75: 5.1–5.1 km/h<br>Rides: 1/1</div>`)[0];
+                popup_db522fcac702257f347fcf28762f1778.setContent(html_70586bbee8f582a95ce66c421c3ed4ed);
+            
+        
+
+        poly_line_659ee986b8778041d08506b3e5e4d704.bindPopup(popup_db522fcac702257f347fcf28762f1778)
+        ;
+
+        
+    
+    
+            var poly_line_37cc0d9c05b8b542ad3b82d60a62e203 = L.polyline(
+                [[45.45507969033953, 9.162414792899336], [45.45511673720244, 9.162531615158239]],
+                {"bubblingMouseEvents": true, "color": "#d9ef8b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d9ef8b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_57973b3912362e2350e6ac0375df1a6f = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_82eda77fbee824dfedd22401fd27cd1a = $(`<div id="html_82eda77fbee824dfedd22401fd27cd1a" style="width: 100.0%; height: 100.0%;"><b>23.1 km/h</b> (avg)<br>Median: 23.1 km/h<br>P25–P75: 23.1–23.1 km/h<br>Rides: 1/1</div>`)[0];
+                popup_57973b3912362e2350e6ac0375df1a6f.setContent(html_82eda77fbee824dfedd22401fd27cd1a);
+            
+        
+
+        poly_line_37cc0d9c05b8b542ad3b82d60a62e203.bindPopup(popup_57973b3912362e2350e6ac0375df1a6f)
+        ;
+
+        
+    
+    
+            var poly_line_a38378731085166320fa224d2af04b4d = L.polyline(
+                [[45.45511673720244, 9.162531615158239], [45.455156481221806, 9.162646587533457]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_6033c66a61e6bf32379c47f9a1cc695c = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_52912a32c5f98f4ef410a69077b39560 = $(`<div id="html_52912a32c5f98f4ef410a69077b39560" style="width: 100.0%; height: 100.0%;"><b>12.6 km/h</b> (avg)<br>Median: 12.6 km/h<br>P25–P75: 12.6–12.6 km/h<br>Rides: 1/1</div>`)[0];
+                popup_6033c66a61e6bf32379c47f9a1cc695c.setContent(html_52912a32c5f98f4ef410a69077b39560);
+            
+        
+
+        poly_line_a38378731085166320fa224d2af04b4d.bindPopup(popup_6033c66a61e6bf32379c47f9a1cc695c)
+        ;
+
+        
+    
+    
+            var poly_line_fd99915104d3972da16bcaa2e9b46ec3 = L.polyline(
+                [[45.455156481221806, 9.162646587533457], [45.45519506560079, 9.162762274118409]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_b613b5436d31944f48a3d648fd0c67d1 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_592c39793224b210ae0197e560ccb300 = $(`<div id="html_592c39793224b210ae0197e560ccb300" style="width: 100.0%; height: 100.0%;"><b>3.9 km/h</b> (avg)<br>Median: 3.9 km/h<br>P25–P75: 3.9–3.9 km/h<br>Rides: 1/1</div>`)[0];
+                popup_b613b5436d31944f48a3d648fd0c67d1.setContent(html_592c39793224b210ae0197e560ccb300);
+            
+        
+
+        poly_line_fd99915104d3972da16bcaa2e9b46ec3.bindPopup(popup_b613b5436d31944f48a3d648fd0c67d1)
+        ;
+
+        
+    
+    
+            var poly_line_2d2e99e26fada29ef6ef7848dd328503 = L.polyline(
+                [[45.45519506560079, 9.162762274118409], [45.45522759821119, 9.162881727024622]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_91e4522a4871efe054263041e60506dd = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_5dc9743da320a9db5603442270675916 = $(`<div id="html_5dc9743da320a9db5603442270675916" style="width: 100.0%; height: 100.0%;"><b>0.2 km/h</b> (avg)<br>Median: 0.2 km/h<br>P25–P75: 0.2–0.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_91e4522a4871efe054263041e60506dd.setContent(html_5dc9743da320a9db5603442270675916);
+            
+        
+
+        poly_line_2d2e99e26fada29ef6ef7848dd328503.bindPopup(popup_91e4522a4871efe054263041e60506dd)
+        ;
+
+        
+    
+    
+            var poly_line_295463de2e98f7bd6058f3b31941c18e = L.polyline(
+                [[45.45522759821119, 9.162881727024622], [45.45525398363191, 9.16300429091479]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_44158afa68d771302e3d9d60ae69c465 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_6dd11324ee06a5f7b1f22e7217b1ed5f = $(`<div id="html_6dd11324ee06a5f7b1f22e7217b1ed5f" style="width: 100.0%; height: 100.0%;"><b>1.3 km/h</b> (avg)<br>Median: 1.3 km/h<br>P25–P75: 1.3–1.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_44158afa68d771302e3d9d60ae69c465.setContent(html_6dd11324ee06a5f7b1f22e7217b1ed5f);
+            
+        
+
+        poly_line_295463de2e98f7bd6058f3b31941c18e.bindPopup(popup_44158afa68d771302e3d9d60ae69c465)
+        ;
+
+        
+    
+    
+            var poly_line_95512fbd7f5d98c400fc8c92b20aa775 = L.polyline(
+                [[45.45525398363191, 9.16300429091479], [45.455276421671215, 9.163128430811568]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_86d6294de1eabfb70a44e122289e8a55 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_32fbcbc23bf2b19078d91ab0b752e3ae = $(`<div id="html_32fbcbc23bf2b19078d91ab0b752e3ae" style="width: 100.0%; height: 100.0%;"><b>8.3 km/h</b> (avg)<br>Median: 8.3 km/h<br>P25–P75: 8.3–8.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_86d6294de1eabfb70a44e122289e8a55.setContent(html_32fbcbc23bf2b19078d91ab0b752e3ae);
+            
+        
+
+        poly_line_95512fbd7f5d98c400fc8c92b20aa775.bindPopup(popup_86d6294de1eabfb70a44e122289e8a55)
+        ;
+
+        
+    
+    
+            var poly_line_9d937b4d5e128cc8f0fc519778d96a99 = L.polyline(
+                [[45.455276421671215, 9.163128430811568], [45.45532295075684, 9.163237052964105]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_d8063402572e9c25d7804f6960943209 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_87fec0eed2626d578b0ff54e10d616a4 = $(`<div id="html_87fec0eed2626d578b0ff54e10d616a4" style="width: 100.0%; height: 100.0%;"><b>10.3 km/h</b> (avg)<br>Median: 10.3 km/h<br>P25–P75: 10.3–10.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_d8063402572e9c25d7804f6960943209.setContent(html_87fec0eed2626d578b0ff54e10d616a4);
+            
+        
+
+        poly_line_9d937b4d5e128cc8f0fc519778d96a99.bindPopup(popup_d8063402572e9c25d7804f6960943209)
+        ;
+
+        
+    
+    
+            var poly_line_8f5de8512ee313ed44eacb8c1a42080d = L.polyline(
+                [[45.45532295075684, 9.163237052964105], [45.45537043001012, 9.163345748749355]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_e2816d745e9040113b722b316e5f40cc = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_1942e56e1b424f372380aa79c3d0968b = $(`<div id="html_1942e56e1b424f372380aa79c3d0968b" style="width: 100.0%; height: 100.0%;"><b>7.0 km/h</b> (avg)<br>Median: 7.0 km/h<br>P25–P75: 7.0–7.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_e2816d745e9040113b722b316e5f40cc.setContent(html_1942e56e1b424f372380aa79c3d0968b);
+            
+        
+
+        poly_line_8f5de8512ee313ed44eacb8c1a42080d.bindPopup(popup_e2816d745e9040113b722b316e5f40cc)
+        ;
+
+        
+    
+    
+            var poly_line_0ffd6f85f7a98461b92fd475a5e3a685 = L.polyline(
+                [[45.45537043001012, 9.163345748749355], [45.45540814532497, 9.163461118958622]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_fefd3c81cf3a7e052fc2a998a8e75aef = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_783d8ae84dcfa2d12108b4664a942da9 = $(`<div id="html_783d8ae84dcfa2d12108b4664a942da9" style="width: 100.0%; height: 100.0%;"><b>3.5 km/h</b> (avg)<br>Median: 3.5 km/h<br>P25–P75: 3.5–3.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_fefd3c81cf3a7e052fc2a998a8e75aef.setContent(html_783d8ae84dcfa2d12108b4664a942da9);
+            
+        
+
+        poly_line_0ffd6f85f7a98461b92fd475a5e3a685.bindPopup(popup_fefd3c81cf3a7e052fc2a998a8e75aef)
+        ;
+
+        
+    
+    
+            var poly_line_20f54e15bfaf6441082e74b14715aa3b = L.polyline(
+                [[45.45540814532497, 9.163461118958622], [45.45542671075202, 9.16358599171673]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_49ac9ba6f793a4be6a353b893301cc65 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_fab3d6879a88cabdb8b91aa47ba063a9 = $(`<div id="html_fab3d6879a88cabdb8b91aa47ba063a9" style="width: 100.0%; height: 100.0%;"><b>0.8 km/h</b> (avg)<br>Median: 0.8 km/h<br>P25–P75: 0.8–0.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_49ac9ba6f793a4be6a353b893301cc65.setContent(html_fab3d6879a88cabdb8b91aa47ba063a9);
+            
+        
+
+        poly_line_20f54e15bfaf6441082e74b14715aa3b.bindPopup(popup_49ac9ba6f793a4be6a353b893301cc65)
+        ;
+
+        
+    
+    
+            var poly_line_d88cdb3cf8d86d51dcf707a58266798f = L.polyline(
+                [[45.45542671075202, 9.16358599171673], [45.45548131557534, 9.163687860237903]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_45c8aaeaa07be9552abdb4d12eb30257 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_c912a9459711852c5f7b73dd25e169a5 = $(`<div id="html_c912a9459711852c5f7b73dd25e169a5" style="width: 100.0%; height: 100.0%;"><b>18.8 km/h</b> (avg)<br>Median: 18.8 km/h<br>P25–P75: 18.8–18.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_45c8aaeaa07be9552abdb4d12eb30257.setContent(html_c912a9459711852c5f7b73dd25e169a5);
+            
+        
+
+        poly_line_d88cdb3cf8d86d51dcf707a58266798f.bindPopup(popup_45c8aaeaa07be9552abdb4d12eb30257)
+        ;
+
+        
+    
+    
+            var poly_line_010e43bec1a164563b46f57e3007a76a = L.polyline(
+                [[45.45548131557534, 9.163687860237903], [45.45553474552937, 9.16379073991278]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_81d4739f632fa3a0c8587cb63063dabe = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_e20eb9197e229092030cbe10b55ff397 = $(`<div id="html_e20eb9197e229092030cbe10b55ff397" style="width: 100.0%; height: 100.0%;"><b>1.3 km/h</b> (avg)<br>Median: 1.3 km/h<br>P25–P75: 1.3–1.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_81d4739f632fa3a0c8587cb63063dabe.setContent(html_e20eb9197e229092030cbe10b55ff397);
+            
+        
+
+        poly_line_010e43bec1a164563b46f57e3007a76a.bindPopup(popup_81d4739f632fa3a0c8587cb63063dabe)
+        ;
+
+        
+    
+    
+            var poly_line_3d5c30012574590d643f0b0547d3a32a = L.polyline(
+                [[45.45553474552937, 9.16379073991278], [45.455572544355356, 9.163907072550632]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_2d9000536ba3246bd476c6c1aa39f35c = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_09ca34c96b2863acaf137bd187f9115c = $(`<div id="html_09ca34c96b2863acaf137bd187f9115c" style="width: 100.0%; height: 100.0%;"><b>19.3 km/h</b> (avg)<br>Median: 19.3 km/h<br>P25–P75: 19.3–19.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_2d9000536ba3246bd476c6c1aa39f35c.setContent(html_09ca34c96b2863acaf137bd187f9115c);
+            
+        
+
+        poly_line_3d5c30012574590d643f0b0547d3a32a.bindPopup(popup_2d9000536ba3246bd476c6c1aa39f35c)
+        ;
+
+        
+    
+    
+            var poly_line_535cea5fe1875c10c2e818a53c21f722 = L.polyline(
+                [[45.455572544355356, 9.163907072550632], [45.45561029718764, 9.164023435591046]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_8d0cd7c16346777cef1f3baf3372d8bd = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_cf37a4b9a465a8a256a08f2393aa2813 = $(`<div id="html_cf37a4b9a465a8a256a08f2393aa2813" style="width: 100.0%; height: 100.0%;"><b>10.0 km/h</b> (avg)<br>Median: 10.0 km/h<br>P25–P75: 10.0–10.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_8d0cd7c16346777cef1f3baf3372d8bd.setContent(html_cf37a4b9a465a8a256a08f2393aa2813);
+            
+        
+
+        poly_line_535cea5fe1875c10c2e818a53c21f722.bindPopup(popup_8d0cd7c16346777cef1f3baf3372d8bd)
+        ;
+
+        
+    
+    
+            var poly_line_16ab409f421fd44b2f4d15233672f1d7 = L.polyline(
+                [[45.45561029718764, 9.164023435591046], [45.45564801360084, 9.164139822705048]],
+                {"bubblingMouseEvents": true, "color": "#a6d96a", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#a6d96a", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_945b25795758b3f02b4570730ab774fe = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_4abb74a1e0288f2f741c4b3d12199a4c = $(`<div id="html_4abb74a1e0288f2f741c4b3d12199a4c" style="width: 100.0%; height: 100.0%;"><b>28.0 km/h</b> (avg)<br>Median: 28.0 km/h<br>P25–P75: 28.0–28.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_945b25795758b3f02b4570730ab774fe.setContent(html_4abb74a1e0288f2f741c4b3d12199a4c);
+            
+        
+
+        poly_line_16ab409f421fd44b2f4d15233672f1d7.bindPopup(popup_945b25795758b3f02b4570730ab774fe)
+        ;
+
+        
+    
+    
+            var poly_line_724fe9516211bcb9870cdb6d5e1dbc7f = L.polyline(
+                [[45.45564801360084, 9.164139822705048], [45.45568054420662, 9.164259278344433]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_d6082a0698ad02471c87ea82487c90bc = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_d56a7f66e4d4590034dafec42cfce4aa = $(`<div id="html_d56a7f66e4d4590034dafec42cfce4aa" style="width: 100.0%; height: 100.0%;"><b>14.3 km/h</b> (avg)<br>Median: 14.3 km/h<br>P25–P75: 14.3–14.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_d6082a0698ad02471c87ea82487c90bc.setContent(html_d56a7f66e4d4590034dafec42cfce4aa);
+            
+        
+
+        poly_line_724fe9516211bcb9870cdb6d5e1dbc7f.bindPopup(popup_d6082a0698ad02471c87ea82487c90bc)
+        ;
+
+        
+    
+    
+            var poly_line_35abdef2fff1b14de11e1b4439d39f1b = L.polyline(
+                [[45.45568054420662, 9.164259278344433], [45.455711749545536, 9.164379519767392]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_8383a43fcd03ec202530b035aba28ffa = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_061d1d825b5553afe55dc853b5f73a5a = $(`<div id="html_061d1d825b5553afe55dc853b5f73a5a" style="width: 100.0%; height: 100.0%;"><b>2.7 km/h</b> (avg)<br>Median: 2.7 km/h<br>P25–P75: 2.7–2.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_8383a43fcd03ec202530b035aba28ffa.setContent(html_061d1d825b5553afe55dc853b5f73a5a);
+            
+        
+
+        poly_line_35abdef2fff1b14de11e1b4439d39f1b.bindPopup(popup_8383a43fcd03ec202530b035aba28ffa)
+        ;
+
+        
+    
+    
+            var poly_line_46aada7448f4c66663899ac992dff88a = L.polyline(
+                [[45.455711749545536, 9.164379519767392], [45.45574309655898, 9.164499686400504]],
+                {"bubblingMouseEvents": true, "color": "#d9ef8b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d9ef8b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_89807c1f73e969ebc3028846fc9f1a59 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_ce330f1cb4ecbd5ea62be8df2089a014 = $(`<div id="html_ce330f1cb4ecbd5ea62be8df2089a014" style="width: 100.0%; height: 100.0%;"><b>20.7 km/h</b> (avg)<br>Median: 20.7 km/h<br>P25–P75: 20.7–20.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_89807c1f73e969ebc3028846fc9f1a59.setContent(html_ce330f1cb4ecbd5ea62be8df2089a014);
+            
+        
+
+        poly_line_46aada7448f4c66663899ac992dff88a.bindPopup(popup_89807c1f73e969ebc3028846fc9f1a59)
+        ;
+
+        
+    
+    
+            var poly_line_a7ee94a5142397291c2e3970e197c060 = L.polyline(
+                [[45.45574309655898, 9.164499686400504], [45.45577608452419, 9.164618931686283]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_1f6a8a9086b95f8b1c86fce29c4078c3 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_d0c4f0e7898c8051aa76fccf9a166cd9 = $(`<div id="html_d0c4f0e7898c8051aa76fccf9a166cd9" style="width: 100.0%; height: 100.0%;"><b>9.2 km/h</b> (avg)<br>Median: 9.2 km/h<br>P25–P75: 9.2–9.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_1f6a8a9086b95f8b1c86fce29c4078c3.setContent(html_d0c4f0e7898c8051aa76fccf9a166cd9);
+            
+        
+
+        poly_line_a7ee94a5142397291c2e3970e197c060.bindPopup(popup_1f6a8a9086b95f8b1c86fce29c4078c3)
+        ;
+
+        
+    
+    
+            var poly_line_eb857f5b210406a21a7f152b88726e3f = L.polyline(
+                [[45.45577608452419, 9.164618931686283], [45.45581064070342, 9.16473729646488]],
+                {"bubblingMouseEvents": true, "color": "#a6d96a", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#a6d96a", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_a61c4f577d8adda8946b21e6f24623f3 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_1ce269983192dadc9f9bb8691b247dbd = $(`<div id="html_1ce269983192dadc9f9bb8691b247dbd" style="width: 100.0%; height: 100.0%;"><b>27.2 km/h</b> (avg)<br>Median: 27.2 km/h<br>P25–P75: 27.2–27.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_a61c4f577d8adda8946b21e6f24623f3.setContent(html_1ce269983192dadc9f9bb8691b247dbd);
+            
+        
+
+        poly_line_eb857f5b210406a21a7f152b88726e3f.bindPopup(popup_a61c4f577d8adda8946b21e6f24623f3)
+        ;
+
+        
+    
+    
+            var poly_line_1216b4e00bd9fed46e89c075e621f58a = L.polyline(
+                [[45.45581064070342, 9.16473729646488], [45.45585273970275, 9.164850475065569]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_aa6d076d3ce16427d8f2a7659adb8a70 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_b157d76fd21dc3118058ee57fcc6d147 = $(`<div id="html_b157d76fd21dc3118058ee57fcc6d147" style="width: 100.0%; height: 100.0%;"><b>15.2 km/h</b> (avg)<br>Median: 15.2 km/h<br>P25–P75: 15.2–15.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_aa6d076d3ce16427d8f2a7659adb8a70.setContent(html_b157d76fd21dc3118058ee57fcc6d147);
+            
+        
+
+        poly_line_1216b4e00bd9fed46e89c075e621f58a.bindPopup(popup_aa6d076d3ce16427d8f2a7659adb8a70)
+        ;
+
+        
+    
+    
+            var poly_line_ef0b92eb18031c9f35802ab7bc28d32a = L.polyline(
+                [[45.45585273970275, 9.164850475065569], [45.45589531736391, 9.16496335408469]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_2bbe7cf1357a88c6511ad4bd6eb03692 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_56b508e86d24c387fb095e634d1a5c13 = $(`<div id="html_56b508e86d24c387fb095e634d1a5c13" style="width: 100.0%; height: 100.0%;"><b>2.7 km/h</b> (avg)<br>Median: 2.7 km/h<br>P25–P75: 2.7–2.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_2bbe7cf1357a88c6511ad4bd6eb03692.setContent(html_56b508e86d24c387fb095e634d1a5c13);
+            
+        
+
+        poly_line_ef0b92eb18031c9f35802ab7bc28d32a.bindPopup(popup_2bbe7cf1357a88c6511ad4bd6eb03692)
+        ;
+
+        
+    
+    
+            var poly_line_6067518b848c5ce0ad1ab0e75e1c86e9 = L.polyline(
+                [[45.45589531736391, 9.16496335408469], [45.45593296981601, 9.165079783883021]],
+                {"bubblingMouseEvents": true, "color": "#d9ef8b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d9ef8b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_297142dc963e3a9d74cf5424b1b49361 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_d83bc60c6767979e40546b564414bd92 = $(`<div id="html_d83bc60c6767979e40546b564414bd92" style="width: 100.0%; height: 100.0%;"><b>20.7 km/h</b> (avg)<br>Median: 20.7 km/h<br>P25–P75: 20.7–20.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_297142dc963e3a9d74cf5424b1b49361.setContent(html_d83bc60c6767979e40546b564414bd92);
+            
+        
+
+        poly_line_6067518b848c5ce0ad1ab0e75e1c86e9.bindPopup(popup_297142dc963e3a9d74cf5424b1b49361)
+        ;
+
+        
+    
+    
+            var poly_line_ffef3ac017c0c99562709430787bce4d = L.polyline(
+                [[45.45593296981601, 9.165079783883021], [45.455970622291225, 9.165196213752294]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_75620c178b3560da7a018efc33bcc8ac = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_98c4c4462810ce69171e66a26858d00d = $(`<div id="html_98c4c4462810ce69171e66a26858d00d" style="width: 100.0%; height: 100.0%;"><b>9.8 km/h</b> (avg)<br>Median: 9.8 km/h<br>P25–P75: 9.8–9.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_75620c178b3560da7a018efc33bcc8ac.setContent(html_98c4c4462810ce69171e66a26858d00d);
+            
+        
+
+        poly_line_ffef3ac017c0c99562709430787bce4d.bindPopup(popup_75620c178b3560da7a018efc33bcc8ac)
+        ;
+
+        
+    
+    
+            var poly_line_30ea372bbfefc213a23c5dc3080aafb1 = L.polyline(
+                [[45.455970622291225, 9.165196213752294], [45.45600827478597, 9.16531264367775]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_703d9aac1efac79f17082f61c7f2f752 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_9da0bfe22ee384c4f2672f68022f77d4 = $(`<div id="html_9da0bfe22ee384c4f2672f68022f77d4" style="width: 100.0%; height: 100.0%;"><b>5.3 km/h</b> (avg)<br>Median: 5.3 km/h<br>P25–P75: 5.3–5.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_703d9aac1efac79f17082f61c7f2f752.setContent(html_9da0bfe22ee384c4f2672f68022f77d4);
+            
+        
+
+        poly_line_30ea372bbfefc213a23c5dc3080aafb1.bindPopup(popup_703d9aac1efac79f17082f61c7f2f752)
+        ;
+
+        
+    
+    
+            var poly_line_24afd9ee9141259d3f28500f2b675373 = L.polyline(
+                [[45.45600827478597, 9.16531264367775], [45.45604592729881, 9.165429073653954]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_d9ae70feb97fe47e0aad40b1358f3bca = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_72942047abe4a5d8cf066f1f122253f5 = $(`<div id="html_72942047abe4a5d8cf066f1f122253f5" style="width: 100.0%; height: 100.0%;"><b>17.3 km/h</b> (avg)<br>Median: 17.3 km/h<br>P25–P75: 17.3–17.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_d9ae70feb97fe47e0aad40b1358f3bca.setContent(html_72942047abe4a5d8cf066f1f122253f5);
+            
+        
+
+        poly_line_24afd9ee9141259d3f28500f2b675373.bindPopup(popup_d9ae70feb97fe47e0aad40b1358f3bca)
+        ;
+
+        
+    
+    
+            var poly_line_ce91e3b98a6b62138fee336d4eb7f0b2 = L.polyline(
+                [[45.45604592729881, 9.165429073653954], [45.456083563758895, 9.165545514282918]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_6a723a6255bd2c6ce0286e3df469f4ca = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_d646fc9a6826db412980d84b1687dcb8 = $(`<div id="html_d646fc9a6826db412980d84b1687dcb8" style="width: 100.0%; height: 100.0%;"><b>16.6 km/h</b> (avg)<br>Median: 16.6 km/h<br>P25–P75: 16.6–16.6 km/h<br>Rides: 1/1</div>`)[0];
+                popup_6a723a6255bd2c6ce0286e3df469f4ca.setContent(html_d646fc9a6826db412980d84b1687dcb8);
+            
+        
+
+        poly_line_ce91e3b98a6b62138fee336d4eb7f0b2.bindPopup(popup_6a723a6255bd2c6ce0286e3df469f4ca)
+        ;
+
+        
+    
+    
+            var poly_line_39c4c9501897ba5f2fcf6b4db08fd282 = L.polyline(
+                [[45.456083563758895, 9.165545514282918], [45.4561210299274, 9.16566206625432]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_cb3ab6cc803d01216856011d49a7f632 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_cae0d0f95ab9d4cf721a32826a5731a1 = $(`<div id="html_cae0d0f95ab9d4cf721a32826a5731a1" style="width: 100.0%; height: 100.0%;"><b>9.3 km/h</b> (avg)<br>Median: 9.3 km/h<br>P25–P75: 9.3–9.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_cb3ab6cc803d01216856011d49a7f632.setContent(html_cae0d0f95ab9d4cf721a32826a5731a1);
+            
+        
+
+        poly_line_39c4c9501897ba5f2fcf6b4db08fd282.bindPopup(popup_cb3ab6cc803d01216856011d49a7f632)
+        ;
+
+        
+    
+    
+            var poly_line_3cc3cf1165c69b5fa6436642b9347702 = L.polyline(
+                [[45.4561210299274, 9.16566206625432], [45.45615838153254, 9.165778693049479]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_d7671ff6a5d40ac9f22772e3f387397c = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_36582d000b97d48109def42d6e3529f0 = $(`<div id="html_36582d000b97d48109def42d6e3529f0" style="width: 100.0%; height: 100.0%;"><b>1.0 km/h</b> (avg)<br>Median: 1.0 km/h<br>P25–P75: 1.0–1.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_d7671ff6a5d40ac9f22772e3f387397c.setContent(html_36582d000b97d48109def42d6e3529f0);
+            
+        
+
+        poly_line_3cc3cf1165c69b5fa6436642b9347702.bindPopup(popup_d7671ff6a5d40ac9f22772e3f387397c)
+        ;
+
+        
+    
+    
+            var poly_line_ed6bf6d797787cb0b077955e2ef20968 = L.polyline(
+                [[45.45615838153254, 9.165778693049479], [45.45619622597779, 9.16589499682696]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_a8cac13087b000ea7d0faf30d1b43316 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_5189e91ced4d6c431d939dc794bcace9 = $(`<div id="html_5189e91ced4d6c431d939dc794bcace9" style="width: 100.0%; height: 100.0%;"><b>13.0 km/h</b> (avg)<br>Median: 13.0 km/h<br>P25–P75: 13.0–13.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_a8cac13087b000ea7d0faf30d1b43316.setContent(html_5189e91ced4d6c431d939dc794bcace9);
+            
+        
+
+        poly_line_ed6bf6d797787cb0b077955e2ef20968.bindPopup(popup_a8cac13087b000ea7d0faf30d1b43316)
+        ;
+
+        
+    
+    
+            var poly_line_01823a524599502797cbafe880823266 = L.polyline(
+                [[45.45619622597779, 9.16589499682696], [45.456226853757336, 9.166015137307722]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_f5dd4a945c4d8cb2f1262df25f158517 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_2d336fa4796c68390f12a17b2509d061 = $(`<div id="html_2d336fa4796c68390f12a17b2509d061" style="width: 100.0%; height: 100.0%;"><b>10.0 km/h</b> (avg)<br>Median: 10.0 km/h<br>P25–P75: 10.0–10.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_f5dd4a945c4d8cb2f1262df25f158517.setContent(html_2d336fa4796c68390f12a17b2509d061);
+            
+        
+
+        poly_line_01823a524599502797cbafe880823266.bindPopup(popup_f5dd4a945c4d8cb2f1262df25f158517)
+        ;
+
+        
+    
+    
+            var poly_line_6c40b5782308e80a4a4800b8a12f6e42 = L.polyline(
+                [[45.456226853757336, 9.166015137307722], [45.45626984727733, 9.166122786464085]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_4576a8ae1e683bc52875f7ca4f75ea82 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_dee7140024ebd8caf1625274fae66e6d = $(`<div id="html_dee7140024ebd8caf1625274fae66e6d" style="width: 100.0%; height: 100.0%;"><b>0.6 km/h</b> (avg)<br>Median: 0.6 km/h<br>P25–P75: 0.6–0.6 km/h<br>Rides: 1/1</div>`)[0];
+                popup_4576a8ae1e683bc52875f7ca4f75ea82.setContent(html_dee7140024ebd8caf1625274fae66e6d);
+            
+        
+
+        poly_line_6c40b5782308e80a4a4800b8a12f6e42.bindPopup(popup_4576a8ae1e683bc52875f7ca4f75ea82)
+        ;
+
+        
+    
+    
+            var poly_line_48ef683e8a20930a676b9b787203a279 = L.polyline(
+                [[45.45626984727733, 9.166122786464085], [45.45632598962381, 9.16622135880915]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_fb7dc4afc09b58d21449afd3d0c63d44 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_ff7455dd71442d05b7287db5160a99b2 = $(`<div id="html_ff7455dd71442d05b7287db5160a99b2" style="width: 100.0%; height: 100.0%;"><b>3.9 km/h</b> (avg)<br>Median: 3.9 km/h<br>P25–P75: 3.9–3.9 km/h<br>Rides: 1/1</div>`)[0];
+                popup_fb7dc4afc09b58d21449afd3d0c63d44.setContent(html_ff7455dd71442d05b7287db5160a99b2);
+            
+        
+
+        poly_line_48ef683e8a20930a676b9b787203a279.bindPopup(popup_fb7dc4afc09b58d21449afd3d0c63d44)
+        ;
+
+        
+    
+    
+            var poly_line_ca4d8d5c2d7fc82dd14192c193f74d74 = L.polyline(
+                [[45.45632598962381, 9.16622135880915], [45.45636751331906, 9.166334086441152]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_bc8c49099ef78a69f6ddfb9060b40a46 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_8b78353986e3c9170e7a928a602807a2 = $(`<div id="html_8b78353986e3c9170e7a928a602807a2" style="width: 100.0%; height: 100.0%;"><b>1.9 km/h</b> (avg)<br>Median: 1.9 km/h<br>P25–P75: 1.9–1.9 km/h<br>Rides: 1/1</div>`)[0];
+                popup_bc8c49099ef78a69f6ddfb9060b40a46.setContent(html_8b78353986e3c9170e7a928a602807a2);
+            
+        
+
+        poly_line_ca4d8d5c2d7fc82dd14192c193f74d74.bindPopup(popup_bc8c49099ef78a69f6ddfb9060b40a46)
+        ;
+
+        
+    
+    
+            var poly_line_8060c0086e86227cbb3111e95056f312 = L.polyline(
+                [[45.45636751331906, 9.166334086441152], [45.456379627216755, 9.166461126545622]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_63b2c502c78e0ea7172269a50c410204 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_36efdd4d71eb8692cbbb306d873bcec9 = $(`<div id="html_36efdd4d71eb8692cbbb306d873bcec9" style="width: 100.0%; height: 100.0%;"><b>19.9 km/h</b> (avg)<br>Median: 19.9 km/h<br>P25–P75: 19.9–19.9 km/h<br>Rides: 1/1</div>`)[0];
+                popup_63b2c502c78e0ea7172269a50c410204.setContent(html_36efdd4d71eb8692cbbb306d873bcec9);
+            
+        
+
+        poly_line_8060c0086e86227cbb3111e95056f312.bindPopup(popup_63b2c502c78e0ea7172269a50c410204)
+        ;
+
+        
+    
+    
+            var poly_line_882c8c9f2a82d2a998876d0741f00b69 = L.polyline(
+                [[45.456379627216755, 9.166461126545622], [45.456405859302635, 9.166583056289051]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_74e2619bd64b623023ba631eba214012 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_8a62b0351c4a88d18d3789ca87867dba = $(`<div id="html_8a62b0351c4a88d18d3789ca87867dba" style="width: 100.0%; height: 100.0%;"><b>12.9 km/h</b> (avg)<br>Median: 12.9 km/h<br>P25–P75: 12.9–12.9 km/h<br>Rides: 1/1</div>`)[0];
+                popup_74e2619bd64b623023ba631eba214012.setContent(html_8a62b0351c4a88d18d3789ca87867dba);
+            
+        
+
+        poly_line_882c8c9f2a82d2a998876d0741f00b69.bindPopup(popup_74e2619bd64b623023ba631eba214012)
+        ;
+
+        
+    
+    
+            var poly_line_9604f8b79b9862b923ec4a70eadb0248 = L.polyline(
+                [[45.456405859302635, 9.166583056289051], [45.45644570106487, 9.16669753945149]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_70b6496dde79c7116e835b686329b511 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_17efc546ca18c24a44f3d934affb2ca5 = $(`<div id="html_17efc546ca18c24a44f3d934affb2ca5" style="width: 100.0%; height: 100.0%;"><b>10.8 km/h</b> (avg)<br>Median: 10.8 km/h<br>P25–P75: 10.8–10.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_70b6496dde79c7116e835b686329b511.setContent(html_17efc546ca18c24a44f3d934affb2ca5);
+            
+        
+
+        poly_line_9604f8b79b9862b923ec4a70eadb0248.bindPopup(popup_70b6496dde79c7116e835b686329b511)
+        ;
+
+        
+    
+    
+            var poly_line_fb3301fb9896d83f29f248f5aad5aa17 = L.polyline(
+                [[45.45644570106487, 9.16669753945149], [45.4564928921393, 9.166806636601033]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_112ceeb7dc87d5b6a5621198691d935f = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_d6be524ce9f64818060ee6693756f75f = $(`<div id="html_d6be524ce9f64818060ee6693756f75f" style="width: 100.0%; height: 100.0%;"><b>6.8 km/h</b> (avg)<br>Median: 6.8 km/h<br>P25–P75: 6.8–6.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_112ceeb7dc87d5b6a5621198691d935f.setContent(html_d6be524ce9f64818060ee6693756f75f);
+            
+        
+
+        poly_line_fb3301fb9896d83f29f248f5aad5aa17.bindPopup(popup_112ceeb7dc87d5b6a5621198691d935f)
+        ;
+
+        
+    
+    
+            var poly_line_be61b2b5f605747e77cbb2e688b2ce2e = L.polyline(
+                [[45.4564928921393, 9.166806636601033], [45.456538747249674, 9.166916747453822]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_ce2171b3dcfe3f27f2cec5bd94338d8c = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_b438f4203f0b25918d3f24c18be44df3 = $(`<div id="html_b438f4203f0b25918d3f24c18be44df3" style="width: 100.0%; height: 100.0%;"><b>3.3 km/h</b> (avg)<br>Median: 3.3 km/h<br>P25–P75: 3.3–3.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_ce2171b3dcfe3f27f2cec5bd94338d8c.setContent(html_b438f4203f0b25918d3f24c18be44df3);
+            
+        
+
+        poly_line_be61b2b5f605747e77cbb2e688b2ce2e.bindPopup(popup_ce2171b3dcfe3f27f2cec5bd94338d8c)
+        ;
+
+        
+    
+    
+            var poly_line_efd076d34969aad352a4e4897650161e = L.polyline(
+                [[45.456538747249674, 9.166916747453822], [45.456578013810095, 9.167031959862362]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_febdd245a4f244b9a4fbea8ad80aec81 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_bd6853c41624478ff7fed82470694adf = $(`<div id="html_bd6853c41624478ff7fed82470694adf" style="width: 100.0%; height: 100.0%;"><b>1.5 km/h</b> (avg)<br>Median: 1.5 km/h<br>P25–P75: 1.5–1.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_febdd245a4f244b9a4fbea8ad80aec81.setContent(html_bd6853c41624478ff7fed82470694adf);
+            
+        
+
+        poly_line_efd076d34969aad352a4e4897650161e.bindPopup(popup_febdd245a4f244b9a4fbea8ad80aec81)
+        ;
+
+        
+    
+    
+            var poly_line_23d6157b63fd2c66171b1536729c66ce = L.polyline(
+                [[45.456578013810095, 9.167031959862362], [45.456608178651116, 9.167152496866903]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_d22a843c7b1081919d3071f95bb4253e = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_2ca97f7a979d7bcd4ece87af10b6ff15 = $(`<div id="html_2ca97f7a979d7bcd4ece87af10b6ff15" style="width: 100.0%; height: 100.0%;"><b>0.3 km/h</b> (avg)<br>Median: 0.3 km/h<br>P25–P75: 0.3–0.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_d22a843c7b1081919d3071f95bb4253e.setContent(html_2ca97f7a979d7bcd4ece87af10b6ff15);
+            
+        
+
+        poly_line_23d6157b63fd2c66171b1536729c66ce.bindPopup(popup_d22a843c7b1081919d3071f95bb4253e)
+        ;
+
+        
+    
+    
+            var poly_line_1fac9343d35d4c379ffa17b87aa8dd26 = L.polyline(
+                [[45.456608178651116, 9.167152496866903], [45.456617337812006, 9.167279955501886]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_55ee35aecfbd8b5e9ec1d71ee36ae029 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_e802ba7809926f2d64902301cb6f6f81 = $(`<div id="html_e802ba7809926f2d64902301cb6f6f81" style="width: 100.0%; height: 100.0%;"><b>0.1 km/h</b> (avg)<br>Median: 0.1 km/h<br>P25–P75: 0.1–0.1 km/h<br>Rides: 1/1</div>`)[0];
+                popup_55ee35aecfbd8b5e9ec1d71ee36ae029.setContent(html_e802ba7809926f2d64902301cb6f6f81);
+            
+        
+
+        poly_line_1fac9343d35d4c379ffa17b87aa8dd26.bindPopup(popup_55ee35aecfbd8b5e9ec1d71ee36ae029)
+        ;
+
+        
+    
+    
+            var poly_line_2eee5db4a0bd7b8bc8506741895e91ab = L.polyline(
+                [[45.456617337812006, 9.167279955501886], [45.45664635063035, 9.16740130964359]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_f92b74132ba9039d8aac2ded18d8e39b = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_3930f82aa3f0ba92dcee49d771212819 = $(`<div id="html_3930f82aa3f0ba92dcee49d771212819" style="width: 100.0%; height: 100.0%;"><b>2.6 km/h</b> (avg)<br>Median: 2.6 km/h<br>P25–P75: 2.6–2.6 km/h<br>Rides: 1/1</div>`)[0];
+                popup_f92b74132ba9039d8aac2ded18d8e39b.setContent(html_3930f82aa3f0ba92dcee49d771212819);
+            
+        
+
+        poly_line_2eee5db4a0bd7b8bc8506741895e91ab.bindPopup(popup_f92b74132ba9039d8aac2ded18d8e39b)
+        ;
+
+        
+    
+    
+            var poly_line_ffb5691bc7d904aa585f98c282e48e77 = L.polyline(
+                [[45.45664635063035, 9.16740130964359], [45.456679341295256, 9.167520571588053]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_0d348df7e922873fe63a87fc35751979 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_a9fe3601dd4abf04a5219e1db5c135d5 = $(`<div id="html_a9fe3601dd4abf04a5219e1db5c135d5" style="width: 100.0%; height: 100.0%;"><b>11.3 km/h</b> (avg)<br>Median: 11.3 km/h<br>P25–P75: 11.3–11.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_0d348df7e922873fe63a87fc35751979.setContent(html_a9fe3601dd4abf04a5219e1db5c135d5);
+            
+        
+
+        poly_line_ffb5691bc7d904aa585f98c282e48e77.bindPopup(popup_0d348df7e922873fe63a87fc35751979)
+        ;
+
+        
+    
+    
+            var poly_line_85312a2820dc1a814d46c652c09c8a67 = L.polyline(
+                [[45.456679341295256, 9.167520571588053], [45.45671999652752, 9.167634577520198]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_eb6310152e92b3858cc4f8f28422f05a = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_ad9bd3d0eb9a0fca07249ffc64cee423 = $(`<div id="html_ad9bd3d0eb9a0fca07249ffc64cee423" style="width: 100.0%; height: 100.0%;"><b>5.7 km/h</b> (avg)<br>Median: 5.7 km/h<br>P25–P75: 5.7–5.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_eb6310152e92b3858cc4f8f28422f05a.setContent(html_ad9bd3d0eb9a0fca07249ffc64cee423);
+            
+        
+
+        poly_line_85312a2820dc1a814d46c652c09c8a67.bindPopup(popup_eb6310152e92b3858cc4f8f28422f05a)
+        ;
+
+        
+    
+    
+            var poly_line_1e01dae788cceed909e2f653b1e7bd34 = L.polyline(
+                [[45.45671999652752, 9.167634577520198], [45.45676734948363, 9.167743390720968]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_3f49afcec95e04c2f4dbe7e24b176f5e = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_8c331980ebb3c8a98bd69e18cb9ed00e = $(`<div id="html_8c331980ebb3c8a98bd69e18cb9ed00e" style="width: 100.0%; height: 100.0%;"><b>2.1 km/h</b> (avg)<br>Median: 2.1 km/h<br>P25–P75: 2.1–2.1 km/h<br>Rides: 1/1</div>`)[0];
+                popup_3f49afcec95e04c2f4dbe7e24b176f5e.setContent(html_8c331980ebb3c8a98bd69e18cb9ed00e);
+            
+        
+
+        poly_line_1e01dae788cceed909e2f653b1e7bd34.bindPopup(popup_3f49afcec95e04c2f4dbe7e24b176f5e)
+        ;
+
+        
+    
+    
+            var poly_line_503213307d0adad8e0aee5c15c17eb05 = L.polyline(
+                [[45.45676734948363, 9.167743390720968], [45.45682057795099, 9.167846731519836]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_15d8b276c1899719b8afbe7356f27ef4 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_6a5d891cf4e1931a878e630595373642 = $(`<div id="html_6a5d891cf4e1931a878e630595373642" style="width: 100.0%; height: 100.0%;"><b>9.3 km/h</b> (avg)<br>Median: 9.3 km/h<br>P25–P75: 9.3–9.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_15d8b276c1899719b8afbe7356f27ef4.setContent(html_6a5d891cf4e1931a878e630595373642);
+            
+        
+
+        poly_line_503213307d0adad8e0aee5c15c17eb05.bindPopup(popup_15d8b276c1899719b8afbe7356f27ef4)
+        ;
+
+        
+    
+    
+            var poly_line_885ab3e965b6b82397d283daac8a16fa = L.polyline(
+                [[45.45682057795099, 9.167846731519836], [45.45687506787116, 9.167948726979498]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_6db10165ea96edea82106d72eaaa0473 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_8698aeda2f663ff37b85a364270ceff9 = $(`<div id="html_8698aeda2f663ff37b85a364270ceff9" style="width: 100.0%; height: 100.0%;"><b>1.9 km/h</b> (avg)<br>Median: 1.9 km/h<br>P25–P75: 1.9–1.9 km/h<br>Rides: 1/1</div>`)[0];
+                popup_6db10165ea96edea82106d72eaaa0473.setContent(html_8698aeda2f663ff37b85a364270ceff9);
+            
+        
+
+        poly_line_885ab3e965b6b82397d283daac8a16fa.bindPopup(popup_6db10165ea96edea82106d72eaaa0473)
+        ;
+
+        
+    
+    
+            var poly_line_246dda1fc344cd715207a2ae38586ed1 = L.polyline(
+                [[45.45687506787116, 9.167948726979498], [45.45686468782856, 9.168074428108605]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_9a637d022e64186b5f455ad8a5e0a5f7 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_18c7e98824f638734daff76ac7553df5 = $(`<div id="html_18c7e98824f638734daff76ac7553df5" style="width: 100.0%; height: 100.0%;"><b>1.3 km/h</b> (avg)<br>Median: 1.3 km/h<br>P25–P75: 1.3–1.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_9a637d022e64186b5f455ad8a5e0a5f7.setContent(html_18c7e98824f638734daff76ac7553df5);
+            
+        
+
+        poly_line_246dda1fc344cd715207a2ae38586ed1.bindPopup(popup_9a637d022e64186b5f455ad8a5e0a5f7)
+        ;
+
+        
+    
+    
+            var poly_line_e8f9afd8e3b5b176a3ce3dc65d0dc9f3 = L.polyline(
+                [[45.45686468782856, 9.168074428108605], [45.45688644150234, 9.168197601343913]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_8982ee49f48f2024946cd7e0cb1a0e9e = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_26c7cc1b2e7caff9d57ee3ec0efa5bab = $(`<div id="html_26c7cc1b2e7caff9d57ee3ec0efa5bab" style="width: 100.0%; height: 100.0%;"><b>10.7 km/h</b> (avg)<br>Median: 10.7 km/h<br>P25–P75: 10.7–10.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_8982ee49f48f2024946cd7e0cb1a0e9e.setContent(html_26c7cc1b2e7caff9d57ee3ec0efa5bab);
+            
+        
+
+        poly_line_e8f9afd8e3b5b176a3ce3dc65d0dc9f3.bindPopup(popup_8982ee49f48f2024946cd7e0cb1a0e9e)
+        ;
+
+        
+    
+    
+            var poly_line_aab4feeb7379862d218f970894f6a181 = L.polyline(
+                [[45.45688644150234, 9.168197601343913], [45.456916951503125, 9.168318098242056]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_5133052ae405e6d3c2d176261c2fbbff = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_30c41393f2f61320a50b15022b78a067 = $(`<div id="html_30c41393f2f61320a50b15022b78a067" style="width: 100.0%; height: 100.0%;"><b>7.7 km/h</b> (avg)<br>Median: 7.7 km/h<br>P25–P75: 7.7–7.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_5133052ae405e6d3c2d176261c2fbbff.setContent(html_30c41393f2f61320a50b15022b78a067);
+            
+        
+
+        poly_line_aab4feeb7379862d218f970894f6a181.bindPopup(popup_5133052ae405e6d3c2d176261c2fbbff)
+        ;
+
+        
+    
+    
+            var poly_line_4a5d26d876877802a8d9275ee3f4d7ff = L.polyline(
+                [[45.456916951503125, 9.168318098242056], [45.45694063918483, 9.16844054511277]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_aee00c8b9ff77663785f72f2b7d8b502 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_3f924974015c73097edd8ba854fdfc05 = $(`<div id="html_3f924974015c73097edd8ba854fdfc05" style="width: 100.0%; height: 100.0%;"><b>3.5 km/h</b> (avg)<br>Median: 3.5 km/h<br>P25–P75: 3.5–3.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_aee00c8b9ff77663785f72f2b7d8b502.setContent(html_3f924974015c73097edd8ba854fdfc05);
+            
+        
+
+        poly_line_4a5d26d876877802a8d9275ee3f4d7ff.bindPopup(popup_aee00c8b9ff77663785f72f2b7d8b502)
+        ;
+
+        
+    
+    
+            var poly_line_5d64f34e688eab7a4753817a04fbb660 = L.polyline(
+                [[45.45694063918483, 9.16844054511277], [45.45694925465889, 9.168568165272447]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_b84fe6ba2e4a49b10b893d7943cea6bf = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_06c697f67bfbfc372f0a1babc2348e48 = $(`<div id="html_06c697f67bfbfc372f0a1babc2348e48" style="width: 100.0%; height: 100.0%;"><b>12.5 km/h</b> (avg)<br>Median: 12.5 km/h<br>P25–P75: 12.5–12.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_b84fe6ba2e4a49b10b893d7943cea6bf.setContent(html_06c697f67bfbfc372f0a1babc2348e48);
+            
+        
+
+        poly_line_5d64f34e688eab7a4753817a04fbb660.bindPopup(popup_b84fe6ba2e4a49b10b893d7943cea6bf)
+        ;
+
+        
+    
+    
+            var poly_line_82d3d7c28a6f010e2837ba26903c74cb = L.polyline(
+                [[45.45694925465889, 9.168568165272447], [45.45699352613588, 9.168676928228303]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_4a04637423d043d981f3d872332bcf5e = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_15420cccde2a431903b19ea854bb5337 = $(`<div id="html_15420cccde2a431903b19ea854bb5337" style="width: 100.0%; height: 100.0%;"><b>14.8 km/h</b> (avg)<br>Median: 14.8 km/h<br>P25–P75: 14.8–14.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_4a04637423d043d981f3d872332bcf5e.setContent(html_15420cccde2a431903b19ea854bb5337);
+            
+        
+
+        poly_line_82d3d7c28a6f010e2837ba26903c74cb.bindPopup(popup_4a04637423d043d981f3d872332bcf5e)
+        ;
+
+        
+    
+    
+            var poly_line_9d99ba9da8513a9dd29af960c6535a9f = L.polyline(
+                [[45.45699352613588, 9.168676928228303], [45.4570237054205, 9.168795841839186]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_085880c764186b6b4a12f5f8887b2657 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_90be271fa26f85c6e382909096e6b1a1 = $(`<div id="html_90be271fa26f85c6e382909096e6b1a1" style="width: 100.0%; height: 100.0%;"><b>8.7 km/h</b> (avg)<br>Median: 8.7 km/h<br>P25–P75: 8.7–8.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_085880c764186b6b4a12f5f8887b2657.setContent(html_90be271fa26f85c6e382909096e6b1a1);
+            
+        
+
+        poly_line_9d99ba9da8513a9dd29af960c6535a9f.bindPopup(popup_085880c764186b6b4a12f5f8887b2657)
+        ;
+
+        
+    
+    
+            var poly_line_bee0b0aa8e94e2dc61b8171f95331182 = L.polyline(
+                [[45.4570237054205, 9.168795841839186], [45.45703042712779, 9.168922875981579]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_e227d392688378c28cf55a5bf95d1a19 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_e6a5cd7ec484118552c4a18087ba1058 = $(`<div id="html_e6a5cd7ec484118552c4a18087ba1058" style="width: 100.0%; height: 100.0%;"><b>3.1 km/h</b> (avg)<br>Median: 3.1 km/h<br>P25–P75: 3.1–3.1 km/h<br>Rides: 1/1</div>`)[0];
+                popup_e227d392688378c28cf55a5bf95d1a19.setContent(html_e6a5cd7ec484118552c4a18087ba1058);
+            
+        
+
+        poly_line_bee0b0aa8e94e2dc61b8171f95331182.bindPopup(popup_e227d392688378c28cf55a5bf95d1a19)
+        ;
+
+        
+    
+    
+            var poly_line_a192e9a88b66da91cc0e9e5a139ca3b6 = L.polyline(
+                [[45.45703042712779, 9.168922875981579], [45.45703432426522, 9.169050748452332]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_ec3ce90d9b4a872a707853d57af6667a = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_ea016cea8a2d5869e4270d4984cec968 = $(`<div id="html_ea016cea8a2d5869e4270d4984cec968" style="width: 100.0%; height: 100.0%;"><b>4.3 km/h</b> (avg)<br>Median: 4.3 km/h<br>P25–P75: 4.3–4.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_ec3ce90d9b4a872a707853d57af6667a.setContent(html_ea016cea8a2d5869e4270d4984cec968);
+            
+        
+
+        poly_line_a192e9a88b66da91cc0e9e5a139ca3b6.bindPopup(popup_ec3ce90d9b4a872a707853d57af6667a)
+        ;
+
+        
+    
+    
+            var poly_line_b34067ee8bf21c2fd02f094832ae7d0e = L.polyline(
+                [[45.45703432426522, 9.169050748452332], [45.45704254598743, 9.16916909103957]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_01d92b92b0dbd3fad6d6b1fbb3997fc9 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_5ce10fccf8ebd784354530ebc0f840bc = $(`<div id="html_5ce10fccf8ebd784354530ebc0f840bc" style="width: 100.0%; height: 100.0%;"><b>0.2 km/h</b> (avg)<br>Median: 0.2 km/h<br>P25–P75: 0.2–0.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_01d92b92b0dbd3fad6d6b1fbb3997fc9.setContent(html_5ce10fccf8ebd784354530ebc0f840bc);
+            
+        
+
+        poly_line_b34067ee8bf21c2fd02f094832ae7d0e.bindPopup(popup_01d92b92b0dbd3fad6d6b1fbb3997fc9)
+        ;
+
+        
+    
+    
+            var poly_line_de3f5560d12bc1143f441bc1aa1a3558 = L.polyline(
+                [[45.45704254598743, 9.16916909103957], [45.456984734715526, 9.169070881262508]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_9e0cd1bd9663f1dc87a89b9e8b92151e = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_8e193a3d4f6875881e5d2d8e47e5e9b0 = $(`<div id="html_8e193a3d4f6875881e5d2d8e47e5e9b0" style="width: 100.0%; height: 100.0%;"><b>5.3 km/h</b> (avg)<br>Median: 5.3 km/h<br>P25–P75: 5.3–5.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_9e0cd1bd9663f1dc87a89b9e8b92151e.setContent(html_8e193a3d4f6875881e5d2d8e47e5e9b0);
+            
+        
+
+        poly_line_de3f5560d12bc1143f441bc1aa1a3558.bindPopup(popup_9e0cd1bd9663f1dc87a89b9e8b92151e)
+        ;
+
+        
+    
+    
+            var poly_line_73b125f1d98556b72629e4acbfc9bcb1 = L.polyline(
+                [[45.456984734715526, 9.169070881262508], [45.45690131636846, 9.169080282508068]],
+                {"bubblingMouseEvents": true, "color": "#a6d96a", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#a6d96a", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_1eeb3b35fa78b2142fc8783edc037dfe = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_512dd858834c4f03dad28f7842ff5af6 = $(`<div id="html_512dd858834c4f03dad28f7842ff5af6" style="width: 100.0%; height: 100.0%;"><b>26.6 km/h</b> (avg)<br>Median: 26.6 km/h<br>P25–P75: 26.6–26.6 km/h<br>Rides: 1/1</div>`)[0];
+                popup_1eeb3b35fa78b2142fc8783edc037dfe.setContent(html_512dd858834c4f03dad28f7842ff5af6);
+            
+        
+
+        poly_line_73b125f1d98556b72629e4acbfc9bcb1.bindPopup(popup_1eeb3b35fa78b2142fc8783edc037dfe)
+        ;
+
+        
+    
+    
+            var poly_line_ddca6d0fdb2e3f7b377c3fd22dc3b8bb = L.polyline(
+                [[45.45690131636846, 9.169080282508068], [45.456857424952105, 9.169095008360722]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_061c07b04b1c8797dab6e6da20ed5b95 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_ead9fb4fa07496bd25c4a0dbf423c8b8 = $(`<div id="html_ead9fb4fa07496bd25c4a0dbf423c8b8" style="width: 100.0%; height: 100.0%;"><b>1.5 km/h</b> (avg)<br>Median: 1.5 km/h<br>P25–P75: 1.5–1.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_061c07b04b1c8797dab6e6da20ed5b95.setContent(html_ead9fb4fa07496bd25c4a0dbf423c8b8);
+            
+        
+
+        poly_line_ddca6d0fdb2e3f7b377c3fd22dc3b8bb.bindPopup(popup_061c07b04b1c8797dab6e6da20ed5b95)
+        ;
+
+        
+    
+    
+            var poly_line_c46287cee980b37aebb6ddff6482b03a = L.polyline(
+                [[45.456857424952105, 9.169095008360722], [45.45694568629781, 9.169070409424812]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_0f33f1a931b51b78a10c7cef0028d43a = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_6a4c70bdb12f32f1edf075fab40c1c33 = $(`<div id="html_6a4c70bdb12f32f1edf075fab40c1c33" style="width: 100.0%; height: 100.0%;"><b>7.5 km/h</b> (avg)<br>Median: 7.5 km/h<br>P25–P75: 7.5–7.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_0f33f1a931b51b78a10c7cef0028d43a.setContent(html_6a4c70bdb12f32f1edf075fab40c1c33);
+            
+        
+
+        poly_line_c46287cee980b37aebb6ddff6482b03a.bindPopup(popup_0f33f1a931b51b78a10c7cef0028d43a)
+        ;
+
+        
+    
+    
+            var poly_line_a5f6ceecb7d0d68f5f8f184ff648d017 = L.polyline(
+                [[45.45694568629781, 9.169070409424812], [45.457009434222655, 9.16906640262435]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_c70c25bbdb701a0a93befa1ab1a7a40d = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_9823476f7002ae1cf4f6f5260a2435e4 = $(`<div id="html_9823476f7002ae1cf4f6f5260a2435e4" style="width: 100.0%; height: 100.0%;"><b>0.2 km/h</b> (avg)<br>Median: 0.2 km/h<br>P25–P75: 0.2–0.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_c70c25bbdb701a0a93befa1ab1a7a40d.setContent(html_9823476f7002ae1cf4f6f5260a2435e4);
+            
+        
+
+        poly_line_a5f6ceecb7d0d68f5f8f184ff648d017.bindPopup(popup_c70c25bbdb701a0a93befa1ab1a7a40d)
+        ;
+
+        
+    
+    
+            var poly_line_302e5831c246d6df3de9e438d07f4a96 = L.polyline(
+                [[45.457009434222655, 9.16906640262435], [45.45696437340953, 9.169167630894888]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_605f51e5568b4689cde3ee319965a190 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_88483db6d8a0bcf2b4c842e8511faa6c = $(`<div id="html_88483db6d8a0bcf2b4c842e8511faa6c" style="width: 100.0%; height: 100.0%;"><b>0.2 km/h</b> (avg)<br>Median: 0.2 km/h<br>P25–P75: 0.2–0.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_605f51e5568b4689cde3ee319965a190.setContent(html_88483db6d8a0bcf2b4c842e8511faa6c);
+            
+        
+
+        poly_line_302e5831c246d6df3de9e438d07f4a96.bindPopup(popup_605f51e5568b4689cde3ee319965a190)
+        ;
+
+        
+    
+    
+            var poly_line_443587bd30c8b42d8db86a3f457ff2a2 = L.polyline(
+                [[45.45696437340953, 9.169167630894888], [45.4569933653897, 9.169288077265607]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_cd281476bbccceeef14e84cf4590d503 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_85a127417428ae330357f79f16421bb0 = $(`<div id="html_85a127417428ae330357f79f16421bb0" style="width: 100.0%; height: 100.0%;"><b>0.7 km/h</b> (avg)<br>Median: 0.7 km/h<br>P25–P75: 0.7–0.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_cd281476bbccceeef14e84cf4590d503.setContent(html_85a127417428ae330357f79f16421bb0);
+            
+        
+
+        poly_line_443587bd30c8b42d8db86a3f457ff2a2.bindPopup(popup_cd281476bbccceeef14e84cf4590d503)
+        ;
+
+        
+    
+    
+            var poly_line_c91fb2fc1786feb10f40b95a1fe9fc2e = L.polyline(
+                [[45.4569933653897, 9.169288077265607], [45.4569876696483, 9.169416029820518]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_6f43e021475be338e6fbc9d358bb0c22 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_54e644aec26bd78425ab5b5d5d6b400a = $(`<div id="html_54e644aec26bd78425ab5b5d5d6b400a" style="width: 100.0%; height: 100.0%;"><b>9.7 km/h</b> (avg)<br>Median: 9.7 km/h<br>P25–P75: 9.7–9.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_6f43e021475be338e6fbc9d358bb0c22.setContent(html_54e644aec26bd78425ab5b5d5d6b400a);
+            
+        
+
+        poly_line_c91fb2fc1786feb10f40b95a1fe9fc2e.bindPopup(popup_6f43e021475be338e6fbc9d358bb0c22)
+        ;
+
+        
+    
+    
+            var poly_line_29ec782039d8c38bdeaf39b10f6e591f = L.polyline(
+                [[45.4569876696483, 9.169416029820518], [45.45700449375372, 9.169540948839057]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_19ebca1093608333fd6d950534ad137c = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_f542fd7743451063572f59b5b993dca7 = $(`<div id="html_f542fd7743451063572f59b5b993dca7" style="width: 100.0%; height: 100.0%;"><b>4.8 km/h</b> (avg)<br>Median: 4.8 km/h<br>P25–P75: 4.8–4.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_19ebca1093608333fd6d950534ad137c.setContent(html_f542fd7743451063572f59b5b993dca7);
+            
+        
+
+        poly_line_29ec782039d8c38bdeaf39b10f6e591f.bindPopup(popup_19ebca1093608333fd6d950534ad137c)
+        ;
+
+        
+    
+    
+            var poly_line_2897bbce32c2bc4383132f5bf0e5c9ca = L.polyline(
+                [[45.45700449375372, 9.169540948839057], [45.45696753086644, 9.169641261979182]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_3aa8962488e7eefecfd5119c3b8df419 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_c8bddc7d2c71ff334f02e7b4041f9cf4 = $(`<div id="html_c8bddc7d2c71ff334f02e7b4041f9cf4" style="width: 100.0%; height: 100.0%;"><b>12.3 km/h</b> (avg)<br>Median: 12.3 km/h<br>P25–P75: 12.3–12.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_3aa8962488e7eefecfd5119c3b8df419.setContent(html_c8bddc7d2c71ff334f02e7b4041f9cf4);
+            
+        
+
+        poly_line_2897bbce32c2bc4383132f5bf0e5c9ca.bindPopup(popup_3aa8962488e7eefecfd5119c3b8df419)
+        ;
+
+        
+    
+    
+            var poly_line_c7a059ff610e475f178585ac285d4b9f = L.polyline(
+                [[45.45696753086644, 9.169641261979182], [45.45690140173135, 9.16972809231717]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_880227603ba0de1781366b9610cd0097 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_0307f4fdac4aea0d04afd3591e414da9 = $(`<div id="html_0307f4fdac4aea0d04afd3591e414da9" style="width: 100.0%; height: 100.0%;"><b>9.1 km/h</b> (avg)<br>Median: 9.1 km/h<br>P25–P75: 9.1–9.1 km/h<br>Rides: 1/1</div>`)[0];
+                popup_880227603ba0de1781366b9610cd0097.setContent(html_0307f4fdac4aea0d04afd3591e414da9);
+            
+        
+
+        poly_line_c7a059ff610e475f178585ac285d4b9f.bindPopup(popup_880227603ba0de1781366b9610cd0097)
+        ;
+
+        
+    
+    
+            var poly_line_02d1527f883a9a813d50b2defcec824b = L.polyline(
+                [[45.45690140173135, 9.16972809231717], [45.45683528857979, 9.169814766697861]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_5f2de66287cf0ece3c34dcb668b2bec9 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_90ff00f379fadf3186091a8a0f61aed6 = $(`<div id="html_90ff00f379fadf3186091a8a0f61aed6" style="width: 100.0%; height: 100.0%;"><b>3.4 km/h</b> (avg)<br>Median: 3.4 km/h<br>P25–P75: 3.4–3.4 km/h<br>Rides: 1/1</div>`)[0];
+                popup_5f2de66287cf0ece3c34dcb668b2bec9.setContent(html_90ff00f379fadf3186091a8a0f61aed6);
+            
+        
+
+        poly_line_02d1527f883a9a813d50b2defcec824b.bindPopup(popup_5f2de66287cf0ece3c34dcb668b2bec9)
+        ;
+
+        
+    
+    
+            var poly_line_a9ea3bb2ea20a5858e7664834cbeed12 = L.polyline(
+                [[45.45683528857979, 9.169814766697861], [45.45677582997516, 9.169910956440123]],
+                {"bubblingMouseEvents": true, "color": "#d9ef8b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d9ef8b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_237fa3159205fb68b0246d00d41b3b0b = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_dd4f9738cfd8a0a044bfffdc829e5113 = $(`<div id="html_dd4f9738cfd8a0a044bfffdc829e5113" style="width: 100.0%; height: 100.0%;"><b>21.4 km/h</b> (avg)<br>Median: 21.4 km/h<br>P25–P75: 21.4–21.4 km/h<br>Rides: 1/1</div>`)[0];
+                popup_237fa3159205fb68b0246d00d41b3b0b.setContent(html_dd4f9738cfd8a0a044bfffdc829e5113);
+            
+        
+
+        poly_line_a9ea3bb2ea20a5858e7664834cbeed12.bindPopup(popup_237fa3159205fb68b0246d00d41b3b0b)
+        ;
+
+        
+    
+    
+            var poly_line_2c3b73a8a9e81b59c2539661581918d3 = L.polyline(
+                [[45.45677582997516, 9.169910956440123], [45.45672385964934, 9.1700155785089]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_15d79e1a4fc3805276d091205845427d = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_6f87f8e71156d5b76f3f628508a11655 = $(`<div id="html_6f87f8e71156d5b76f3f628508a11655" style="width: 100.0%; height: 100.0%;"><b>17.8 km/h</b> (avg)<br>Median: 17.8 km/h<br>P25–P75: 17.8–17.8 km/h<br>Rides: 1/1</div>`)[0];
+                popup_15d79e1a4fc3805276d091205845427d.setContent(html_6f87f8e71156d5b76f3f628508a11655);
+            
+        
+
+        poly_line_2c3b73a8a9e81b59c2539661581918d3.bindPopup(popup_15d79e1a4fc3805276d091205845427d)
+        ;
+
+        
+    
+    
+            var poly_line_6fb0037019413aeaa985cd6454a2c4cd = L.polyline(
+                [[45.45672385964934, 9.1700155785089], [45.456681717517874, 9.17012873620337]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_12f2acd5b41417086e350aacb451fb67 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_038a6f5a46e29704537a07b9dcf02ddc = $(`<div id="html_038a6f5a46e29704537a07b9dcf02ddc" style="width: 100.0%; height: 100.0%;"><b>16.5 km/h</b> (avg)<br>Median: 16.5 km/h<br>P25–P75: 16.5–16.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_12f2acd5b41417086e350aacb451fb67.setContent(html_038a6f5a46e29704537a07b9dcf02ddc);
+            
+        
+
+        poly_line_6fb0037019413aeaa985cd6454a2c4cd.bindPopup(popup_12f2acd5b41417086e350aacb451fb67)
+        ;
+
+        
+    
+    
+            var poly_line_2a918261d25980434dec230f09698528 = L.polyline(
+                [[45.456681717517874, 9.17012873620337], [45.45661847623999, 9.170218260462649]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_ce92b09d849fbde39f26ddaf333b57fe = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_32213c4971bcfc371f8a0f6bda545f78 = $(`<div id="html_32213c4971bcfc371f8a0f6bda545f78" style="width: 100.0%; height: 100.0%;"><b>15.2 km/h</b> (avg)<br>Median: 15.2 km/h<br>P25–P75: 15.2–15.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_ce92b09d849fbde39f26ddaf333b57fe.setContent(html_32213c4971bcfc371f8a0f6bda545f78);
+            
+        
+
+        poly_line_2a918261d25980434dec230f09698528.bindPopup(popup_ce92b09d849fbde39f26ddaf333b57fe)
+        ;
+
+        
+    
+    
+            var poly_line_50cb48a9317b9f04a90b2514dd46a888 = L.polyline(
+                [[45.45661847623999, 9.170218260462649], [45.45654944552499, 9.170300371875527]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_22132dede70de6304e68df3a280a292e = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_202e9b8ef21f5f937e5e7731435c0c39 = $(`<div id="html_202e9b8ef21f5f937e5e7731435c0c39" style="width: 100.0%; height: 100.0%;"><b>10.3 km/h</b> (avg)<br>Median: 10.3 km/h<br>P25–P75: 10.3–10.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_22132dede70de6304e68df3a280a292e.setContent(html_202e9b8ef21f5f937e5e7731435c0c39);
+            
+        
+
+        poly_line_50cb48a9317b9f04a90b2514dd46a888.bindPopup(popup_22132dede70de6304e68df3a280a292e)
+        ;
+
+        
+    
+    
+            var poly_line_d267297a3a162608a5ef6fd76550e7be = L.polyline(
+                [[45.45654944552499, 9.170300371875527], [45.45647888457364, 9.170379846906407]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_db03819b50a81c8daa34521fa30c1a40 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_9c81be91c971b969231e534db90444ee = $(`<div id="html_9c81be91c971b969231e534db90444ee" style="width: 100.0%; height: 100.0%;"><b>1.7 km/h</b> (avg)<br>Median: 1.7 km/h<br>P25–P75: 1.7–1.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_db03819b50a81c8daa34521fa30c1a40.setContent(html_9c81be91c971b969231e534db90444ee);
+            
+        
+
+        poly_line_d267297a3a162608a5ef6fd76550e7be.bindPopup(popup_db03819b50a81c8daa34521fa30c1a40)
+        ;
+
+        
+    
+    
+            var poly_line_fd4c436c8235636abb9f67130a691452 = L.polyline(
+                [[45.45647888457364, 9.170379846906407], [45.45640674073502, 9.17045639411445]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_5d0bdca1cd42f1d1cf70bcb984872fb3 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_d10cbcf08fdba262987b857fa27daf93 = $(`<div id="html_d10cbcf08fdba262987b857fa27daf93" style="width: 100.0%; height: 100.0%;"><b>13.7 km/h</b> (avg)<br>Median: 13.7 km/h<br>P25–P75: 13.7–13.7 km/h<br>Rides: 1/1</div>`)[0];
+                popup_5d0bdca1cd42f1d1cf70bcb984872fb3.setContent(html_d10cbcf08fdba262987b857fa27daf93);
+            
+        
+
+        poly_line_fd4c436c8235636abb9f67130a691452.bindPopup(popup_5d0bdca1cd42f1d1cf70bcb984872fb3)
+        ;
+
+        
+    
+    
+            var poly_line_36f0a4ce18216a92f35679219dea3923 = L.polyline(
+                [[45.45640674073502, 9.17045639411445], [45.4563532858531, 9.170559145819023]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_06dbc307d8425a668f34c69099f2f6c1 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_0601bfc9076d57ab07fd33d78792b396 = $(`<div id="html_0601bfc9076d57ab07fd33d78792b396" style="width: 100.0%; height: 100.0%;"><b>4.3 km/h</b> (avg)<br>Median: 4.3 km/h<br>P25–P75: 4.3–4.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_06dbc307d8425a668f34c69099f2f6c1.setContent(html_0601bfc9076d57ab07fd33d78792b396);
+            
+        
+
+        poly_line_36f0a4ce18216a92f35679219dea3923.bindPopup(popup_06dbc307d8425a668f34c69099f2f6c1)
+        ;
+
+        
+    
+    
+            var poly_line_faaec9db85f028469d94b10a5feb062e = L.polyline(
+                [[45.4563532858531, 9.170559145819023], [45.45628997085752, 9.170650049315675]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_ce81d6dc8f2e19ea83e67efcfc99f62d = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_2114e70d8b0a95a22bdb486bf8d40e13 = $(`<div id="html_2114e70d8b0a95a22bdb486bf8d40e13" style="width: 100.0%; height: 100.0%;"><b>16.9 km/h</b> (avg)<br>Median: 16.9 km/h<br>P25–P75: 16.9–16.9 km/h<br>Rides: 1/1</div>`)[0];
+                popup_ce81d6dc8f2e19ea83e67efcfc99f62d.setContent(html_2114e70d8b0a95a22bdb486bf8d40e13);
+            
+        
+
+        poly_line_faaec9db85f028469d94b10a5feb062e.bindPopup(popup_ce81d6dc8f2e19ea83e67efcfc99f62d)
+        ;
+
+        
+    
+    
+            var poly_line_9f51121d41c296d2f2bd438955007563 = L.polyline(
+                [[45.45628997085752, 9.170650049315675], [45.456225816810736, 9.170739894520725]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_68b0358065daaacc7d9ac28e80ce4fe0 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_01a868e1f5b4f1ef76cae966fa4e5bad = $(`<div id="html_01a868e1f5b4f1ef76cae966fa4e5bad" style="width: 100.0%; height: 100.0%;"><b>5.0 km/h</b> (avg)<br>Median: 5.0 km/h<br>P25–P75: 5.0–5.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_68b0358065daaacc7d9ac28e80ce4fe0.setContent(html_01a868e1f5b4f1ef76cae966fa4e5bad);
+            
+        
+
+        poly_line_9f51121d41c296d2f2bd438955007563.bindPopup(popup_68b0358065daaacc7d9ac28e80ce4fe0)
+        ;
+
+        
+    
+    
+            var poly_line_89945edb818da7aac457562b65c19e9f = L.polyline(
+                [[45.456225816810736, 9.170739894520725], [45.45616099594851, 9.17082874913524]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_ffb80e67ed76237dcaa8e1f93ec91136 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_546b60cda5f3001e7d98d33919986eff = $(`<div id="html_546b60cda5f3001e7d98d33919986eff" style="width: 100.0%; height: 100.0%;"><b>1.0 km/h</b> (avg)<br>Median: 1.0 km/h<br>P25–P75: 1.0–1.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_ffb80e67ed76237dcaa8e1f93ec91136.setContent(html_546b60cda5f3001e7d98d33919986eff);
+            
+        
+
+        poly_line_89945edb818da7aac457562b65c19e9f.bindPopup(popup_ffb80e67ed76237dcaa8e1f93ec91136)
+        ;
+
+        
+    
+    
+            var poly_line_9c0c8ff9d465f6ae1917d7a3227958a2 = L.polyline(
+                [[45.45616099594851, 9.17082874913524], [45.456099536061245, 9.170922346271327]],
+                {"bubblingMouseEvents": true, "color": "#fee08b", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fee08b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_c57349ee6218d27079f41a993b3d6e16 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_5ec0c0fe79abd3473e29dcfd4f527931 = $(`<div id="html_5ec0c0fe79abd3473e29dcfd4f527931" style="width: 100.0%; height: 100.0%;"><b>19.0 km/h</b> (avg)<br>Median: 19.0 km/h<br>P25–P75: 19.0–19.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_c57349ee6218d27079f41a993b3d6e16.setContent(html_5ec0c0fe79abd3473e29dcfd4f527931);
+            
+        
+
+        poly_line_9c0c8ff9d465f6ae1917d7a3227958a2.bindPopup(popup_c57349ee6218d27079f41a993b3d6e16)
+        ;
+
+        
+    
+    
+            var poly_line_7a61f279ef02184954bdd69b374dac07 = L.polyline(
+                [[45.456099536061245, 9.170922346271327], [45.45603791446919, 9.17101572630967]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_db38bb713c6714957ec7dc0a77a510bd = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_811e6519669a25cf694f09ad461a61fa = $(`<div id="html_811e6519669a25cf694f09ad461a61fa" style="width: 100.0%; height: 100.0%;"><b>5.2 km/h</b> (avg)<br>Median: 5.2 km/h<br>P25–P75: 5.2–5.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_db38bb713c6714957ec7dc0a77a510bd.setContent(html_811e6519669a25cf694f09ad461a61fa);
+            
+        
+
+        poly_line_7a61f279ef02184954bdd69b374dac07.bindPopup(popup_db38bb713c6714957ec7dc0a77a510bd)
+        ;
+
+        
+    
+    
+            var poly_line_85f66d80e9c1a0bc0c9d99c55a8e8c76 = L.polyline(
+                [[45.45603791446919, 9.17101572630967], [45.45597612452767, 9.17110888038144]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_0095907ab841d11e5a4ffa9d4d4d03d0 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_48593a8d9c84265152da562fdd77cfd7 = $(`<div id="html_48593a8d9c84265152da562fdd77cfd7" style="width: 100.0%; height: 100.0%;"><b>1.1 km/h</b> (avg)<br>Median: 1.1 km/h<br>P25–P75: 1.1–1.1 km/h<br>Rides: 1/1</div>`)[0];
+                popup_0095907ab841d11e5a4ffa9d4d4d03d0.setContent(html_48593a8d9c84265152da562fdd77cfd7);
+            
+        
+
+        poly_line_85f66d80e9c1a0bc0c9d99c55a8e8c76.bindPopup(popup_0095907ab841d11e5a4ffa9d4d4d03d0)
+        ;
+
+        
+    
+    
+            var poly_line_d62f701da491aa46f9f64c52aee44717 = L.polyline(
+                [[45.45597612452767, 9.17110888038144], [45.45591456125004, 9.171202339040153]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_38cb8fed205275bab8d907615e104dd4 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_ebebd25f2ca547fde5e747946597b598 = $(`<div id="html_ebebd25f2ca547fde5e747946597b598" style="width: 100.0%; height: 100.0%;"><b>8.3 km/h</b> (avg)<br>Median: 8.3 km/h<br>P25–P75: 8.3–8.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_38cb8fed205275bab8d907615e104dd4.setContent(html_ebebd25f2ca547fde5e747946597b598);
+            
+        
+
+        poly_line_d62f701da491aa46f9f64c52aee44717.bindPopup(popup_38cb8fed205275bab8d907615e104dd4)
+        ;
+
+        
+    
+    
+            var poly_line_ce910e5bce7afce617979916cabdf7da = L.polyline(
+                [[45.45591456125004, 9.171202339040153], [45.45583016945323, 9.171206126534248]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_01010188f44cc87a3c009db1864cb07e = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_460ea6bf1d816e8d1c37de2fa0a34e40 = $(`<div id="html_460ea6bf1d816e8d1c37de2fa0a34e40" style="width: 100.0%; height: 100.0%;"><b>1.3 km/h</b> (avg)<br>Median: 1.3 km/h<br>P25–P75: 1.3–1.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_01010188f44cc87a3c009db1864cb07e.setContent(html_460ea6bf1d816e8d1c37de2fa0a34e40);
+            
+        
+
+        poly_line_ce910e5bce7afce617979916cabdf7da.bindPopup(popup_01010188f44cc87a3c009db1864cb07e)
+        ;
+
+        
+    
+    
+            var poly_line_da95aee4dce0f784f0782aede0dce47e = L.polyline(
+                [[45.45583016945323, 9.171206126534248], [45.45576178710255, 9.171270382810794]],
+                {"bubblingMouseEvents": true, "color": "#fdae61", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#fdae61", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_108d512cbdae63607b40e174469c0512 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_88f21322093a60af2d99d11dfec566cf = $(`<div id="html_88f21322093a60af2d99d11dfec566cf" style="width: 100.0%; height: 100.0%;"><b>13.0 km/h</b> (avg)<br>Median: 13.0 km/h<br>P25–P75: 13.0–13.0 km/h<br>Rides: 1/1</div>`)[0];
+                popup_108d512cbdae63607b40e174469c0512.setContent(html_88f21322093a60af2d99d11dfec566cf);
+            
+        
+
+        poly_line_da95aee4dce0f784f0782aede0dce47e.bindPopup(popup_108d512cbdae63607b40e174469c0512)
+        ;
+
+        
+    
+    
+            var poly_line_475eca61e0834acb921d346291bfcaaf = L.polyline(
+                [[45.45576178710255, 9.171270382810794], [45.45570487487837, 9.171369532053868]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_91c8af45e90db070a3113e1a25b36e9c = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_6a0122c864f10f122c2d951fa434dd80 = $(`<div id="html_6a0122c864f10f122c2d951fa434dd80" style="width: 100.0%; height: 100.0%;"><b>7.5 km/h</b> (avg)<br>Median: 7.5 km/h<br>P25–P75: 7.5–7.5 km/h<br>Rides: 1/1</div>`)[0];
+                popup_91c8af45e90db070a3113e1a25b36e9c.setContent(html_6a0122c864f10f122c2d951fa434dd80);
+            
+        
+
+        poly_line_475eca61e0834acb921d346291bfcaaf.bindPopup(popup_91c8af45e90db070a3113e1a25b36e9c)
+        ;
+
+        
+    
+    
+            var poly_line_e6765c1fefcdea1f54bbfa085b67806e = L.polyline(
+                [[45.45570487487837, 9.171369532053868], [45.455654275159326, 9.171475360257304]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_adcf1d1d5066e4402197db78a97ff675 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_fa03c4a81da71c698842a3d9d4b35918 = $(`<div id="html_fa03c4a81da71c698842a3d9d4b35918" style="width: 100.0%; height: 100.0%;"><b>7.4 km/h</b> (avg)<br>Median: 7.4 km/h<br>P25–P75: 7.4–7.4 km/h<br>Rides: 1/1</div>`)[0];
+                popup_adcf1d1d5066e4402197db78a97ff675.setContent(html_fa03c4a81da71c698842a3d9d4b35918);
+            
+        
+
+        poly_line_e6765c1fefcdea1f54bbfa085b67806e.bindPopup(popup_adcf1d1d5066e4402197db78a97ff675)
+        ;
+
+        
+    
+    
+            var poly_line_771294a7f8aedb3f9c85022303ca04ec = L.polyline(
+                [[45.455654275159326, 9.171475360257304], [45.455590332571816, 9.171558408571972]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_cd0f19408fcd6e5a625d74c3ef14c215 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_e01c6efa6c5f9c3cec44d382e635c47f = $(`<div id="html_e01c6efa6c5f9c3cec44d382e635c47f" style="width: 100.0%; height: 100.0%;"><b>4.4 km/h</b> (avg)<br>Median: 4.4 km/h<br>P25–P75: 4.4–4.4 km/h<br>Rides: 1/1</div>`)[0];
+                popup_cd0f19408fcd6e5a625d74c3ef14c215.setContent(html_e01c6efa6c5f9c3cec44d382e635c47f);
+            
+        
+
+        poly_line_771294a7f8aedb3f9c85022303ca04ec.bindPopup(popup_cd0f19408fcd6e5a625d74c3ef14c215)
+        ;
+
+        
+    
+    
+            var poly_line_412777054b73ee0a9ba285c6b81f7e38 = L.polyline(
+                [[45.455590332571816, 9.171558408571972], [45.455557759319426, 9.171647428511598]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_478c6dcb8a819d6c7d28108b3f6d9016 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_655152f0799c8a0a8d42a709e6d1548a = $(`<div id="html_655152f0799c8a0a8d42a709e6d1548a" style="width: 100.0%; height: 100.0%;"><b>0.2 km/h</b> (avg)<br>Median: 0.2 km/h<br>P25–P75: 0.2–0.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_478c6dcb8a819d6c7d28108b3f6d9016.setContent(html_655152f0799c8a0a8d42a709e6d1548a);
+            
+        
+
+        poly_line_412777054b73ee0a9ba285c6b81f7e38.bindPopup(popup_478c6dcb8a819d6c7d28108b3f6d9016)
+        ;
+
+        
+    
+    
+            var poly_line_ede38bd854c10a1943fe3ae95ca695d4 = L.polyline(
+                [[45.455557759319426, 9.171647428511598], [45.45555605910957, 9.171769450113642]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_1d80d417e8332146f3ad6f488fe6fd13 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_b0dd89c35969eb19fe8d9b5fd842db9d = $(`<div id="html_b0dd89c35969eb19fe8d9b5fd842db9d" style="width: 100.0%; height: 100.0%;"><b>1.2 km/h</b> (avg)<br>Median: 1.2 km/h<br>P25–P75: 1.2–1.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_1d80d417e8332146f3ad6f488fe6fd13.setContent(html_b0dd89c35969eb19fe8d9b5fd842db9d);
+            
+        
+
+        poly_line_ede38bd854c10a1943fe3ae95ca695d4.bindPopup(popup_1d80d417e8332146f3ad6f488fe6fd13)
+        ;
+
+        
+    
+    
+            var poly_line_3ddfb45cb8f8bae045d0b5083e575bc5 = L.polyline(
+                [[45.45555605910957, 9.171769450113642], [45.455520044533735, 9.171886927484246]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_676bc6568f4809fd80d2e68916d68fb7 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_088590f1ddce7edfa765a01285b66c5c = $(`<div id="html_088590f1ddce7edfa765a01285b66c5c" style="width: 100.0%; height: 100.0%;"><b>4.2 km/h</b> (avg)<br>Median: 4.2 km/h<br>P25–P75: 4.2–4.2 km/h<br>Rides: 1/1</div>`)[0];
+                popup_676bc6568f4809fd80d2e68916d68fb7.setContent(html_088590f1ddce7edfa765a01285b66c5c);
+            
+        
+
+        poly_line_3ddfb45cb8f8bae045d0b5083e575bc5.bindPopup(popup_676bc6568f4809fd80d2e68916d68fb7)
+        ;
+
+        
+    
+    
+            var poly_line_5a51e788a0111f3a58f96db2279e9b7f = L.polyline(
+                [[45.455520044533735, 9.171886927484246], [45.45552958804765, 9.17180853078987]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_b5097c56dbc8a9059c77880fc9e77a8e = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_6700da72461dbd31c2eef38790570642 = $(`<div id="html_6700da72461dbd31c2eef38790570642" style="width: 100.0%; height: 100.0%;"><b>7.3 km/h</b> (avg)<br>Median: 7.3 km/h<br>P25–P75: 7.3–7.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_b5097c56dbc8a9059c77880fc9e77a8e.setContent(html_6700da72461dbd31c2eef38790570642);
+            
+        
+
+        poly_line_5a51e788a0111f3a58f96db2279e9b7f.bindPopup(popup_b5097c56dbc8a9059c77880fc9e77a8e)
+        ;
+
+        
+    
+    
+            var poly_line_c0d3813f97889d016b86814e30f9e5cb = L.polyline(
+                [[45.45552958804765, 9.17180853078987], [45.455526803516655, 9.171811383698683]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_eed723dd739b502abcb6b500e58873a4 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_e58de889d0920f44a9579fbb57fbcdbc = $(`<div id="html_e58de889d0920f44a9579fbb57fbcdbc" style="width: 100.0%; height: 100.0%;"><b>4.6 km/h</b> (avg)<br>Median: 4.6 km/h<br>P25–P75: 4.6–4.6 km/h<br>Rides: 1/1</div>`)[0];
+                popup_eed723dd739b502abcb6b500e58873a4.setContent(html_e58de889d0920f44a9579fbb57fbcdbc);
+            
+        
+
+        poly_line_c0d3813f97889d016b86814e30f9e5cb.bindPopup(popup_eed723dd739b502abcb6b500e58873a4)
+        ;
+
+        
+    
+    
+            var poly_line_d5ffaa4480ca833f9638a141c3eb4654 = L.polyline(
+                [[45.455526803516655, 9.171811383698683], [45.45547858726449, 9.171909085455995]],
+                {"bubblingMouseEvents": true, "color": "#f46d43", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f46d43", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_a90ef57a6c136a70a2ba1bbf62b4db11 = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_95dd5731d081cfef83e1e8f98ca540df = $(`<div id="html_95dd5731d081cfef83e1e8f98ca540df" style="width: 100.0%; height: 100.0%;"><b>5.4 km/h</b> (avg)<br>Median: 5.4 km/h<br>P25–P75: 5.4–5.4 km/h<br>Rides: 1/1</div>`)[0];
+                popup_a90ef57a6c136a70a2ba1bbf62b4db11.setContent(html_95dd5731d081cfef83e1e8f98ca540df);
+            
+        
+
+        poly_line_d5ffaa4480ca833f9638a141c3eb4654.bindPopup(popup_a90ef57a6c136a70a2ba1bbf62b4db11)
+        ;
+
+        
+    
+    
+            var poly_line_5a0ee42bf3d97a270f8d0bfc5d2853fb = L.polyline(
+                [[45.45547858726449, 9.171909085455995], [45.45540157514333, 9.171975226314355]],
+                {"bubblingMouseEvents": true, "color": "#d73027", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#d73027", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(feature_group_2ac33ce37c583ec1f5c82469e11ad02c);
+        
+    
+        var popup_09de5d39dc670847e31426a496237e9f = L.popup({
+  "maxWidth": 200,
+});
+
+        
+            
+                var html_3132a0631fa15085d9940f39c3fc285f = $(`<div id="html_3132a0631fa15085d9940f39c3fc285f" style="width: 100.0%; height: 100.0%;"><b>0.3 km/h</b> (avg)<br>Median: 0.3 km/h<br>P25–P75: 0.3–0.3 km/h<br>Rides: 1/1</div>`)[0];
+                popup_09de5d39dc670847e31426a496237e9f.setContent(html_3132a0631fa15085d9940f39c3fc285f);
+            
+        
+
+        poly_line_5a0ee42bf3d97a270f8d0bfc5d2853fb.bindPopup(popup_09de5d39dc670847e31426a496237e9f)
+        ;
+
+        
+    
+    
+            feature_group_2ac33ce37c583ec1f5c82469e11ad02c.addTo(map_c9da45db00ac894d54638b0486f20cc7);
+        
+    
+            var feature_group_450fb2579443d9a358ed4a3630ae871c = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var circle_marker_767e361775834f11010258d09e936d6d = L.circleMarker(
+                [45.45526, 9.16302],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_450fb2579443d9a358ed4a3630ae871c);
+        
+    
+        var popup_8bc4049703b7c07192aaae3bc9964208 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_68e468dbdcad565d71c22fc55310f9dd = $(`<div id="html_68e468dbdcad565d71c22fc55310f9dd" style="width: 100.0%; height: 100.0%;"><b>Tram Stop</b><br>Stop: p.za del rosario<br>Avg wait: 32s<br>Occurrences: 1/1 rides</div>`)[0];
+                popup_8bc4049703b7c07192aaae3bc9964208.setContent(html_68e468dbdcad565d71c22fc55310f9dd);
+            
+        
+
+        circle_marker_767e361775834f11010258d09e936d6d.bindPopup(popup_8bc4049703b7c07192aaae3bc9964208)
+        ;
+
+        
+    
+    
+            var circle_marker_f1a9c9eea32b84efa94ab35772a7e9eb = L.circleMarker(
+                [45.45628, 9.16617],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_450fb2579443d9a358ed4a3630ae871c);
+        
+    
+        var popup_5ba752926089d34cbe48cfd4b77a3fbb = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_617a49ade52a719018405120ef459fcb = $(`<div id="html_617a49ade52a719018405120ef459fcb" style="width: 100.0%; height: 100.0%;"><b>Tram Stop</b><br>Stop: via montevideo<br>Avg wait: 26s<br>Occurrences: 1/1 rides</div>`)[0];
+                popup_5ba752926089d34cbe48cfd4b77a3fbb.setContent(html_617a49ade52a719018405120ef459fcb);
+            
+        
+
+        circle_marker_f1a9c9eea32b84efa94ab35772a7e9eb.bindPopup(popup_5ba752926089d34cbe48cfd4b77a3fbb)
+        ;
+
+        
+    
+    
+            feature_group_450fb2579443d9a358ed4a3630ae871c.addTo(map_c9da45db00ac894d54638b0486f20cc7);
+        
+    
+            var feature_group_50295c85750c5e061f8aec216e825fde = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var circle_marker_ffa75b605dedcac60bdca575a6160f69 = L.circleMarker(
+                [45.45692, 9.16976],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_50295c85750c5e061f8aec216e825fde);
+        
+    
+        var popup_faf494dea23e480668da492a1b6624d9 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_6c777bb9c8db3eeb162cf29c416c06da = $(`<div id="html_6c777bb9c8db3eeb162cf29c416c06da" style="width: 100.0%; height: 100.0%;"><b>Traffic Light</b><br>Avg wait: 6s<br>Occurrences: 1/1 rides</div>`)[0];
+                popup_faf494dea23e480668da492a1b6624d9.setContent(html_6c777bb9c8db3eeb162cf29c416c06da);
+            
+        
+
+        circle_marker_ffa75b605dedcac60bdca575a6160f69.bindPopup(popup_faf494dea23e480668da492a1b6624d9)
+        ;
+
+        
+    
+    
+            feature_group_50295c85750c5e061f8aec216e825fde.addTo(map_c9da45db00ac894d54638b0486f20cc7);
+        
+    
+            var feature_group_b45f83af6da320b04be7a38877196fe5 = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var circle_marker_6909313a726458a921c72ea83cb10005 = L.circleMarker(
+                [45.4539, 9.15879],
+                {"bubblingMouseEvents": true, "color": "orange", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "orange", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_b45f83af6da320b04be7a38877196fe5);
+        
+    
+        var popup_84e91a4d3f5229923bb8ebb5399015c3 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_bb78056e7151019bc51a93865895a04e = $(`<div id="html_bb78056e7151019bc51a93865895a04e" style="width: 100.0%; height: 100.0%;"><b>Combined</b><br>Stop: via solari via stendhal<br>Avg wait: 16s<br>Occurrences: 1/1 rides<br>Est. traffic light wait: 4s</div>`)[0];
+                popup_84e91a4d3f5229923bb8ebb5399015c3.setContent(html_bb78056e7151019bc51a93865895a04e);
+            
+        
+
+        circle_marker_6909313a726458a921c72ea83cb10005.bindPopup(popup_84e91a4d3f5229923bb8ebb5399015c3)
+        ;
+
+        
+    
+    
+            var circle_marker_92930b90bc9473b7cc7743c478106a29 = L.circleMarker(
+                [45.45703, 9.16901],
+                {"bubblingMouseEvents": true, "color": "orange", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "orange", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_b45f83af6da320b04be7a38877196fe5);
+        
+    
+        var popup_b7c00fb7876eaea3e379bfcfcba8849b = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_cf6b9354da6bcfd6170f1a2d87010090 = $(`<div id="html_cf6b9354da6bcfd6170f1a2d87010090" style="width: 100.0%; height: 100.0%;"><b>Combined</b><br>Stop: v.le coni zugna via solari<br>Avg wait: 73s<br>Occurrences: 1/1 rides<br>Est. traffic light wait: 34s</div>`)[0];
+                popup_b7c00fb7876eaea3e379bfcfcba8849b.setContent(html_cf6b9354da6bcfd6170f1a2d87010090);
+            
+        
+
+        circle_marker_92930b90bc9473b7cc7743c478106a29.bindPopup(popup_b7c00fb7876eaea3e379bfcfcba8849b)
+        ;
+
+        
+    
+    
+            feature_group_b45f83af6da320b04be7a38877196fe5.addTo(map_c9da45db00ac894d54638b0486f20cc7);
+        
+    
+            var feature_group_074dd6fe1913b54b868a85e06da2332c = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var circle_marker_e3adbfe98c89ae03bbaeddc558012744 = L.circleMarker(
+                [45.45662, 9.16728],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "gray", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_074dd6fe1913b54b868a85e06da2332c);
+        
+    
+        var popup_a5ac88876ceba2285b5bccdd4a192245 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_762f73032f425445b8a8ee66a348cacd = $(`<div id="html_762f73032f425445b8a8ee66a348cacd" style="width: 100.0%; height: 100.0%;"><b>Bottleneck</b><br>Nearest stop: via montevideo<br>Distance: 94m<br>Avg wait: 7s<br>Occurrences: 1/1 rides</div>`)[0];
+                popup_a5ac88876ceba2285b5bccdd4a192245.setContent(html_762f73032f425445b8a8ee66a348cacd);
+            
+        
+
+        circle_marker_e3adbfe98c89ae03bbaeddc558012744.bindPopup(popup_a5ac88876ceba2285b5bccdd4a192245)
+        ;
+
+        
+    
+    
+            var circle_marker_59271210e5dadd88858f21ca6f6244ec = L.circleMarker(
+                [45.45665, 9.16741],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "gray", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_074dd6fe1913b54b868a85e06da2332c);
+        
+    
+        var popup_9026f5b0d86cd16fb8a1736ca4d20148 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_f30d3867ce794674a0715ae18398b7cf = $(`<div id="html_f30d3867ce794674a0715ae18398b7cf" style="width: 100.0%; height: 100.0%;"><b>Bottleneck</b><br>Nearest stop: v.le coni zugna via solari<br>Distance: 97m<br>Avg wait: 14s<br>Occurrences: 1/1 rides</div>`)[0];
+                popup_9026f5b0d86cd16fb8a1736ca4d20148.setContent(html_f30d3867ce794674a0715ae18398b7cf);
+            
+        
+
+        circle_marker_59271210e5dadd88858f21ca6f6244ec.bindPopup(popup_9026f5b0d86cd16fb8a1736ca4d20148)
+        ;
+
+        
+    
+    
+            var circle_marker_c6dfb3e95ccd0e3020cc9bea7527b49d = L.circleMarker(
+                [45.45688, 9.16795],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "gray", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_074dd6fe1913b54b868a85e06da2332c);
+        
+    
+        var popup_fcc58c66d72f94ddcf0a70c3a8f36226 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_6d0c08bb8aaf9463ed001a8c259ecc58 = $(`<div id="html_6d0c08bb8aaf9463ed001a8c259ecc58" style="width: 100.0%; height: 100.0%;"><b>Bottleneck</b><br>Nearest stop: v.le coni zugna via solari<br>Distance: 48m<br>Avg wait: 19s<br>Occurrences: 1/1 rides</div>`)[0];
+                popup_fcc58c66d72f94ddcf0a70c3a8f36226.setContent(html_6d0c08bb8aaf9463ed001a8c259ecc58);
+            
+        
+
+        circle_marker_c6dfb3e95ccd0e3020cc9bea7527b49d.bindPopup(popup_fcc58c66d72f94ddcf0a70c3a8f36226)
+        ;
+
+        
+    
+    
+            var circle_marker_8de5ee96a80bb959c8521e3ffc0a6bb1 = L.circleMarker(
+                [45.45686, 9.16809],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "gray", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_074dd6fe1913b54b868a85e06da2332c);
+        
+    
+        var popup_cf914e7b22adc7b3d469814b99b3e0fe = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_6e7bb3584e9849dc3a392b6037c94c2e = $(`<div id="html_6e7bb3584e9849dc3a392b6037c94c2e" style="width: 100.0%; height: 100.0%;"><b>Bottleneck</b><br>Nearest stop: v.le coni zugna via solari<br>Distance: 39m<br>Avg wait: 27s<br>Occurrences: 1/1 rides</div>`)[0];
+                popup_cf914e7b22adc7b3d469814b99b3e0fe.setContent(html_6e7bb3584e9849dc3a392b6037c94c2e);
+            
+        
+
+        circle_marker_8de5ee96a80bb959c8521e3ffc0a6bb1.bindPopup(popup_cf914e7b22adc7b3d469814b99b3e0fe)
+        ;
+
+        
+    
+    
+            var circle_marker_278bf67d393bbcd16af7c4a9dc701250 = L.circleMarker(
+                [45.45635, 9.17057],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "gray", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_074dd6fe1913b54b868a85e06da2332c);
+        
+    
+        var popup_0d8185343d06f5e9cff8237a11208a36 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_8c39d5d4e4b37464063017c8bfc25d38 = $(`<div id="html_8c39d5d4e4b37464063017c8bfc25d38" style="width: 100.0%; height: 100.0%;"><b>Bottleneck</b><br>Nearest stop: v.le coni zugna via solari<br>Distance: 142m<br>Avg wait: 8s<br>Occurrences: 1/1 rides</div>`)[0];
+                popup_0d8185343d06f5e9cff8237a11208a36.setContent(html_8c39d5d4e4b37464063017c8bfc25d38);
+            
+        
+
+        circle_marker_278bf67d393bbcd16af7c4a9dc701250.bindPopup(popup_0d8185343d06f5e9cff8237a11208a36)
+        ;
+
+        
+    
+    
+            var circle_marker_b631721f0169bd06bdfc5b935d9533c3 = L.circleMarker(
+                [45.45581, 9.1712],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "gray", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_074dd6fe1913b54b868a85e06da2332c);
+        
+    
+        var popup_18550a6ab1180ebba00a5ec9980b445c = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_0cd46d8f9e15956a2ae9f47d7e1df9a6 = $(`<div id="html_0cd46d8f9e15956a2ae9f47d7e1df9a6" style="width: 100.0%; height: 100.0%;"><b>Bottleneck</b><br>Nearest stop: p.le cantore<br>Distance: 88m<br>Avg wait: 23s<br>Occurrences: 1/1 rides</div>`)[0];
+                popup_18550a6ab1180ebba00a5ec9980b445c.setContent(html_0cd46d8f9e15956a2ae9f47d7e1df9a6);
+            
+        
+
+        circle_marker_b631721f0169bd06bdfc5b935d9533c3.bindPopup(popup_18550a6ab1180ebba00a5ec9980b445c)
+        ;
+
+        
+    
+    
+            var circle_marker_937844775e759bf06e29f25cc74314d8 = L.circleMarker(
+                [45.45557, 9.17172],
+                {"bubblingMouseEvents": true, "color": "gray", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "gray", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(feature_group_074dd6fe1913b54b868a85e06da2332c);
+        
+    
+        var popup_b037f6df3b95bc0b8af08f2faaf32527 = L.popup({
+  "maxWidth": 250,
+});
+
+        
+            
+                var html_b371f923dff77cbf4c52b4ec8b910cb1 = $(`<div id="html_b371f923dff77cbf4c52b4ec8b910cb1" style="width: 100.0%; height: 100.0%;"><b>Bottleneck</b><br>Nearest stop: p.le cantore<br>Distance: 40m<br>Avg wait: 75s<br>Occurrences: 1/1 rides</div>`)[0];
+                popup_b037f6df3b95bc0b8af08f2faaf32527.setContent(html_b371f923dff77cbf4c52b4ec8b910cb1);
+            
+        
+
+        circle_marker_937844775e759bf06e29f25cc74314d8.bindPopup(popup_b037f6df3b95bc0b8af08f2faaf32527)
+        ;
+
+        
+    
+    
+            feature_group_074dd6fe1913b54b868a85e06da2332c.addTo(map_c9da45db00ac894d54638b0486f20cc7);
+        
+</script>
+</html>

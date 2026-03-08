@@ -183,12 +183,15 @@ def _process_rides(gpx_paths: list[str] | None = None):
 
 
 def cmd_analyze(gpx_paths: list[str]):
-    rides_by_line, _, _ = _process_rides(gpx_paths or None)
+    rides_by_line, tram_stops, traffic_lights = _process_rides(gpx_paths or None)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     for line_key, data in rides_by_line.items():
-        m = build_map(data["ride_dfs"], data["all_stops"], title=f"Velotrack — {line_key}")
+        m = build_map(
+            data["ride_dfs"], data["all_stops"], title=f"Velotrack — {line_key}",
+            tram_stops=tram_stops, traffic_lights=traffic_lights,
+        )
         out_path = OUTPUT_DIR / f"{line_key}.html"
         m.save(str(out_path))
         print(f"  Map saved: {out_path}")
@@ -204,7 +207,7 @@ def cmd_extract_trips():
 def cmd_build_site():
     from velotrack.site_builder import LineInfo, build_site
 
-    rides_by_line, _, _ = _process_rides()
+    rides_by_line, tram_stops, traffic_lights = _process_rides()
 
     MAPS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -215,7 +218,10 @@ def cmd_build_site():
         all_stops = data["all_stops"]
 
         # Save map to site/maps/
-        m = build_map(ride_dfs, all_stops, title=f"Velotrack — {line_key}")
+        m = build_map(
+            ride_dfs, all_stops, title=f"Velotrack — {line_key}",
+            tram_stops=tram_stops, traffic_lights=traffic_lights,
+        )
         m.save(str(MAPS_DIR / f"{line_key}.html"))
         print(f"  Map saved: {MAPS_DIR / f'{line_key}.html'}")
 

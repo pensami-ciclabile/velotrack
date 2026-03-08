@@ -24,6 +24,8 @@ class StopEvent:
     nearest_stop_name: str | None = None
     nearest_stop_dist: float | None = None
     traffic_light_wait: float | None = None
+    ref_lat: float | None = None  # matched reference location lat
+    ref_lon: float | None = None  # matched reference location lon
 
 
 def detect_stops(df: pd.DataFrame) -> list[StopEvent]:
@@ -54,6 +56,9 @@ def load_traffic_lights() -> pd.DataFrame:
         tl = pd.read_csv(TRAFFIC_LIGHTS_CSV)
         if tl.empty:
             return pd.DataFrame(columns=["lat", "lon", "name"])
+        tl["lat"] = pd.to_numeric(tl["lat"], errors="coerce")
+        tl["lon"] = pd.to_numeric(tl["lon"], errors="coerce")
+        tl = tl.dropna(subset=["lat", "lon"])
         return tl
     except Exception:
         return pd.DataFrame(columns=["lat", "lon", "name"])
@@ -72,19 +77,27 @@ def classify_stops(
         # Find nearest tram stop
         nearest_tram_dist = float("inf")
         nearest_tram_name = None
+        nearest_tram_lat = None
+        nearest_tram_lon = None
         for _, ts in tram_stops.iterrows():
             d = haversine(stop.lat, stop.lon, ts["lat"], ts["lon"])
             if d < nearest_tram_dist:
                 nearest_tram_dist = d
                 nearest_tram_name = ts["stop_name"]
+                nearest_tram_lat = ts["lat"]
+                nearest_tram_lon = ts["lon"]
 
         # Find nearest traffic light
         nearest_tl_dist = float("inf")
+        nearest_tl_lat = None
+        nearest_tl_lon = None
         if not traffic_lights.empty:
             for _, tl in traffic_lights.iterrows():
                 d = haversine(stop.lat, stop.lon, tl["lat"], tl["lon"])
                 if d < nearest_tl_dist:
                     nearest_tl_dist = d
+                    nearest_tl_lat = tl["lat"]
+                    nearest_tl_lon = tl["lon"]
 
         near_tram = nearest_tram_dist <= TRAM_STOP_RADIUS
         near_tl = nearest_tl_dist <= TRAFFIC_LIGHT_RADIUS
@@ -92,10 +105,16 @@ def classify_stops(
         if near_tram and near_tl:
             stop.category = "combined"
             stop.traffic_light_wait = max(0, stop.duration - COMBINED_TRAM_DEDUCT)
+            stop.ref_lat = nearest_tram_lat
+            stop.ref_lon = nearest_tram_lon
         elif near_tram:
             stop.category = "tram_stop"
+            stop.ref_lat = nearest_tram_lat
+            stop.ref_lon = nearest_tram_lon
         elif near_tl:
             stop.category = "traffic_light"
+            stop.ref_lat = nearest_tl_lat
+            stop.ref_lon = nearest_tl_lon
         else:
             stop.category = "bottleneck"
 

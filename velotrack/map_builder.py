@@ -306,6 +306,35 @@ def _jsonify_stats(obj):
     return obj
 
 
+def _merge_stops(all_stops: list[list[StopEvent]]) -> dict[tuple[float, float], list[StopEvent]]:
+    """Merge stops: first within each ride (sum durations at same location),
+    then across rides (one entry per ride per location)."""
+    merged: dict[tuple[float, float], list[StopEvent]] = {}
+    for stops in all_stops:
+        ride_merged: dict[tuple[float, float], StopEvent] = {}
+        for stop in stops:
+            if stop.ref_lat is not None and stop.ref_lon is not None:
+                key = (round(stop.ref_lat, 5), round(stop.ref_lon, 5))
+            else:
+                key = (round(stop.lat, 5), round(stop.lon, 5))
+            if key in ride_merged:
+                existing = ride_merged[key]
+                existing.duration += stop.duration
+                if stop.traffic_light_wait is not None:
+                    existing.traffic_light_wait = (existing.traffic_light_wait or 0) + stop.traffic_light_wait
+            else:
+                ride_merged[key] = StopEvent(
+                    lat=stop.lat, lon=stop.lon, duration=stop.duration,
+                    category=stop.category, nearest_stop_name=stop.nearest_stop_name,
+                    nearest_stop_dist=stop.nearest_stop_dist,
+                    traffic_light_wait=stop.traffic_light_wait,
+                    ref_lat=stop.ref_lat, ref_lon=stop.ref_lon,
+                )
+        for key, stop in ride_merged.items():
+            merged.setdefault(key, []).append(stop)
+    return merged
+
+
 def compute_line_stats(
     ride_dfs: list[pd.DataFrame],
     all_stops: list[list[StopEvent]],
@@ -314,12 +343,7 @@ def compute_line_stats(
 
     Reuses the same merge-stops + _compute_stats logic from build_map.
     """
-    merged_stops: dict[tuple[float, float], list[StopEvent]] = {}
-    for stops in all_stops:
-        for stop in stops:
-            key = (round(stop.lat, 5), round(stop.lon, 5))
-            merged_stops.setdefault(key, []).append(stop)
-
+    merged_stops = _merge_stops(all_stops)
     stats = _compute_stats(ride_dfs, merged_stops)
     return _jsonify_stats(stats)
 
@@ -692,10 +716,88 @@ def _speed_space_chart_html(
     """
 
 
+def _average_route(ride_dfs: list[pd.DataFrame], step_m: float = 10.0) -> pd.DataFrame:
+    """Compute an averaged route line from multiple rides.
+
+    Resamples each ride at fixed distance intervals and averages lat/lon/speed
+    across rides at each distance bin. Uses max ride length so the full route
+    is shown even when rides differ in length.
+
+    Returns DataFrame with columns: cum_dist, lat, lon, velocity_kmh,
+        n_rides, median_kmh, p25_kmh, p75_kmh
+    """
+    resampled = []
+    for df in ride_dfs:
+        if len(df) < 2:
+            continue
+        cum_dist = df["dist"].cumsum().values
+        max_dist = cum_dist[-1]
+        if max_dist < step_m:
+            continue
+        steps = np.arange(0, max_dist, step_m)
+        lat_interp = np.interp(steps, cum_dist, df["lat"].values)
+        lon_interp = np.interp(steps, cum_dist, df["lon"].values)
+        vel_interp = np.interp(steps, cum_dist, df["velocity_kmh"].values)
+        resampled.append({
+            "steps": steps,
+            "lat": lat_interp,
+            "lon": lon_interp,
+            "vel": vel_interp,
+            "n_steps": len(steps),
+        })
+
+    if not resampled:
+        return pd.DataFrame(columns=[
+            "cum_dist", "lat", "lon", "velocity_kmh",
+            "n_rides", "median_kmh", "p25_kmh", "p75_kmh",
+        ])
+
+    max_len = max(r["n_steps"] for r in resampled)
+    steps = next(r["steps"] for r in resampled if r["n_steps"] == max_len)
+
+    avg_lat = np.full(max_len, np.nan)
+    avg_lon = np.full(max_len, np.nan)
+    avg_vel = np.full(max_len, np.nan)
+    median_vel = np.full(max_len, np.nan)
+    p25_vel = np.full(max_len, np.nan)
+    p75_vel = np.full(max_len, np.nan)
+    n_rides = np.zeros(max_len, dtype=int)
+
+    for i in range(max_len):
+        lats = [r["lat"][i] for r in resampled if i < r["n_steps"]]
+        lons = [r["lon"][i] for r in resampled if i < r["n_steps"]]
+        vels = [r["vel"][i] for r in resampled if i < r["n_steps"]]
+        n = len(lats)
+        n_rides[i] = n
+        avg_lat[i] = np.mean(lats)
+        avg_lon[i] = np.mean(lons)
+        avg_vel[i] = np.mean(vels)
+        median_vel[i] = np.median(vels)
+        if n >= 2:
+            p25_vel[i] = np.percentile(vels, 25)
+            p75_vel[i] = np.percentile(vels, 75)
+        else:
+            p25_vel[i] = vels[0]
+            p75_vel[i] = vels[0]
+
+    return pd.DataFrame({
+        "cum_dist": steps,
+        "lat": avg_lat,
+        "lon": avg_lon,
+        "velocity_kmh": avg_vel,
+        "n_rides": n_rides,
+        "median_kmh": median_vel,
+        "p25_kmh": p25_vel,
+        "p75_kmh": p75_vel,
+    })
+
+
 def build_map(
     ride_dfs: list[pd.DataFrame],
     all_stops: list[list[StopEvent]],
     title: str = "Velotrack",
+    tram_stops: pd.DataFrame | None = None,
+    traffic_lights: pd.DataFrame | None = None,
 ) -> folium.Map:
     """Build a Folium map from one or more rides with velocity-colored segments and stop markers.
 
@@ -703,7 +805,11 @@ def build_map(
         ride_dfs: List of parsed GPX DataFrames (one per ride).
         all_stops: List of stop event lists (one per ride, aligned with ride_dfs).
         title: Map title.
+        tram_stops: GTFS tram stop locations (for fixed stop marker positions).
+        traffic_lights: Traffic light locations (for fixed stop marker positions).
     """
+    num_rides = len(ride_dfs)
+
     # Center map on first ride's midpoint
     all_lats = [df["lat"].mean() for df in ride_dfs if not df.empty]
     all_lons = [df["lon"].mean() for df in ride_dfs if not df.empty]
@@ -719,31 +825,37 @@ def build_map(
         for cat in STOP_COLORS
     }
 
-    # Draw velocity-colored route segments for each ride
-    for df in ride_dfs:
-        if len(df) < 2:
-            continue
-        for i in range(1, len(df)):
+    # Draw a single averaged velocity-colored route line
+    avg_route = _average_route(ride_dfs)
+    if len(avg_route) >= 2:
+        for i in range(1, len(avg_route)):
+            row = avg_route.iloc[i]
             coords = [
-                [df.iloc[i - 1]["lat"], df.iloc[i - 1]["lon"]],
-                [df.iloc[i]["lat"], df.iloc[i]["lon"]],
+                [avg_route.iloc[i - 1]["lat"], avg_route.iloc[i - 1]["lon"]],
+                [row["lat"], row["lon"]],
             ]
-            speed = df.iloc[i]["velocity_kmh"]
+            speed = row["velocity_kmh"]
+            n = int(row["n_rides"])
+            median = row["median_kmh"]
+            p25 = row["p25_kmh"]
+            p75 = row["p75_kmh"]
             color = velocity_color(speed)
+            popup_text = (
+                f"<b>{speed:.1f} km/h</b> (avg)"
+                f"<br>Median: {median:.1f} km/h"
+                f"<br>P25–P75: {p25:.1f}–{p75:.1f} km/h"
+                f"<br>Rides: {n}/{num_rides}"
+            )
             folium.PolyLine(
                 coords,
                 color=color,
                 weight=4,
                 opacity=0.8,
-                popup=f"{speed:.1f} km/h",
+                popup=folium.Popup(popup_text, max_width=200),
             ).add_to(route_group)
 
-    # Add stop markers — aggregate duplicates at same location across rides
-    merged_stops: dict[tuple[float, float], list[StopEvent]] = {}
-    for stops in all_stops:
-        for stop in stops:
-            key = (round(stop.lat, 5), round(stop.lon, 5))
-            merged_stops.setdefault(key, []).append(stop)
+    # Merge stops: within each ride first (sum durations), then across rides
+    merged_stops = _merge_stops(all_stops)
 
     for (lat, lon), events in merged_stops.items():
         # Use most common category
@@ -752,17 +864,27 @@ def build_map(
         avg_duration = sum(e.duration for e in events) / len(events)
         count = len(events)
 
+        # Filter bottlenecks: only show if ≥50% of rides stop there
+        if category == "bottleneck" and num_rides > 0:
+            if count < num_rides * 0.5:
+                continue
+
         nearest_name = next((e.nearest_stop_name for e in events if e.nearest_stop_name), "?")
-        nearest_dist = min((e.nearest_stop_dist for e in events if e.nearest_stop_dist is not None), default=None)
 
         popup_parts = [
             f"<b>{category.replace('_', ' ').title()}</b>",
-            f"Avg wait: {avg_duration:.0f}s",
-            f"Occurrences: {count}",
-            f"Nearest stop: {nearest_name}",
         ]
-        if nearest_dist is not None:
-            popup_parts.append(f"Distance: {nearest_dist:.0f}m")
+        if category in ("tram_stop", "combined"):
+            popup_parts.append(f"Stop: {nearest_name}")
+        elif category == "bottleneck":
+            nearest_dist = min((e.nearest_stop_dist for e in events if e.nearest_stop_dist is not None), default=None)
+            popup_parts.append(f"Nearest stop: {nearest_name}")
+            if nearest_dist is not None:
+                popup_parts.append(f"Distance: {nearest_dist:.0f}m")
+        popup_parts.extend([
+            f"Avg wait: {avg_duration:.0f}s",
+            f"Occurrences: {count}/{num_rides} rides",
+        ])
         if category == "combined":
             avg_tl_wait = sum(e.traffic_light_wait or 0 for e in events) / len(events)
             popup_parts.append(f"Est. traffic light wait: {avg_tl_wait:.0f}s")
