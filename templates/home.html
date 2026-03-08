@@ -99,6 +99,45 @@
     </div>
 </section>
 
+<script id="hotspot-slices" type="application/json">{{ hotspot_slices_json }}</script>
+<section class="hotspots-highlight">
+    <div class="hotspots-header">
+        <h2><span class="i18n-it">Hotspot di rete</span><span class="i18n-en">Network hotspots</span></h2>
+        <a class="hotspots-link" href="{{ root_path }}/hotspots.html"><span class="i18n-it">Vista completa</span><span class="i18n-en">Full view</span></a>
+    </div>
+    <p class="hotspots-sub">
+        <span class="i18n-it">Punti in cui i tram perdono più tempo (semafori, fermate condivise, colli di bottiglia), aggregando tutte le fermate osservate nello stesso punto fisico anche quando arrivano da linee diverse.</span>
+        <span class="i18n-en">Places where trams lose the most time (traffic lights, shared stops, bottlenecks), aggregating all observed waits at the same physical point even when they come from different lines.</span>
+    </p>
+    <div class="hotspots-controls">
+        <label for="home-hotspot-category"><span class="i18n-it">Categoria</span><span class="i18n-en">Category</span></label>
+        <select id="home-hotspot-category" class="commute-select">
+            <option value="all">All</option>
+            <option value="traffic_light">Traffic lights</option>
+            <option value="combined">Combined</option>
+            <option value="bottleneck">Bottlenecks</option>
+            <option value="tram_stop">Tram stops</option>
+        </select>
+    </div>
+    <div class="hotspots-table-wrap">
+        <table class="hotspots-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th><span class="i18n-it">Categoria</span><span class="i18n-en">Category</span></th>
+                    <th><span class="i18n-it">Attesa media</span><span class="i18n-en">Mean wait</span></th>
+                    <th><span class="i18n-it">Osservazioni</span><span class="i18n-en">Obs</span></th>
+                    <th><span class="i18n-it">Linee</span><span class="i18n-en">Lines</span></th>
+                    <th><span class="i18n-it">Contributi</span><span class="i18n-en">Contributions</span></th>
+                </tr>
+            </thead>
+            <tbody id="home-hotspots-body">
+                <tr><td colspan="6">—</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
 <section class="cards">
     {% for group in grouped_lines %}
     <h2 class="line-group-heading"><span class="i18n-it">Linea</span><span class="i18n-en">Line</span> {{ group.line_number }}</h2>

@@ -183,10 +183,11 @@ def _compute_stats(
     avg_trip_duration = sum(trip_durations) / len(trip_durations) if trip_durations else 0
 
     # --- Speed stats (distance/time based, not mean of instantaneous speeds) ---
-    all_speeds = pd.concat(
-        [df[["velocity_kmh", "dt", "dist"]].iloc[1:] for df in ride_dfs if len(df) >= 2],
-        ignore_index=True,
-    )
+    speed_parts = [df[["velocity_kmh", "dt", "dist"]].iloc[1:] for df in ride_dfs if len(df) >= 2]
+    if speed_parts:
+        all_speeds = pd.concat(speed_parts, ignore_index=True)
+    else:
+        all_speeds = pd.DataFrame(columns=["velocity_kmh", "dt", "dist"])
     total_dist = all_speeds["dist"].sum()
     total_dt = all_speeds["dt"].sum()
     moving_mask = ~((all_speeds["dt"] > STOP_TIME_GAP) & (all_speeds["dist"] < STOP_DISTANCE))

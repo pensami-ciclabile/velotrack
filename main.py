@@ -20,6 +20,12 @@ from velotrack.config import (
 )
 from velotrack.gpx_parser import parse_gpx
 from velotrack.gtfs import download_gtfs, load_tram_stops
+from velotrack.location_analytics import (
+    aggregate_location_events,
+    build_hotspot_slices,
+    build_normalized_events,
+    serialize_location_aggregates,
+)
 from velotrack.map_builder import build_map, build_traffic_lights_map, compute_line_stats
 from velotrack.stop_detector import classify_stops, detect_stops, load_traffic_lights
 
@@ -156,6 +162,7 @@ def _process_rides(gpx_paths: list[str] | None = None):
         print(f"\nProcessing {line_key} ({len(ride_files)} ride(s))...")
         ride_dfs = []
         all_stops = []
+        valid_ride_files: list[tuple[Path, str]] = []
         for ride_path, name in ride_files:
             print(f"  Parsing {name}...")
             df, outlier_count = parse_gpx(ride_path)
@@ -163,6 +170,7 @@ def _process_rides(gpx_paths: list[str] | None = None):
                 print(f"  WARNING: No points in {name}, skipping.")
                 continue
             ride_dfs.append(df)
+            valid_ride_files.append((ride_path, name))
             stops = detect_stops(df)
             stops = classify_stops(stops, tram_stops, traffic_lights)
             all_stops.append(stops)
@@ -174,7 +182,7 @@ def _process_rides(gpx_paths: list[str] | None = None):
             rides_by_line[line_key] = {
                 "ride_dfs": ride_dfs,
                 "all_stops": all_stops,
-                "ride_files": ride_files,
+                "ride_files": valid_ride_files,
             }
         else:
             print(f"  No valid rides for {line_key}, skipping.")
@@ -250,6 +258,11 @@ def cmd_build_site():
             total_distance_km=round(total_dist_km, 1),
         ))
 
+    # Build global location analytics (one row per physical hotspot + nested breakdowns)
+    normalized_events = build_normalized_events(rides_by_line)
+    location_aggregates = aggregate_location_events(normalized_events)
+    hotspot_slices = build_hotspot_slices(location_aggregates, limit=25)
+
     # Build traffic lights map into site/maps/
     tl = load_traffic_lights()
     tl_map = build_traffic_lights_map(tl)
@@ -257,7 +270,11 @@ def cmd_build_site():
     print(f"  Traffic lights map saved: {MAPS_DIR / 'traffic_lights.html'}")
 
     # Render the site
-    build_site(line_infos)
+    build_site(
+        line_infos,
+        location_stats=serialize_location_aggregates(location_aggregates),
+        hotspot_slices=hotspot_slices,
+    )
     print("\nSite build complete!")
 
 

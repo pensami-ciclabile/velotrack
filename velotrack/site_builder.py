@@ -4,6 +4,7 @@ import json
 import re
 import shutil
 from dataclasses import dataclass, asdict
+from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 from markupsafe import Markup
@@ -74,7 +75,11 @@ def _group_lines(lines: list[LineInfo]) -> list[dict]:
     ]
 
 
-def build_site(lines: list[LineInfo]) -> None:
+def build_site(
+    lines: list[LineInfo],
+    location_stats: list[dict[str, Any]] | None = None,
+    hotspot_slices: dict[str, list[dict[str, Any]]] | None = None,
+) -> None:
     """Render the full static site into SITE_DIR."""
     # Prepare output dirs
     for d in (SITE_DIR, MAPS_DIR, LINES_DIR, DATA_DIR_SITE):
@@ -93,6 +98,11 @@ def build_site(lines: list[LineInfo]) -> None:
     # Export lines.json
     lines_data = [asdict(li) for li in lines]
     (DATA_DIR_SITE / "lines.json").write_text(json.dumps(lines_data, indent=2))
+    location_stats = location_stats or []
+    hotspot_slices = hotspot_slices or {}
+    (DATA_DIR_SITE / "location_stats.json").write_text(
+        json.dumps(location_stats, indent=2)
+    )
 
     # Group lines by number for home page
     grouped_lines = _group_lines(lines)
@@ -206,6 +216,7 @@ def build_site(lines: list[LineInfo]) -> None:
             tl_breakdown=tl_breakdown,
             tl_extra_rides=tl_extra_rides,
             commute_lines_json=commute_lines_json,
+            hotspot_slices_json=Markup(json.dumps(hotspot_slices, ensure_ascii=False)),
         )
     )
 
@@ -215,5 +226,14 @@ def build_site(lines: list[LineInfo]) -> None:
         (LINES_DIR / f"{li.line_key}.html").write_text(
             tmpl.render(line=li, root_path="..")
         )
+
+    # Render network hotspots page
+    tmpl = env.get_template("hotspots.html")
+    (SITE_DIR / "hotspots.html").write_text(
+        tmpl.render(
+            root_path=".",
+            location_stats_json=Markup(json.dumps(location_stats, ensure_ascii=False)),
+        )
+    )
 
     print(f"Site built: {SITE_DIR}")

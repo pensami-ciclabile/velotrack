@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Network Hotspots — Velotrack{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+{% endblock %}
+
+{% block content %}
+<script id="hotspot-data" type="application/json">{{ location_stats_json }}</script>
+<div id="hotspot-data-url" data-url="{{ root_path }}/data/location_stats.json" hidden></div>
+
+<section class="section">
+    <h1><span class="i18n-it">Hotspot di rete</span><span class="i18n-en">Network hotspots</span></h1>
+    <p class="subtitle">
+        <span class="i18n-it">Qui analizziamo i punti fisici della rete (semafori, fermate, colli di bottiglia) dove i tram restano fermi più a lungo. Sommiamo tutte le fermate osservate in quel punto, anche se arrivano da linee diverse: se il semaforo è lo stesso, i dati vengono uniti. Ogni osservazione è una fermata reale registrata nei tracciati GPS.</span>
+        <span class="i18n-en">This page tracks physical network points (traffic lights, stops, bottlenecks) where trams wait the most. We combine all observed waits at the same physical point, even across different lines: if it is the same traffic light, data is merged. Each observation is a real stop captured in GPS rides.</span>
+    </p>
+    <div class="hotspot-category-guide">
+        <p class="hotspot-category-guide-title">
+            <span class="i18n-it">Come leggere le categorie</span>
+            <span class="i18n-en">How to read categories</span>
+        </p>
+        <ul>
+            <li>
+                <strong>Traffic light:</strong>
+                <span class="i18n-it"> fermata vicino a un semaforo mappato.</span>
+                <span class="i18n-en"> stop close to a mapped traffic light.</span>
+            </li>
+            <li>
+                <strong>Tram stop:</strong>
+                <span class="i18n-it"> fermata vicino a una fermata tram GTFS.</span>
+                <span class="i18n-en"> stop close to a GTFS tram stop.</span>
+            </li>
+            <li>
+                <strong>Bottleneck:</strong>
+                <span class="i18n-it"> fermata non associata né a semaforo né a fermata tram (congestione/incrocio).</span>
+                <span class="i18n-en"> stop not matched to either a traffic light or a tram stop (congestion/intersection).</span>
+            </li>
+            <li>
+                <strong>Combined:</strong>
+                <span class="i18n-it"> fermata vicina sia a fermata tram sia a semaforo. In questa pagina il tempo mostrato è il tempo totale di sosta osservato in quel punto (salita/discesa passeggeri + attesa semaforica), non solo la quota stimata dovuta al semaforo.</span>
+                <span class="i18n-en"> stop close to both a tram stop and a traffic light. On this page, shown wait time is the full observed stop time at that point (boarding/alighting + signal wait), not only the estimated traffic-light component.</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="hotspots-controls hotspots-controls-wide">
+        <label for="hotspot-category"><span class="i18n-it">Categoria</span><span class="i18n-en">Category</span></label>
+        <select id="hotspot-category" class="commute-select">
+            <option value="all">All</option>
+            <option value="traffic_light">Traffic lights</option>
+            <option value="combined">Combined</option>
+            <option value="bottleneck">Bottlenecks</option>
+            <option value="tram_stop">Tram stops</option>
+        </select>
+
+        <label for="hotspot-timeband"><span class="i18n-it">Fascia oraria</span><span class="i18n-en">Time band</span></label>
+        <select id="hotspot-timeband" class="commute-select">
+            <option value="all">All</option>
+        </select>
+    </div>
+
+    <div class="hotspots-layout">
+        <div class="hotspots-map-wrap">
+            <div id="hotspots-map" class="hotspots-map"></div>
+        </div>
+
+        <div class="hotspots-panel">
+            <h2><span class="i18n-it">Peggiori hotspot</span><span class="i18n-en">Worst hotspots</span></h2>
+            <div id="hotspots-list" class="hotspots-list">
+                <p class="hotspots-empty">—</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
