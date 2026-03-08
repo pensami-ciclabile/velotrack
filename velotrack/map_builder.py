@@ -6,7 +6,11 @@ from folium import Element
 import pandas as pd
 
 from velotrack.config import STOP_COLORS, STOP_DISTANCE, STOP_TIME_GAP, VELOCITY_COLORS
+from velotrack.gpx_parser import haversine
 from velotrack.stop_detector import StopEvent
+
+# Priority for category merging: higher = more specific
+_CAT_PRIORITY = {"unknown": 0, "bottleneck": 0, "tram_stop": 1, "traffic_light": 1, "combined": 2}
 
 
 def build_traffic_lights_map(
@@ -223,45 +227,51 @@ def _compute_stats(
         "p75": p75,
     }
 
-    # --- Stop time stats (per-category) ---
+    # --- Stop time stats (per-category, frequency-weighted) ---
+    num_rides = len(ride_dfs)
     cat_counts: dict[str, int] = {}
     cat_total_avg: dict[str, float] = {}
     tl_wait_from_tl = 0.0
     tl_wait_from_combined = 0.0
     tl_wait_from_bottleneck = 0.0
+    unweighted_total = 0.0
     for (_lat, _lon), events in merged_stops.items():
         categories = [e.category for e in events]
         category = max(set(categories), key=categories.count)
         avg_dur = sum(e.duration for e in events) / len(events)
+        frequency = len(events) / num_rides if num_rides > 0 else 1.0
+        weighted_dur = avg_dur * frequency
         cat_counts[category] = cat_counts.get(category, 0) + 1
-        cat_total_avg[category] = cat_total_avg.get(category, 0) + avg_dur
+        cat_total_avg[category] = cat_total_avg.get(category, 0) + weighted_dur
+        unweighted_total += avg_dur
         if category == "traffic_light":
-            tl_wait_from_tl += avg_dur
+            tl_wait_from_tl += weighted_dur
         elif category == "combined":
             avg_tl_wait = sum(e.traffic_light_wait or 0 for e in events) / len(events)
-            tl_wait_from_combined += avg_tl_wait
+            tl_wait_from_combined += avg_tl_wait * frequency
         elif category == "bottleneck":
-            tl_wait_from_bottleneck += avg_dur
+            tl_wait_from_bottleneck += weighted_dur
 
     total_stops = sum(cat_counts.values())
     total_delay = sum(cat_total_avg.values())
-    avg_wait = total_delay / total_stops if total_stops else 0
+    avg_wait = unweighted_total / total_stops if total_stops else 0
 
     # --- Scenario analysis (per-location min/max/percentiles) ---
     green_wave = 0.0
     red_wave = 0.0
     p25_sum = 0.0
     p75_sum = 0.0
-    for events in merged_stops.values():
+    for (_lat, _lon), events in merged_stops.items():
         durations = [e.duration for e in events]
-        green_wave += min(durations)
-        red_wave += max(durations)
+        frequency = len(events) / num_rides if num_rides > 0 else 1.0
+        green_wave += min(durations) * frequency
+        red_wave += max(durations) * frequency
         if len(durations) >= 2:
-            p25_sum += float(np.percentile(durations, 25))
-            p75_sum += float(np.percentile(durations, 75))
+            p25_sum += float(np.percentile(durations, 25)) * frequency
+            p75_sum += float(np.percentile(durations, 75)) * frequency
         else:
-            p25_sum += durations[0]
-            p75_sum += durations[0]
+            p25_sum += durations[0] * frequency
+            p75_sum += durations[0] * frequency
 
     priority_excl = tl_wait_from_tl + tl_wait_from_combined
     priority_incl = priority_excl + tl_wait_from_bottleneck
@@ -306,22 +316,51 @@ def _jsonify_stats(obj):
     return obj
 
 
-def _merge_stops(all_stops: list[list[StopEvent]]) -> dict[tuple[float, float], list[StopEvent]]:
+def _merge_stops(
+    all_stops: list[list[StopEvent]], cluster_radius_m: float = 20.0,
+) -> dict[tuple[float, float], list[StopEvent]]:
     """Merge stops: first within each ride (sum durations at same location),
-    then across rides (one entry per ride per location)."""
+    then across rides (one entry per ride per location).
+
+    Stops with ref_lat/ref_lon (tram_stop, traffic_light, combined) merge by
+    exact reference coordinates. Bottlenecks (no ref) merge by spatial
+    clustering within cluster_radius_m.
+
+    When merging within a ride, the most specific category wins
+    (combined > tram_stop/traffic_light > bottleneck).
+    """
     merged: dict[tuple[float, float], list[StopEvent]] = {}
+
     for stops in all_stops:
+        # Phase 1: per-ride merge
         ride_merged: dict[tuple[float, float], StopEvent] = {}
         for stop in stops:
             if stop.ref_lat is not None and stop.ref_lon is not None:
                 key = (round(stop.ref_lat, 5), round(stop.ref_lon, 5))
             else:
-                key = (round(stop.lat, 5), round(stop.lon, 5))
+                # Bottleneck: find nearest existing bottleneck key within radius
+                best_key = None
+                best_dist = cluster_radius_m
+                for k, existing in ride_merged.items():
+                    if existing.ref_lat is not None:
+                        continue  # skip non-bottleneck keys
+                    d = haversine(stop.lat, stop.lon, k[0], k[1])
+                    if d < best_dist:
+                        best_dist = d
+                        best_key = k
+                key = best_key if best_key is not None else (round(stop.lat, 5), round(stop.lon, 5))
+
             if key in ride_merged:
                 existing = ride_merged[key]
                 existing.duration += stop.duration
                 if stop.traffic_light_wait is not None:
                     existing.traffic_light_wait = (existing.traffic_light_wait or 0) + stop.traffic_light_wait
+                # Upgrade category if more specific
+                if _CAT_PRIORITY.get(stop.category, 0) > _CAT_PRIORITY.get(existing.category, 0):
+                    existing.category = stop.category
+                    if stop.ref_lat is not None:
+                        existing.ref_lat = stop.ref_lat
+                        existing.ref_lon = stop.ref_lon
             else:
                 ride_merged[key] = StopEvent(
                     lat=stop.lat, lon=stop.lon, duration=stop.duration,
@@ -330,9 +369,48 @@ def _merge_stops(all_stops: list[list[StopEvent]]) -> dict[tuple[float, float], 
                     traffic_light_wait=stop.traffic_light_wait,
                     ref_lat=stop.ref_lat, ref_lon=stop.ref_lon,
                 )
+
+        # Phase 2: cross-ride merge
         for key, stop in ride_merged.items():
-            merged.setdefault(key, []).append(stop)
+            if stop.ref_lat is not None and stop.ref_lon is not None:
+                # Non-bottleneck: exact key match
+                merged.setdefault(key, []).append(stop)
+            else:
+                # Bottleneck: spatial clustering across rides
+                best_key = None
+                best_dist = cluster_radius_m
+                for k, events in merged.items():
+                    if events[0].ref_lat is not None:
+                        continue  # skip non-bottleneck clusters
+                    d = haversine(key[0], key[1], k[0], k[1])
+                    if d < best_dist:
+                        best_dist = d
+                        best_key = k
+                if best_key is not None:
+                    merged[best_key].append(stop)
+                else:
+                    merged.setdefault(key, []).append(stop)
+
     return merged
+
+
+def _majority_category(events: list[StopEvent]) -> str:
+    """Return the most common category among a list of stop events."""
+    categories = [e.category for e in events]
+    return max(set(categories), key=categories.count)
+
+
+def _filter_bottlenecks(
+    merged_stops: dict[tuple[float, float], list[StopEvent]], num_rides: int,
+) -> dict[tuple[float, float], list[StopEvent]]:
+    """Remove bottleneck locations where fewer than 50% of rides stop."""
+    if num_rides <= 0:
+        return merged_stops
+    threshold = num_rides * 0.5
+    return {
+        key: events for key, events in merged_stops.items()
+        if not (_majority_category(events) == "bottleneck" and len(events) < threshold)
+    }
 
 
 def compute_line_stats(
@@ -344,6 +422,7 @@ def compute_line_stats(
     Reuses the same merge-stops + _compute_stats logic from build_map.
     """
     merged_stops = _merge_stops(all_stops)
+    merged_stops = _filter_bottlenecks(merged_stops, len(all_stops))
     stats = _compute_stats(ride_dfs, merged_stops)
     return _jsonify_stats(stats)
 
@@ -855,19 +934,13 @@ def build_map(
             ).add_to(route_group)
 
     # Merge stops: within each ride first (sum durations), then across rides
-    merged_stops = _merge_stops(all_stops)
+    # Filter bottlenecks below 50% threshold — used for both map and stats
+    merged_stops = _filter_bottlenecks(_merge_stops(all_stops), num_rides)
 
     for (lat, lon), events in merged_stops.items():
-        # Use most common category
-        categories = [e.category for e in events]
-        category = max(set(categories), key=categories.count)
+        category = _majority_category(events)
         avg_duration = sum(e.duration for e in events) / len(events)
         count = len(events)
-
-        # Filter bottlenecks: only show if ≥50% of rides stop there
-        if category == "bottleneck" and num_rides > 0:
-            if count < num_rides * 0.5:
-                continue
 
         nearest_name = next((e.nearest_stop_name for e in events if e.nearest_stop_name), "?")
 

@@ -9,7 +9,7 @@
 {% block content %}
 <section class="section">
     <h1><span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span></h1>
-    <p class="subtitle">{{ line.num_rides }} <span class="i18n-it">corsa{{ "e" if line.num_rides != 1 }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km</p>
+    <p class="subtitle">{{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km</p>
 
     <div class="iframe-wrapper">
         <iframe src="{{ root_path }}/maps/{{ line.line_key }}.html" loading="lazy" allowfullscreen></iframe>

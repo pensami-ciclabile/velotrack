@@ -123,7 +123,7 @@
             {% set remainder = (secs % 60)|int %}
             <p class="card-savings"><span class="i18n-it">Potrebbe essere il {{ pct }}% più veloce ({{ mins }}m {{ remainder }}s)</span><span class="i18n-en">Could be {{ pct }}% faster ({{ mins }}m {{ remainder }}s)</span></p>
             {% endif %}
-            <p class="card-meta">{{ line.num_rides }} <span class="i18n-it">corsa{{ "e" if line.num_rides != 1 }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km</p>
+            <p class="card-meta">{{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km</p>
         </a>
         {% endfor %}
     </div>
