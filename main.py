@@ -58,6 +58,50 @@ def _ensure_csv_columns():
         TRAFFIC_LIGHTS_CSV.write_text(content)
 
 
+def _remove_traffic_light_from_csv(lat: float, lon: float, tolerance: float = 1e-7) -> bool:
+    """Remove first traffic light matching lat/lon within tolerance. Returns True if removed."""
+    if not TRAFFIC_LIGHTS_CSV.exists():
+        return False
+
+    with open(TRAFFIC_LIGHTS_CSV, newline="") as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
+        fieldnames = reader.fieldnames
+
+    if not fieldnames:
+        return False
+
+    removed = False
+    kept_rows: list[dict[str, str]] = []
+    for row in rows:
+        if removed:
+            kept_rows.append(row)
+            continue
+
+        try:
+            row_lat = float(row.get("lat", ""))
+            row_lon = float(row.get("lon", ""))
+        except (TypeError, ValueError):
+            kept_rows.append(row)
+            continue
+
+        if abs(row_lat - lat) <= tolerance and abs(row_lon - lon) <= tolerance:
+            removed = True
+            continue
+
+        kept_rows.append(row)
+
+    if not removed:
+        return False
+
+    with open(TRAFFIC_LIGHTS_CSV, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(kept_rows)
+
+    return True
+
+
 def cmd_traffic_lights(watch: bool = False):
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     out_path = OUTPUT_DIR / "traffic_lights.html"
@@ -77,6 +121,14 @@ def cmd_traffic_lights(watch: bool = False):
     _ensure_csv_columns()
 
     class TrafficLightHandler(BaseHTTPRequestHandler):
+        def _send_json(self, status_code: int, payload: dict):
+            raw = json.dumps(payload).encode("utf-8")
+            self.send_response(status_code)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(raw)))
+            self.end_headers()
+            self.wfile.write(raw)
+
         def do_GET(self):
             # Regenerate map on every request
             generate()
@@ -88,36 +140,60 @@ def cmd_traffic_lights(watch: bool = False):
             self.wfile.write(html)
 
         def do_POST(self):
-            if self.path != "/add":
+            if self.path not in ("/add", "/remove"):
                 self.send_response(404)
                 self.end_headers()
                 return
+
             length = int(self.headers.get("Content-Length", 0))
-            body = json.loads(self.rfile.read(length))
-            lat = body["lat"]
-            lon = body["lon"]
-            name = body.get("name", "")
-            notes = body.get("notes", "")
-            added_at = datetime.now(timezone.utc).isoformat()
-            added_by = getpass.getuser()
+            try:
+                body = json.loads(self.rfile.read(length))
+            except json.JSONDecodeError:
+                self._send_json(400, {"ok": False, "error": "invalid_json"})
+                return
 
-            # Append to CSV
-            TRAFFIC_LIGHTS_CSV.parent.mkdir(parents=True, exist_ok=True)
-            if not TRAFFIC_LIGHTS_CSV.exists():
-                TRAFFIC_LIGHTS_CSV.write_text("lat,lon,name,notes,added_at,added_by\n")
-                _ensure_csv_columns()
+            if self.path == "/add":
+                try:
+                    lat = float(body["lat"])
+                    lon = float(body["lon"])
+                except (KeyError, TypeError, ValueError):
+                    self._send_json(400, {"ok": False, "error": "invalid_coordinates"})
+                    return
+                name = str(body.get("name", "")).strip()
+                if not name:
+                    self._send_json(400, {"ok": False, "error": "name_required"})
+                    return
+                notes = str(body.get("notes", "")).strip()
+                added_at = datetime.now(timezone.utc).isoformat()
+                added_by = getpass.getuser()
 
-            buf = io.StringIO()
-            writer = csv.writer(buf)
-            writer.writerow([lat, lon, name, notes, added_at, added_by])
-            with open(TRAFFIC_LIGHTS_CSV, "a") as f:
-                f.write(buf.getvalue())
+                # Append to CSV
+                TRAFFIC_LIGHTS_CSV.parent.mkdir(parents=True, exist_ok=True)
+                if not TRAFFIC_LIGHTS_CSV.exists():
+                    TRAFFIC_LIGHTS_CSV.write_text("lat,lon,name,notes,added_at,added_by\n")
+                    _ensure_csv_columns()
 
-            print(f"  Added: {name} ({lat}, {lon})")
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(b'{"ok":true}')
+                buf = io.StringIO()
+                writer = csv.writer(buf)
+                writer.writerow([lat, lon, name, notes, added_at, added_by])
+                with open(TRAFFIC_LIGHTS_CSV, "a") as f:
+                    f.write(buf.getvalue())
+
+                print(f"  Added: {name} ({lat}, {lon})")
+                self._send_json(200, {"ok": True})
+                return
+
+            try:
+                lat = float(body["lat"])
+                lon = float(body["lon"])
+            except (KeyError, TypeError, ValueError):
+                self._send_json(400, {"ok": False, "error": "invalid_coordinates"})
+                return
+
+            removed = _remove_traffic_light_from_csv(lat, lon)
+            if removed:
+                print(f"  Removed: ({lat}, {lon})")
+            self._send_json(200, {"ok": True, "removed": removed})
 
         def log_message(self, format, *args):
             pass  # Suppress default request logging
@@ -125,8 +201,9 @@ def cmd_traffic_lights(watch: bool = False):
     port = 8000
     server = HTTPServer(("localhost", port), TrafficLightHandler)
     print(f"Serving traffic light map at http://localhost:{port}")
-    print(f"Right-click on the map to add new traffic lights.")
-    print("Right-click to add, page reloads on submit. Ctrl+C to stop.")
+    print("Right-click to add new traffic lights.")
+    print("Click an existing red dot to remove it.")
+    print("Map reloads after add/remove. Ctrl+C to stop.")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

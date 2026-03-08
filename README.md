@@ -150,7 +150,7 @@ open outputs/traffic_lights.html
 uv run main.py traffic-lights --watch
 ```
 
-With `--watch`, a local HTTP server starts at `http://localhost:8000`. The map includes a Google Satellite + Labels layer (toggle in top-right) for easy identification. Right-click anywhere on the map to open a popup form — enter a name (required) and optional notes, then click "Add". The page reloads automatically with the new marker. Each entry is timestamped (`added_at`) and tagged with your local username (`added_by`) in the CSV.
+With `--watch`, a local HTTP server starts at `http://localhost:8000`. The map includes a Google Satellite + Labels layer (toggle in top-right) for easy identification. Right-click anywhere on the map to open a popup form — enter a name (required) and optional notes, then click "Add". Click any existing red-dot traffic light to remove it. The page reloads automatically after add/remove. Each added entry is timestamped (`added_at`) and tagged with your local username (`added_by`) in the CSV.
 
 ### Tram stop data
 

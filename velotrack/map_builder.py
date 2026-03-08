@@ -45,16 +45,18 @@ def build_traffic_lights_map(
         popup_text = f"<b>{name}</b>"
         if notes:
             popup_text += f"<br>{notes}"
-        folium.CircleMarker(
+        marker = folium.CircleMarker(
             location=[row["lat"], row["lon"]],
             radius=8,
             color="red",
             fill=True,
             fill_color="red",
             fill_opacity=0.7,
-            popup=folium.Popup(popup_text, max_width=250),
             tooltip=name,
-        ).add_to(m)
+        )
+        if not server_mode:
+            marker.add_child(folium.Popup(popup_text, max_width=250))
+        marker.add_to(m)
 
     # Street names overlay (no POIs/shops) — useful on top of satellite
     street_labels = folium.TileLayer(
@@ -112,6 +114,70 @@ def build_traffic_lights_map(
                 window.location.hash = c.lat.toFixed(6) + '/' + c.lng.toFixed(6) + '/' + map.getZoom();
                 if (activeLayer) localStorage.setItem('tl_layer', activeLayer);
             }
+
+            function escapeHtml(s) {
+                return String(s || '').replace(/[&<>"']/g, function(ch) {
+                    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+                });
+            }
+
+            function stripHtml(html) {
+                var el = document.createElement('div');
+                el.innerHTML = String(html || '');
+                return (el.textContent || el.innerText || '').trim();
+            }
+
+            function bindRemoveHandler(layer) {
+                if (!(layer instanceof L.CircleMarker)) return;
+                if (layer.options.color !== 'red') return;
+                layer.on('click', function(ev) {
+                    var p = layer.getLatLng();
+                    var lat = p.lat;
+                    var lon = p.lng;
+                    var tooltip = layer.getTooltip ? layer.getTooltip() : null;
+                    var rawName = tooltip && tooltip.getContent ? tooltip.getContent() : '';
+                    var name = stripHtml(rawName) || 'Traffic light';
+                    var notes = '';
+                    var popupId = 'tl-remove-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
+                    var notesHtml = notes ? ('<div style="margin-top:4px;color:#555">' + escapeHtml(notes) + '</div>') : '';
+                    var html = '<div style="font-family:sans-serif;font-size:13px">'
+                        + '<b>' + escapeHtml(name) + '</b>'
+                        + notesHtml
+                        + '<div style="margin-top:8px">Remove this traffic light?</div>'
+                        + '<button id="' + popupId + '" type="button" style="margin-top:6px;padding:4px 12px;cursor:pointer">Remove</button>'
+                        + '<span id="' + popupId + '-status" style="margin-left:8px;color:#888"></span>'
+                        + '</div>';
+                    L.popup({maxWidth: 360, minWidth: 240}).setLatLng(ev.latlng).setContent(html).openOn(map);
+
+                    setTimeout(function() {
+                        var btn = document.getElementById(popupId);
+                        var status = document.getElementById(popupId + '-status');
+                        if (!btn) return;
+                        btn.addEventListener('click', function() {
+                            if (!window.confirm('Remove this traffic light?')) return;
+                            if (status) status.textContent = 'Removing...';
+                            fetch('/remove', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({lat: lat, lon: lon})
+                            }).then(function(r) {
+                                return r.json().catch(function() { return {}; });
+                            }).then(function(payload) {
+                                if (payload && payload.ok && payload.removed) {
+                                    saveState();
+                                    window.location.reload();
+                                } else if (status) {
+                                    status.textContent = 'Not found';
+                                }
+                            }).catch(function() {
+                                if (status) status.textContent = 'Error!';
+                            });
+                        });
+                    }, 30);
+                });
+            }
+
+            map.eachLayer(bindRemoveHandler);
 
             // Right-click to add a traffic light
             map.on('contextmenu', function(e) {
