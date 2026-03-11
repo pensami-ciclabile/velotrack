@@ -862,80 +862,117 @@ def _speed_space_chart_html(
     """
 
 
-def _average_route(ride_dfs: list[pd.DataFrame], step_m: float = 10.0) -> pd.DataFrame:
-    """Compute an averaged route line from multiple rides.
+def _resample_ride(df: pd.DataFrame, step_m: float) -> np.ndarray | None:
+    """Resample a ride at fixed distance intervals.
 
-    Resamples each ride at fixed distance intervals and averages lat/lon/speed
-    across rides at each distance bin. Uses max ride length so the full route
-    is shown even when rides differ in length.
+    Returns an Nx3 array of (lat, lon, velocity_kmh), or None if too short.
+    """
+    if len(df) < 2:
+        return None
+    cum_dist = df["dist"].cumsum().values
+    if cum_dist[-1] < step_m:
+        return None
+    steps = np.arange(0, cum_dist[-1], step_m)
+    return np.column_stack([
+        np.interp(steps, cum_dist, df["lat"].values),
+        np.interp(steps, cum_dist, df["lon"].values),
+        np.interp(steps, cum_dist, df["velocity_kmh"].values),
+    ])
+
+
+def _average_route(ride_dfs: list[pd.DataFrame], step_m: float = 10.0) -> pd.DataFrame:
+    """Compute an averaged route from multiple rides.
+
+    Uses the longest ride as a spatial backbone. Points from other rides are
+    snapped onto the backbone by geographic proximity (haversine ≤ 50 m) so
+    only co-located points are averaged. Segments of shorter rides that don't
+    overlap the backbone are spliced in at the correct position.
+
+    The drawing code in build_map() breaks the polyline at gaps (>50 m between
+    consecutive output points), so non-contiguous segments render cleanly.
 
     Returns DataFrame with columns: cum_dist, lat, lon, velocity_kmh,
         n_rides, median_kmh, p25_kmh, p75_kmh
     """
-    resampled = []
-    for df in ride_dfs:
-        if len(df) < 2:
-            continue
-        cum_dist = df["dist"].cumsum().values
-        max_dist = cum_dist[-1]
-        if max_dist < step_m:
-            continue
-        steps = np.arange(0, max_dist, step_m)
-        lat_interp = np.interp(steps, cum_dist, df["lat"].values)
-        lon_interp = np.interp(steps, cum_dist, df["lon"].values)
-        vel_interp = np.interp(steps, cum_dist, df["velocity_kmh"].values)
-        resampled.append({
-            "steps": steps,
-            "lat": lat_interp,
-            "lon": lon_interp,
-            "vel": vel_interp,
-            "n_steps": len(steps),
-        })
+    SNAP_M = 50.0
+    COLS = ["cum_dist", "lat", "lon", "velocity_kmh",
+            "n_rides", "median_kmh", "p25_kmh", "p75_kmh"]
 
-    if not resampled:
-        return pd.DataFrame(columns=[
-            "cum_dist", "lat", "lon", "velocity_kmh",
-            "n_rides", "median_kmh", "p25_kmh", "p75_kmh",
+    rides = [r for df in ride_dfs if (r := _resample_ride(df, step_m)) is not None]
+    if not rides:
+        return pd.DataFrame(columns=COLS)
+
+    # Backbone = longest ride.  bins[i] collects all (lat, lon, vel) at bin i.
+    ref = max(rides, key=len)
+    bins: list[list[np.ndarray]] = [[ref[i]] for i in range(len(ref))]
+
+    # For each other ride, snap each point to the nearest backbone bin.
+    # Track which points matched so we can splice unmatched runs afterwards.
+    splices: list[tuple[int, np.ndarray]] = []  # (insert_pos, unmatched_points)
+
+    for ride in rides:
+        if ride is ref:
+            continue
+
+        snap_idx = np.full(len(ride), -1, dtype=int)  # -1 = unmatched
+        hint = 0
+        for j in range(len(ride)):
+            # Search near the last match first (rides are spatially ordered)
+            best_k, best_d = -1, float("inf")
+            for k in range(max(0, hint - 50), min(len(ref), hint + 200)):
+                d = haversine(ride[j, 0], ride[j, 1], ref[k, 0], ref[k, 1])
+                if d < best_d:
+                    best_d, best_k = d, k
+            if best_d <= SNAP_M:
+                snap_idx[j] = best_k
+                hint = best_k
+                bins[best_k].append(ride[j])
+
+        # Collect contiguous unmatched runs and figure out where to splice them
+        j = 0
+        while j < len(ride):
+            if snap_idx[j] >= 0:
+                j += 1
+                continue
+            start = j
+            while j < len(ride) and snap_idx[j] < 0:
+                j += 1
+            # Insert position: after the last matched point before this run,
+            # or before the first matched point after it, or at the start.
+            if start > 0 and snap_idx[start - 1] >= 0:
+                pos = snap_idx[start - 1] + 1
+            elif j < len(ride) and snap_idx[j] >= 0:
+                pos = snap_idx[j]
+            else:
+                pos = 0
+            splices.append((pos, ride[start:j]))
+
+    # Build backbone rows from bins
+    rows = []
+    for i, b in enumerate(bins):
+        pts = np.array(b)
+        vels = pts[:, 2]
+        n = len(b)
+        rows.append([
+            i * step_m,                               # cum_dist
+            pts[:, 0].mean(), pts[:, 1].mean(),       # lat, lon
+            vels.mean(), n,                            # velocity_kmh, n_rides
+            np.median(vels),                           # median_kmh
+            np.percentile(vels, 25) if n >= 2 else vels[0],  # p25_kmh
+            np.percentile(vels, 75) if n >= 2 else vels[0],  # p75_kmh
         ])
 
-    max_len = max(r["n_steps"] for r in resampled)
-    steps = next(r["steps"] for r in resampled if r["n_steps"] == max_len)
+    # Splice unmatched runs (reverse order so indices stay valid)
+    splices.sort(key=lambda x: x[0], reverse=True)
+    for pos, pts in splices:
+        extra = [[0, p[0], p[1], p[2], 1, p[2], p[2], p[2]] for p in pts]
+        rows[pos:pos] = extra
 
-    avg_lat = np.full(max_len, np.nan)
-    avg_lon = np.full(max_len, np.nan)
-    avg_vel = np.full(max_len, np.nan)
-    median_vel = np.full(max_len, np.nan)
-    p25_vel = np.full(max_len, np.nan)
-    p75_vel = np.full(max_len, np.nan)
-    n_rides = np.zeros(max_len, dtype=int)
+    # Reassign cum_dist after splicing
+    for i, row in enumerate(rows):
+        row[0] = i * step_m
 
-    for i in range(max_len):
-        lats = [r["lat"][i] for r in resampled if i < r["n_steps"]]
-        lons = [r["lon"][i] for r in resampled if i < r["n_steps"]]
-        vels = [r["vel"][i] for r in resampled if i < r["n_steps"]]
-        n = len(lats)
-        n_rides[i] = n
-        avg_lat[i] = np.mean(lats)
-        avg_lon[i] = np.mean(lons)
-        avg_vel[i] = np.mean(vels)
-        median_vel[i] = np.median(vels)
-        if n >= 2:
-            p25_vel[i] = np.percentile(vels, 25)
-            p75_vel[i] = np.percentile(vels, 75)
-        else:
-            p25_vel[i] = vels[0]
-            p75_vel[i] = vels[0]
-
-    return pd.DataFrame({
-        "cum_dist": steps,
-        "lat": avg_lat,
-        "lon": avg_lon,
-        "velocity_kmh": avg_vel,
-        "n_rides": n_rides,
-        "median_kmh": median_vel,
-        "p25_kmh": p25_vel,
-        "p75_kmh": p75_vel,
-    })
+    return pd.DataFrame(rows, columns=COLS)
 
 
 def build_map(
@@ -971,15 +1008,20 @@ def build_map(
         for cat in STOP_COLORS
     }
 
-    # Draw a single averaged velocity-colored route line
+    # Draw averaged velocity-colored route line, breaking at geographic gaps
     avg_route = _average_route(ride_dfs)
     if len(avg_route) >= 2:
+        # Max realistic segment length: ~3× the resampling step (10 m) to
+        # tolerate small GPS jitter but break at real discontinuities.
+        max_seg_m = 50.0
         for i in range(1, len(avg_route)):
+            prev = avg_route.iloc[i - 1]
             row = avg_route.iloc[i]
-            coords = [
-                [avg_route.iloc[i - 1]["lat"], avg_route.iloc[i - 1]["lon"]],
-                [row["lat"], row["lon"]],
-            ]
+            # Skip segment if consecutive points are far apart (route gap)
+            seg_dist = haversine(prev["lat"], prev["lon"], row["lat"], row["lon"])
+            if seg_dist > max_seg_m:
+                continue
+            coords = [[prev["lat"], prev["lon"]], [row["lat"], row["lon"]]]
             speed = row["velocity_kmh"]
             n = int(row["n_rides"])
             median = row["median_kmh"]
@@ -1060,5 +1102,95 @@ def build_map(
     if x_km:
         chart_html = _speed_space_chart_html(x_km, avg_speed, ride_traces)
         m.get_root().html.add_child(Element(chart_html))
+
+    return m
+
+
+def build_inspect_map(df: pd.DataFrame, title: str = "Ride Inspector",
+                      gpx_path: str = "") -> folium.Map:
+    """Build an interactive map for inspecting a single GPX ride point-by-point.
+
+    Each GPS point is shown as a small circle. Hovering reveals the point index,
+    timestamp, lat/lon, speed and cumulative distance — useful for finding
+    corrupted sections that should be deleted from the source file.
+    """
+    center_lat = df["lat"].mean()
+    center_lon = df["lon"].mean()
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=13,
+                   tiles="cartodbpositron")
+
+    # Draw the route polyline
+    coords = list(zip(df["lat"], df["lon"]))
+    folium.PolyLine(coords, color="#3388ff", weight=3, opacity=0.5).add_to(m)
+
+    # Cumulative distance
+    cum_dist = df["dist"].cumsum()
+
+    # Add a circle for each point with tooltip
+    for i, row in df.iterrows():
+        time_str = row["time"].strftime("%H:%M:%S") if pd.notna(row["time"]) else "—"
+        speed = row["velocity_kmh"]
+        dist_km = cum_dist.iloc[i] / 1000
+
+        # Color by speed
+        color = "#d73027"  # default red
+        for max_kmh, c in VELOCITY_COLORS:
+            if speed <= max_kmh:
+                color = c
+                break
+
+        tooltip = (
+            f"<b>#{i}</b><br>"
+            f"Time: {time_str}<br>"
+            f"Lat: {row['lat']:.6f}<br>"
+            f"Lon: {row['lon']:.6f}<br>"
+            f"Speed: {speed:.1f} km/h<br>"
+            f"Dist: {dist_km:.2f} km"
+        )
+
+        folium.CircleMarker(
+            location=[row["lat"], row["lon"]],
+            radius=4,
+            color=color,
+            fill=True,
+            fill_color=color,
+            fill_opacity=0.8,
+            weight=1,
+            tooltip=tooltip,
+        ).add_to(m)
+
+    # Info panel
+    n_points = len(df)
+    duration = ""
+    if n_points > 1 and pd.notna(df.iloc[0]["time"]) and pd.notna(df.iloc[-1]["time"]):
+        dt = df.iloc[-1]["time"] - df.iloc[0]["time"]
+        mins = int(dt.total_seconds() // 60)
+        secs = int(dt.total_seconds() % 60)
+        duration = f"Duration: {mins}m {secs}s<br>"
+    total_km = cum_dist.iloc[-1] / 1000 if n_points > 0 else 0
+
+    source_line = ""
+    if gpx_path:
+        source_line = (
+            f'Source: <a href="file://{gpx_path}" '
+            f'style="color:#0066cc; word-break:break-all;">{gpx_path}</a><br>'
+        )
+
+    info_html = f"""
+    <div style="position:fixed; bottom:20px; left:20px; z-index:9999;
+                background:white; padding:12px 16px; border-radius:8px;
+                box-shadow:0 2px 8px rgba(0,0,0,0.2); font:13px/1.5 sans-serif;
+                max-width:400px;">
+        <b>{title}</b><br>
+        Points: {n_points}<br>
+        {duration}
+        Distance: {total_km:.2f} km<br>
+        {source_line}
+        <span style="color:#888; font-size:11px;">
+            Hover over points to inspect. Colors = speed.
+        </span>
+    </div>
+    """
+    m.get_root().html.add_child(Element(info_html))
 
     return m

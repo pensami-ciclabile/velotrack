@@ -26,7 +26,7 @@ from velotrack.location_analytics import (
     build_normalized_events,
     serialize_location_aggregates,
 )
-from velotrack.map_builder import build_map, build_traffic_lights_map, compute_line_stats
+from velotrack.map_builder import build_inspect_map, build_map, build_traffic_lights_map, compute_line_stats
 from velotrack.stop_detector import classify_stops, detect_stops, load_traffic_lights
 
 
@@ -210,6 +210,34 @@ def cmd_traffic_lights(watch: bool = False):
         print("\nServer stopped.")
 
 
+def cmd_inspect(gpx_paths: list[str]):
+    """Generate an interactive inspection map for individual GPX rides."""
+    if not gpx_paths:
+        gpx_paths = sorted(str(p) for p in RIDES_DIR.glob("*.gpx") if not p.name.startswith("._"))
+        if not gpx_paths:
+            print(f"No GPX files found. Place .gpx files in {RIDES_DIR}")
+            sys.exit(1)
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    for p in gpx_paths:
+        path = Path(p)
+        print(f"Parsing {path.name}...")
+        df, outlier_count = parse_gpx(path)
+        if df.empty:
+            print(f"  WARNING: No points in {path.name}, skipping.")
+            continue
+        if outlier_count > 0:
+            print(f"  ⚠ {outlier_count} velocity outliers clamped to {MAX_REALISTIC_SPEED} km/h")
+
+        m = build_inspect_map(df, title=path.stem, gpx_path=str(path.resolve()))
+        out_path = OUTPUT_DIR / f"inspect_{path.stem}.html"
+        m.save(str(out_path))
+        print(f"  {len(df)} points → file://{out_path.resolve()}")
+
+    print("\nDone! Open the HTML file(s) in a browser to inspect rides.")
+
+
 def _process_rides(gpx_paths: list[str] | None = None):
     """Parse GPX files, detect stops, group by line. Returns (rides_by_line, tram_stops, traffic_lights).
 
@@ -361,6 +389,7 @@ def main():
         print("  uv run main.py download-gtfs          Download Milan GTFS tram stop data")
         print("  uv run main.py template                Create traffic_lights.csv template")
         print("  uv run main.py traffic-lights [--watch]     View traffic lights on a map")
+        print("  uv run main.py inspect [files]         Inspect individual GPX rides on a map")
         print("  uv run main.py analyze [files]         Analyze GPX rides and generate maps")
         print("  uv run main.py extract-trips           Extract daily trip counts from GTFS")
         print("  uv run main.py build-site              Build static website for GitHub Pages")
@@ -377,6 +406,8 @@ def main():
             cmd_traffic_lights(watch=True)
         else:
             cmd_traffic_lights()
+    elif cmd == "inspect":
+        cmd_inspect(sys.argv[2:])
     elif cmd == "analyze":
         cmd_analyze(sys.argv[2:])
     elif cmd == "extract-trips":

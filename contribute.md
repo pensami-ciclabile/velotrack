@@ -38,6 +38,12 @@ This guide explains architecture, analytics contracts, and test expectations for
 - `/Volumes/T7/velotrack/velotrack/map_builder.py`
   - `compute_line_stats()` computes per-line KPIs and scenario totals.
   - `build_map()` renders per-line Folium maps.
+  - `_average_route()` merges multiple rides into one velocity-colored route:
+    1. Each ride is resampled at 10 m intervals (`_resample_ride()`).
+    2. The longest ride becomes the spatial backbone.
+    3. Other rides' points snap to the nearest backbone bin by haversine distance (≤ 50 m). Only co-located points are averaged.
+    4. Unmatched segments (ride portions with no backbone overlap) are spliced into the output at the correct position.
+    5. `build_map()` breaks the polyline at gaps (consecutive points > 50 m apart) so non-contiguous segments render cleanly without diagonal artifacts.
 
 ### Infrastructure analytics
 - `/Volumes/T7/velotrack/velotrack/location_analytics.py`

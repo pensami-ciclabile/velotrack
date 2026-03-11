@@ -100,6 +100,16 @@ You can also analyze specific files:
 uv run main.py analyze data/rides/line1_roserio_repubblica_xxsettembre.gpx
 ```
 
+### Inspect individual rides
+
+To visually check a GPX recording for corrupted segments before including it in the analysis:
+
+```bash
+uv run main.py inspect data/rides/line1_roserio_repubblica_xxsettembre.gpx
+```
+
+This generates a point-by-point map in `outputs/` where each GPS point is color-coded by speed. Hover over any point to see its index, timestamp, lat/lon, speed, and cumulative distance. The console prints a clickable `file://` URL to open the map directly. Use the point indices to identify corrupted sections to delete from the source GPX file.
+
 ## Managing data
 
 ### Recording GPX rides
