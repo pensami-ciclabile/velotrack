@@ -1,0 +1,504 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Methodology — Velotrack
+{% endblock %}
+
+{% block content %}
+<section class="section methodology">
+    <h1><span class="i18n-it">Metodologia</span><span class="i18n-en">Methodology</span></h1>
+    <p class="subtitle">
+        <span class="i18n-it">
+            Questa pagina descrive come raccogliamo, elaboriamo e analizziamo i dati sulla velocità e le fermate dei tram di Milano.
+            VeloTrack è un progetto open-source: tutto il codice sorgente è disponibile su <a href="https://github.com/pensami-ciclabile/velotrack" target="_blank" rel="noopener">GitHub</a>.
+        </span>
+        <span class="i18n-en">
+            This page describes how we collect, process, and analyze data about Milan's tram speeds and stops.
+            VeloTrack is an open-source project: all source code is available on <a href="https://github.com/pensami-ciclabile/velotrack" target="_blank" rel="noopener">GitHub</a>.
+        </span>
+    </p>
+
+    <!-- 1. DATA COLLECTION -->
+    <div class="method-block">
+        <h2><span class="i18n-it">1. Raccolta dati</span><span class="i18n-en">1. Data collection</span></h2>
+
+        <h3><span class="i18n-it">Tracce GPS</span><span class="i18n-en">GPS traces</span></h3>
+        <p>
+            <span class="i18n-it">
+                I dati provengono da tracciati GPS registrati a bordo dei tram di Milano da volontari tramite app di tracking (come Strava, OsmAnd, o simili).
+                I file vengono esportati in formato <strong>GPX</strong> (GPS Exchange Format), uno standard aperto ampiamente utilizzato.
+                Ogni traccia contiene una sequenza di punti con latitudine, longitudine, quota e timestamp.
+            </span>
+            <span class="i18n-en">
+                Data comes from GPS traces recorded aboard Milan trams by volunteers using tracking apps (such as Strava, OsmAnd, or similar).
+                Files are exported in <strong>GPX</strong> (GPS Exchange Format), a widely-used open standard.
+                Each trace contains a sequence of points with latitude, longitude, elevation, and timestamp.
+            </span>
+        </p>
+
+        <h3><span class="i18n-it">Fermate tram (GTFS)</span><span class="i18n-en">Tram stops (GTFS)</span></h3>
+        <p>
+            <span class="i18n-it">
+                Le posizioni delle fermate tram sono scaricate dal dataset <strong>GTFS</strong> (General Transit Feed Specification) ufficiale del Comune di Milano,
+                pubblicato come open data su <a href="https://dati.comune.milano.it" target="_blank" rel="noopener">dati.comune.milano.it</a>.
+                Da questo file estraiamo le coordinate di ogni fermata delle linee tranviarie.
+            </span>
+            <span class="i18n-en">
+                Tram stop locations are downloaded from the official <strong>GTFS</strong> (General Transit Feed Specification) dataset published by the City of Milan
+                as open data on <a href="https://dati.comune.milano.it" target="_blank" rel="noopener">dati.comune.milano.it</a>.
+                We extract the coordinates of every tram line stop from this feed.
+            </span>
+        </p>
+
+        <h3><span class="i18n-it">Semafori</span><span class="i18n-en">Traffic lights</span></h3>
+        <p>
+            <span class="i18n-it">
+                Le posizioni dei semafori che intersecano i percorsi tranviari sono mappate manualmente dai volontari
+                tramite una mappa interattiva integrata nel progetto. Ogni semaforo è georeferenziato con coordinate precise.
+            </span>
+            <span class="i18n-en">
+                Traffic light positions along tram routes are manually mapped by volunteers
+                using an interactive map built into the project. Each traffic light is georeferenced with precise coordinates.
+            </span>
+        </p>
+    </div>
+
+    <!-- 2. GPS PARSING -->
+    <div class="method-block">
+        <h2><span class="i18n-it">2. Elaborazione GPS</span><span class="i18n-en">2. GPS parsing</span></h2>
+        <p>
+            <span class="i18n-it">
+                Per ogni file GPX, il sistema ordina i punti per timestamp e calcola, tra ogni coppia di punti consecutivi:
+            </span>
+            <span class="i18n-en">
+                For each GPX file, the system sorts points by timestamp and computes, between each pair of consecutive points:
+            </span>
+        </p>
+        <ul>
+            <li>
+                <span class="i18n-it"><strong>Distanza</strong>: calcolata con la formula dell'emisenoverso (haversine), che misura la distanza geodetica tra due coordinate GPS.</span>
+                <span class="i18n-en"><strong>Distance</strong>: computed using the haversine formula, which measures geodesic distance between two GPS coordinates.</span>
+            </li>
+            <li>
+                <span class="i18n-it"><strong>Intervallo di tempo</strong>: differenza in secondi tra i timestamp di due punti consecutivi.</span>
+                <span class="i18n-en"><strong>Time delta</strong>: difference in seconds between the timestamps of two consecutive points.</span>
+            </li>
+            <li>
+                <span class="i18n-it"><strong>Velocità</strong>: <code>distanza / tempo × 3.6</code> (da m/s a km/h).</span>
+                <span class="i18n-en"><strong>Velocity</strong>: <code>distance / time × 3.6</code> (converting m/s to km/h).</span>
+            </li>
+        </ul>
+        <p>
+            <span class="i18n-it">
+                Le velocità superiori a <strong>50 km/h</strong> vengono limitate a 50 km/h per filtrare errori GPS (ad esempio salti di segnale).
+                I tram di Milano non raggiungono velocità superiori in servizio normale.
+            </span>
+            <span class="i18n-en">
+                Speeds above <strong>50 km/h</strong> are capped at 50 km/h to filter GPS errors (e.g. signal jumps).
+                Milan trams do not reach higher speeds in normal service.
+            </span>
+        </p>
+    </div>
+
+    <!-- 3. STOP DETECTION -->
+    <div class="method-block">
+        <h2><span class="i18n-it">3. Rilevamento delle fermate</span><span class="i18n-en">3. Stop detection</span></h2>
+        <p>
+            <span class="i18n-it">
+                L'algoritmo di rilevamento delle fermate sfrutta un comportamento comune delle app di tracking GPS:
+                quando il veicolo è fermo, l'app smette di registrare punti, creando un <em>gap temporale</em> nei dati.
+                Una fermata viene identificata quando:
+            </span>
+            <span class="i18n-en">
+                The stop detection algorithm exploits a common behavior of GPS tracking apps:
+                when the vehicle is stationary, the app stops recording points, creating a <em>time gap</em> in the data.
+                A stop is identified when:
+            </span>
+        </p>
+        <ul>
+            <li>
+                <span class="i18n-it">Il gap temporale tra due punti consecutivi è maggiore di <strong>5 secondi</strong></span>
+                <span class="i18n-en">The time gap between two consecutive points is greater than <strong>5 seconds</strong></span>
+            </li>
+            <li>
+                <span class="i18n-it">Lo spostamento è inferiore a <strong>15 metri</strong></span>
+                <span class="i18n-en">The movement is less than <strong>15 meters</strong></span>
+            </li>
+        </ul>
+        <p>
+            <span class="i18n-it">
+                La durata della fermata corrisponde al gap temporale: più il tram resta fermo, più lungo è il gap.
+            </span>
+            <span class="i18n-en">
+                The stop duration corresponds to the time gap: the longer the tram stays still, the longer the gap.
+            </span>
+        </p>
+    </div>
+
+    <!-- 4. STOP CLASSIFICATION -->
+    <div class="method-block">
+        <h2><span class="i18n-it">4. Classificazione delle fermate</span><span class="i18n-en">4. Stop classification</span></h2>
+        <p>
+            <span class="i18n-it">
+                Ogni fermata rilevata viene classificata in base alla sua prossimità a punti di riferimento noti:
+            </span>
+            <span class="i18n-en">
+                Each detected stop is classified based on its proximity to known reference points:
+            </span>
+        </p>
+        <table class="method-table">
+            <thead>
+                <tr>
+                    <th><span class="i18n-it">Categoria</span><span class="i18n-en">Category</span></th>
+                    <th><span class="i18n-it">Criterio</span><span class="i18n-en">Criterion</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Tram stop</strong></td>
+                    <td>
+                        <span class="i18n-it">Entro <strong>30 m</strong> da una fermata GTFS e <em>non</em> vicino a un semaforo</span>
+                        <span class="i18n-en">Within <strong>30 m</strong> of a GTFS tram stop and <em>not</em> near a traffic light</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Traffic light</strong></td>
+                    <td>
+                        <span class="i18n-it">Entro <strong>25 m</strong> da un semaforo mappato e <em>non</em> vicino a una fermata tram</span>
+                        <span class="i18n-en">Within <strong>25 m</strong> of a mapped traffic light and <em>not</em> near a tram stop</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Combined</strong></td>
+                    <td>
+                        <span class="i18n-it">Entro 30 m da una fermata tram <em>e</em> 25 m da un semaforo. Il tempo di attesa al semaforo viene stimato sottraendo <strong>12 secondi</strong> (tempo stimato di salita/discesa passeggeri) dalla durata totale della fermata.</span>
+                        <span class="i18n-en">Within 30 m of a tram stop <em>and</em> 25 m of a traffic light. The traffic light wait time is estimated by subtracting <strong>12 seconds</strong> (estimated boarding/alighting time) from the total stop duration.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Bottleneck</strong></td>
+                    <td>
+                        <span class="i18n-it">Non corrisponde a nessuna fermata tram né semaforo. Indica congestione, incroci o altri ostacoli.</span>
+                        <span class="i18n-en">Does not match any tram stop or traffic light. Indicates congestion, intersections, or other obstacles.</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 5. MULTI-RIDE AVERAGING -->
+    <div class="method-block">
+        <h2><span class="i18n-it">5. Corse multiple e medie</span><span class="i18n-en">5. Multi-ride averaging</span></h2>
+        <p>
+            <span class="i18n-it">
+                Quando sono disponibili più tracce GPS per la stessa linea e direzione, il sistema le combina.
+                Questo aumenta di molto la precisione delle misurazioni, eliminando anche piccoli errori dovuti al GPS:
+                con una sola corsa, un ritardo anomalo o un'imprecisione del segnale possono distorcere i risultati;
+                con più corse, questi errori si annullano e i dati convergono verso il comportamento reale della linea.
+            </span>
+            <span class="i18n-en">
+                When multiple GPS traces are available for the same line and direction, the system combines them.
+                This greatly improves measurement accuracy, also eliminating small GPS errors:
+                with a single ride, an anomalous delay or signal inaccuracy can distort the results;
+                with multiple rides, these errors cancel out and the data converges toward the real behavior of the line.
+            </span>
+        </p>
+
+        <h3><span class="i18n-it">Come funziona l'unione delle fermate</span><span class="i18n-en">How stop merging works</span></h3>
+        <p>
+            <span class="i18n-it">
+                Ogni corsa produce il proprio elenco di fermate. Per confrontarle e combinarle, il sistema procede in due fasi:
+            </span>
+            <span class="i18n-en">
+                Each ride produces its own list of stops. To compare and combine them, the system works in two phases:
+            </span>
+        </p>
+        <ol>
+            <li>
+                <span class="i18n-it"><strong>Unione dentro la stessa corsa</strong>: se il tram si ferma due volte nello stesso punto durante una corsa (ad esempio, si ferma al semaforo, riparte, e si referma pochi metri dopo), le durate vengono sommate in un'unica fermata.</span>
+                <span class="i18n-en"><strong>Merging within one ride</strong>: if the tram stops twice at the same point during one ride (e.g., stops at a traffic light, moves a few meters, and stops again), the durations are summed into a single stop.</span>
+            </li>
+            <li>
+                <span class="i18n-it"><strong>Unione tra corse diverse</strong>: le fermate di corse diverse vengono associate se si riferiscono allo stesso punto fisico. Per fermate tram e semafori, il sistema usa le coordinate di riferimento esatte (dal GTFS o dalla mappa dei semafori). Per i colli di bottiglia, che non hanno un riferimento fisso, il sistema raggruppa le fermate entro <strong>20 m</strong> l'una dall'altra.</span>
+                <span class="i18n-en"><strong>Merging across rides</strong>: stops from different rides are matched if they refer to the same physical point. For tram stops and traffic lights, the system uses exact reference coordinates (from GTFS or the traffic light map). For bottlenecks, which have no fixed reference, the system clusters stops within <strong>20 m</strong> of each other.</span>
+            </li>
+        </ol>
+
+        <h3><span class="i18n-it">Medie pesate per frequenza</span><span class="i18n-en">Frequency-weighted averages</span></h3>
+        <p>
+            <span class="i18n-it">
+                Non tutte le fermate si verificano in ogni corsa. Un semaforo potrebbe fermare il tram in 3 corse su 5 (perché nelle altre 2 il tram è passato col verde).
+                Per riflettere questo, le statistiche usano <strong>medie pesate per frequenza</strong>: la durata media di quella fermata viene moltiplicata per la frazione di corse in cui si è verificata.
+                In questo modo le statistiche complessive della linea riflettono sia <em>quanto</em> si aspetta in un punto, sia <em>quanto spesso</em> ci si ferma.
+            </span>
+            <span class="i18n-en">
+                Not every stop occurs on every ride. A traffic light might stop the tram on 3 out of 5 rides (because on the other 2 the tram passed on green).
+                To reflect this, statistics use <strong>frequency-weighted averages</strong>: the average duration of that stop is multiplied by the fraction of rides in which it occurred.
+                This way, overall line statistics reflect both <em>how long</em> the wait is at a point and <em>how often</em> the tram actually stops there.
+            </span>
+        </p>
+
+        <h3><span class="i18n-it">Filtro dei colli di bottiglia</span><span class="i18n-en">Bottleneck filtering</span></h3>
+        <p>
+            <span class="i18n-it">
+                I colli di bottiglia che compaiono in meno del 50% delle corse vengono rimossi, perché probabilmente rappresentano eventi casuali (un'auto in doppia fila, un pedone) piuttosto che problemi sistematici dell'infrastruttura.
+            </span>
+            <span class="i18n-en">
+                Bottlenecks that appear in fewer than 50% of rides are removed, as they likely represent random events (a double-parked car, a pedestrian) rather than systematic infrastructure problems.
+            </span>
+        </p>
+    </div>
+
+    <!-- 6. SPEED METRICS -->
+    <div class="method-block">
+        <h2><span class="i18n-it">6. Metriche di velocità</span><span class="i18n-en">6. Speed metrics</span></h2>
+        <p>
+            <span class="i18n-it">Per ogni linea calcoliamo diverse metriche di velocità:</span>
+            <span class="i18n-en">For each line we compute several speed metrics:</span>
+        </p>
+        <table class="method-table">
+            <thead>
+                <tr>
+                    <th><span class="i18n-it">Metrica</span><span class="i18n-en">Metric</span></th>
+                    <th><span class="i18n-it">Descrizione</span><span class="i18n-en">Description</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong><span class="i18n-it">Velocità media in movimento</span><span class="i18n-en">Average moving speed</span></strong></td>
+                    <td>
+                        <span class="i18n-it">Distanza totale divisa per il tempo trascorso in movimento (escluse le fermate). Rappresenta la velocità quando il tram sta effettivamente procedendo.</span>
+                        <span class="i18n-en">Total distance divided by time spent moving (excluding stops). Represents the speed when the tram is actually traveling.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong><span class="i18n-it">Velocità media di viaggio</span><span class="i18n-en">Average trip speed</span></strong></td>
+                    <td>
+                        <span class="i18n-it">Distanza totale divisa per il tempo totale di viaggio (incluse tutte le fermate). Questa è la velocità percepita dal passeggero.</span>
+                        <span class="i18n-en">Total distance divided by total trip time (including all stops). This is the speed as perceived by the passenger.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong><span class="i18n-it">Mediana</span><span class="i18n-en">Median</span></strong></td>
+                    <td>
+                        <span class="i18n-it">Mediane pesate per tempo delle velocità istantanee, più robuste rispetto agli outlier.</span>
+                        <span class="i18n-en">Time-weighted medians of instantaneous velocities, more robust to outliers.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong><span class="i18n-it">Velocità di punta</span><span class="i18n-en">Peak speed</span></strong></td>
+                    <td>
+                        <span class="i18n-it">Velocità media del segmento più veloce registrato.</span>
+                        <span class="i18n-en">Highest average segment speed recorded.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>P25 / P75</strong></td>
+                    <td>
+                        <span class="i18n-it">Percentili 25° e 75° pesati per tempo, indicano la dispersione delle velocità.</span>
+                        <span class="i18n-en">Time-weighted 25th and 75th percentiles, indicating speed spread.</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 7. SCENARIO ANALYSIS -->
+    <div class="method-block">
+        <h2><span class="i18n-it">7. Analisi degli scenari</span><span class="i18n-en">7. Scenario analysis</span></h2>
+        <p>
+            <span class="i18n-it">
+                Per quantificare l'impatto dei semafori sulla velocità dei tram, proiettiamo scenari ipotetici per ogni linea:
+            </span>
+            <span class="i18n-en">
+                To quantify the impact of traffic lights on tram speed, we project hypothetical scenarios for each line:
+            </span>
+        </p>
+        <table class="method-table">
+            <thead>
+                <tr>
+                    <th><span class="i18n-it">Scenario</span><span class="i18n-en">Scenario</span></th>
+                    <th><span class="i18n-it">Descrizione</span><span class="i18n-en">Description</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Green wave</strong></td>
+                    <td>
+                        <span class="i18n-it">Eliminando le attese ai semafori (priorità semaforica al tram). Rimangono le fermate passeggeri e i colli di bottiglia.</span>
+                        <span class="i18n-en">Removing traffic light waits (traffic light priority for trams). Boarding stops and bottlenecks remain.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Red wave</strong></td>
+                    <td>
+                        <span class="i18n-it">Caso peggiore: il tempo massimo osservato in ogni punto di fermata.</span>
+                        <span class="i18n-en">Worst case: the maximum observed wait time at every stop location.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong><span class="i18n-it">Caso migliore</span><span class="i18n-en">Best case</span></strong></td>
+                    <td>
+                        <span class="i18n-it">Priorità semaforica <em>e</em> nessun collo di bottiglia. Il tempo di viaggio include solo le fermate passeggeri.</span>
+                        <span class="i18n-en">Traffic light priority <em>and</em> no bottlenecks. Trip time includes only boarding stops.</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            <span class="i18n-it">
+                Questi scenari ci permettono di stimare quanto tempo si potrebbe risparmiare con interventi infrastrutturali specifici.
+            </span>
+            <span class="i18n-en">
+                These scenarios allow us to estimate how much time could be saved with specific infrastructure interventions.
+            </span>
+        </p>
+    </div>
+
+    <!-- 8. NETWORK HOTSPOTS -->
+    <div class="method-block">
+        <h2><span class="i18n-it">8. Hotspot di rete</span><span class="i18n-en">8. Network hotspots</span></h2>
+        <p>
+            <span class="i18n-it">
+                Oltre all'analisi per linea, aggreghiamo i dati per <strong>posizione fisica</strong>: tutti i semafori, le fermate e i colli di bottiglia
+                vengono uniti per coordinate, anche se provengono da linee diverse. Se due linee si fermano allo stesso semaforo,
+                le osservazioni confluiscono nello stesso hotspot.
+            </span>
+            <span class="i18n-en">
+                Beyond per-line analysis, we aggregate data by <strong>physical location</strong>: all traffic lights, stops, and bottlenecks
+                are merged by coordinates, even across different lines. If two lines stop at the same traffic light,
+                observations flow into the same hotspot.
+            </span>
+        </p>
+        <p>
+            <span class="i18n-it">Per ogni hotspot calcoliamo:</span>
+            <span class="i18n-en">For each hotspot we compute:</span>
+        </p>
+        <ul>
+            <li>
+                <span class="i18n-it">Numero di osservazioni, attesa media, mediana, percentili (P25/P75), minimo e massimo</span>
+                <span class="i18n-en">Observation count, mean wait, median, percentiles (P25/P75), minimum and maximum</span>
+            </li>
+            <li>
+                <span class="i18n-it">Ripartizione per <strong>fascia oraria</strong>: punta mattino (6–9), centro giornata (10–15), punta sera (16–19), sera (20–23), notte (0–5)</span>
+                <span class="i18n-en">Breakdown by <strong>time band</strong>: morning peak (6–9), midday (10–15), evening peak (16–19), evening (20–23), night (0–5)</span>
+            </li>
+            <li>
+                <span class="i18n-it">Contributo di ogni linea con metriche proprie per fascia oraria</span>
+                <span class="i18n-en">Per-line contributions with their own time-band metrics</span>
+            </li>
+        </ul>
+        <p>
+            <span class="i18n-it">
+                La direzione di marcia è determinata automaticamente calcolando il vettore dal primo all'ultimo punto GPS della corsa
+                e mappandolo a una delle 8 direzioni cardinali (N, NE, E, SE, S, SW, W, NW).
+                Il fuso orario di riferimento è <strong>Europe/Rome</strong>.
+            </span>
+            <span class="i18n-en">
+                Ride direction is determined automatically by computing the bearing from the first to last GPS point
+                and mapping it to one of 8 cardinal directions (N, NE, E, SE, S, SW, W, NW).
+                The reference timezone is <strong>Europe/Rome</strong>.
+            </span>
+        </p>
+    </div>
+
+    <!-- 9. SYSTEM-WIDE PROJECTIONS -->
+    <div class="method-block">
+        <h2><span class="i18n-it">9. Proiezioni a livello di rete</span><span class="i18n-en">9. System-wide projections</span></h2>
+        <p>
+            <span class="i18n-it">
+                Per stimare l'impatto a livello dell'intera rete tranviaria, incrociamo i nostri dati con il numero di
+                <strong>corse giornaliere</strong> per linea, estratto dal GTFS ufficiale. Questo ci permette di calcolare:
+            </span>
+            <span class="i18n-en">
+                To estimate the impact across the entire tram network, we cross-reference our data with the number of
+                <strong>daily trips</strong> per line, extracted from the official GTFS. This allows us to compute:
+            </span>
+        </p>
+        <ul>
+            <li>
+                <span class="i18n-it"><strong>Ore perse ai semafori</strong>: per ogni linea, moltiplichiamo il tempo medio perso ai semafori (mediato tra le direzioni) per il numero di corse giornaliere. La somma su tutte le linee dà le ore totali perse al giorno.</span>
+                <span class="i18n-en"><strong>Hours lost to traffic lights</strong>: for each line, we multiply the average time lost at traffic lights (averaged across directions) by the number of daily trips. The sum across all lines gives total hours lost per day.</span>
+            </li>
+            <li>
+                <span class="i18n-it"><strong>Corse aggiuntive possibili</strong>: le ore risparmiate dai semafori, divise per la durata media di una corsa per linea, danno il numero di corse extra che si potrebbero effettuare con le stesse risorse.</span>
+                <span class="i18n-en"><strong>Extra rides possible</strong>: hours saved from traffic lights, divided by the average trip duration per line, give the number of extra rides that could be run with the same resources.</span>
+            </li>
+        </ul>
+        <p>
+            <span class="i18n-it">
+                Queste proiezioni vengono calcolate separatamente per <strong>giorni feriali</strong>, <strong>sabato</strong> e <strong>domenica</strong>,
+                dato che il numero di corse varia.
+            </span>
+            <span class="i18n-en">
+                These projections are computed separately for <strong>weekdays</strong>, <strong>Saturdays</strong>, and <strong>Sundays</strong>,
+                since trip counts vary.
+            </span>
+        </p>
+    </div>
+
+    <!-- 10. LIMITATIONS -->
+    <div class="method-block">
+        <h2><span class="i18n-it">10. Limitazioni e trasparenza</span><span class="i18n-en">10. Limitations and transparency</span></h2>
+        <ul>
+            <li>
+                <span class="i18n-it"><strong>Campione</strong>: i dati provengono da registrazioni volontarie e non rappresentano un campione statisticamente rappresentativo di tutte le corse. Tuttavia, più corse vengono registrate per una linea, più le medie convergono verso valori affidabili.</span>
+                <span class="i18n-en"><strong>Sample</strong>: data comes from volunteer recordings and does not represent a statistically representative sample of all rides. However, the more rides recorded for a line, the more averages converge toward reliable values.</span>
+            </li>
+            <li>
+                <span class="i18n-it"><strong>Precisione GPS</strong>: la precisione del GPS consumer è tipicamente 3–10 metri. Filtriamo le anomalie (velocità >50 km/h, salti di segnale), ma piccole imprecisioni nelle coordinate possono influire sulla classificazione delle fermate vicine ai confini dei raggi di matching.</span>
+                <span class="i18n-en"><strong>GPS accuracy</strong>: consumer GPS accuracy is typically 3–10 meters. We filter anomalies (speeds >50 km/h, signal jumps), but small coordinate inaccuracies can affect stop classification near the matching radius boundaries.</span>
+            </li>
+            <li>
+                <span class="i18n-it"><strong>Semafori</strong>: la posizione dei semafori è mappata manualmente. Semafori non ancora mappati saranno classificati come "bottleneck". Al momento, tutti i semafori sulle linee tramviarie milanesi sono stati mappati. Puoi consultarli <a href="https://pensamiciclabile.it/velotrack/maps/traffic_lights.html" target="_blank" rel="noopener">qui</a>.</span>
+                <span class="i18n-en"><strong>Traffic lights</strong>: traffic light positions are manually mapped. Unmapped traffic lights will be classified as "bottleneck". Currently, all traffic lights along Milan's tram lines have been mapped. You can view them <a href="https://pensamiciclabile.it/velotrack/maps/traffic_lights.html" target="_blank" rel="noopener">here</a>.</span>
+            </li>
+            <li>
+                <span class="i18n-it"><strong>Tempo di salita</strong>: la stima di 12 secondi per la salita/discesa passeggeri nelle fermate "combined" è un valore fisso. Il tempo reale varia in base all'affluenza.</span>
+                <span class="i18n-en"><strong>Boarding time</strong>: the 12-second estimate for boarding/alighting at "combined" stops is a fixed value. Actual time varies with passenger volume.</span>
+            </li>
+            <li>
+                <span class="i18n-it"><strong>Variabilità temporale</strong>: le condizioni del traffico variano per ora, giorno e stagione. Le nostre fasce orarie forniscono una prima approssimazione, ma corse aggiuntive migliorano la granularità.</span>
+                <span class="i18n-en"><strong>Temporal variability</strong>: traffic conditions vary by hour, day, and season. Our time bands provide a first approximation, but additional rides improve granularity.</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 11. HOW TO CONTRIBUTE -->
+    <div class="method-block">
+        <h2><span class="i18n-it">11. Come contribuire</span><span class="i18n-en">11. How to contribute</span></h2>
+        <p>
+            <span class="i18n-it">
+                Chiunque può contribuire registrando una corsa in tram con una app GPS e condividendo il file GPX.
+                Più dati raccogliamo, più accurate diventano le nostre analisi. Per istruzioni dettagliate,
+                visita il <a href="https://github.com/pensami-ciclabile/velotrack" target="_blank" rel="noopener">repository GitHub</a>
+                del progetto.
+            </span>
+            <span class="i18n-en">
+                Anyone can contribute by recording a tram ride with a GPS app and sharing the GPX file.
+                The more data we collect, the more accurate our analyses become. For detailed instructions,
+                visit the project's <a href="https://github.com/pensami-ciclabile/velotrack" target="_blank" rel="noopener">GitHub repository</a>.
+            </span>
+        </p>
+    </div>
+
+    <!-- 12. CONTACT -->
+    <div class="method-block">
+        <h2><span class="i18n-it">12. Contatti</span><span class="i18n-en">12. Contact</span></h2>
+        <p>
+            <span class="i18n-it">
+                Per domande sulla metodologia, richieste dati o collaborazioni giornalistiche, potete contattarci attraverso il
+                <a href="https://github.com/pensami-ciclabile/velotrack" target="_blank" rel="noopener">repository GitHub</a>
+                o attraverso i canali di <a href="https://pensamiciclabile.it" target="_blank" rel="noopener">PensaMiCiclabile</a>
+                e <a href="https://velocipiedi.it" target="_blank" rel="noopener">Velocipiedi</a>.
+            </span>
+            <span class="i18n-en">
+                For questions about the methodology, data requests, or press inquiries, you can reach us through the
+                <a href="https://github.com/pensami-ciclabile/velotrack" target="_blank" rel="noopener">GitHub repository</a>
+                or through the channels of <a href="https://pensamiciclabile.it" target="_blank" rel="noopener">PensaMiCiclabile</a>
+                and <a href="https://velocipiedi.it" target="_blank" rel="noopener">Velocipiedi</a>.
+            </span>
+        </p>
+    </div>
+</section>
+{% endblock %}

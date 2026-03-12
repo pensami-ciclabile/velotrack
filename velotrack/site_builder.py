@@ -236,4 +236,10 @@ def build_site(
         )
     )
 
+    # Render methodology page
+    tmpl = env.get_template("methodology.html")
+    (SITE_DIR / "methodology.html").write_text(
+        tmpl.render(root_path=".")
+    )
+
     print(f"Site built: {SITE_DIR}")

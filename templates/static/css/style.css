@@ -692,3 +692,81 @@ footer a { color: #888; }
 @media (min-width: 640px) {
     .direction-cards { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
 }
+
+/* Methodology page */
+.methodology .subtitle {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    max-width: 720px;
+}
+.method-block {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+}
+.method-block h2 {
+    font-size: 1.1rem;
+    margin: 0 0 0.75rem;
+    color: #e2722c;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+.method-block h3 {
+    font-size: 0.95rem;
+    margin: 1rem 0 0.4rem;
+    color: #333;
+}
+.method-block h3:first-of-type {
+    margin-top: 0;
+}
+.method-block p {
+    font-size: 0.9rem;
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 0.6rem;
+}
+.method-block ul,
+.method-block ol {
+    margin: 0.4rem 0 0.8rem;
+    padding-left: 1.25rem;
+}
+.method-block li {
+    font-size: 0.9rem;
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 0.3rem;
+}
+.method-block code {
+    background: #f5f5f5;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.85rem;
+}
+.method-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 0.5rem 0 0.75rem;
+}
+.method-table th,
+.method-table td {
+    padding: 0.45rem 0.65rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+}
+.method-table thead th {
+    color: #666;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+}
+@media (max-width: 639px) {
+    .method-block {
+        padding: 1rem;
+    }
+    .method-table {
+        font-size: 0.8rem;
+    }
+}
