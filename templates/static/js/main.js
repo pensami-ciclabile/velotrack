@@ -276,10 +276,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderHomeCards(container, rows) {
         if (!container) return;
         if (!rows || !rows.length) {
-            container.innerHTML = "<p class='text-secondary col-span-full'>—</p>";
+            container.innerHTML = "<p class='text-secondary'>—</p>";
             return;
         }
-        var html = "";
+        var html = "<div class='space-y-0 divide-y divide-outline-variant/10'>";
         rows.forEach(function (row, idx) {
             var cat = row.category || "unknown";
             var color = categoryColor(cat);
@@ -287,19 +287,19 @@ document.addEventListener("DOMContentLoaded", function () {
             var wait = num(row.mean_wait_s);
             var waitStr = wait >= 60 ? Math.floor(wait / 60) + "m " + Math.round(wait % 60) + "s" : wait.toFixed(0) + "s";
             var lines = linesSummary(row);
-            html += "<div class='bg-surface-container-lowest rounded-xl p-5 ambient-shadow flex flex-col gap-2'>"
-                + "<div class='flex items-center justify-between'>"
-                + "<div class='flex items-center gap-2'>"
-                + "<span class='text-xs font-bold text-secondary/60'>#" + (idx + 1) + "</span>"
-                + "<span class='material-symbols-outlined text-sm' style='color:" + color + "'>" + icon + "</span>"
-                + "<span class='text-[10px] font-bold uppercase tracking-wide text-secondary'>" + esc(categoryLabel(cat)) + "</span>"
+            html += "<div class='flex items-center gap-4 py-3'>"
+                + "<span class='text-sm font-bold text-secondary/40 w-5 text-right shrink-0'>" + (idx + 1) + "</span>"
+                + "<span class='material-symbols-outlined text-base shrink-0' style='color:" + color + "'>" + icon + "</span>"
+                + "<div class='flex-1 min-w-0'>"
+                + "<div class='flex items-baseline justify-between gap-2'>"
+                + "<span class='text-sm font-semibold text-on-surface truncate'>" + esc(categoryLabel(cat)) + "</span>"
+                + "<span class='text-sm font-black tracking-tight text-on-surface shrink-0'>" + waitStr + "</span>"
                 + "</div>"
-                + "<span class='text-lg font-black tracking-tight text-on-surface'>" + waitStr + "</span>"
+                + "<p class='text-xs text-secondary truncate'>" + num(row.obs_count) + " obs · " + num(row.line_count) + " lines · " + esc(lines) + "</p>"
                 + "</div>"
-                + "<p class='text-xs text-secondary leading-snug'>" + num(row.obs_count) + " obs · " + num(row.line_count) + " lines</p>"
-                + "<p class='text-[11px] text-secondary/70 leading-snug'>" + esc(lines) + "</p>"
                 + "</div>";
         });
+        html += "</div>";
         container.innerHTML = html;
     }
 

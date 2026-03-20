@@ -11,8 +11,8 @@
             <span class="i18n-en">GPS analysis of Milan's tram network</span>
         </span>
         <h1 class="text-4xl md:text-[3.5rem] font-light leading-tight tracking-tight text-on-surface mb-6">
-            <span class="i18n-it">Il costo del <span class="font-bold italic">ritardo</span></span>
-            <span class="i18n-en">The cost of <span class="font-bold italic">delay</span></span>
+            <span class="i18n-it">Come i tram di Milano <span class="font-bold italic">perdono tempo</span></span>
+            <span class="i18n-en">How Milan's trams <span class="font-bold italic">lose time</span></span>
         </h1>
         <p class="text-lg text-secondary leading-relaxed max-w-xl">
             <span class="i18n-it">Analisi GPS delle corse tramviarie a Milano. Mappe di velocità, rilevamento fermate e monitoraggio ritardi ai semafori.</span>
@@ -139,29 +139,44 @@
 <!-- Hotspots Preview -->
 <script id="hotspot-slices" type="application/json">{{ hotspot_slices_json }}</script>
 <section class="py-16 md:py-20 max-w-[1440px] mx-auto px-6 md:px-8">
-    <div class="mb-8">
-        <span class="text-[0.6875rem] font-bold uppercase tracking-[0.15em] text-primary block mb-2">
-            <span class="i18n-it">Punti critici della rete</span><span class="i18n-en">Network critical points</span>
-        </span>
-        <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-on-surface">
-            <span class="i18n-it">Peggiori hotspot</span><span class="i18n-en">Worst hotspots</span>
-        </h2>
-        <p class="text-secondary mt-2 max-w-2xl leading-relaxed">
-            <span class="i18n-it">I punti della rete dove i tram perdono più tempo, aggregando tutte le fermate osservate nello stesso punto fisico.</span>
-            <span class="i18n-en">The points in the network where trams lose the most time, aggregating all observed stops at the same physical location.</span>
-        </p>
-    </div>
-    <div id="home-hotspots-body" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
-        <p class="text-secondary col-span-full">—</p>
-    </div>
-    <div id="home-hotspot-category" data-value="all" hidden></div>
-    <div class="text-center">
-        <a href="{{ root_path }}/hotspots.html" class="inline-flex items-center gap-2 bg-primary text-white font-bold text-sm px-6 py-3 rounded-xl hover:bg-on-primary-fixed-variant transition-colors">
-            <span class="material-symbols-outlined text-lg">map</span>
-            <span class="i18n-it">Esplora tutti gli hotspot sulla mappa</span>
-            <span class="i18n-en">Explore all hotspots on the map</span>
-            <span class="material-symbols-outlined text-sm">arrow_forward</span>
-        </a>
+    <div class="bg-surface-container-low rounded-2xl p-8 md:p-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+            <!-- Left: description -->
+            <div>
+                <span class="text-[0.6875rem] font-bold uppercase tracking-[0.15em] text-primary block mb-2">
+                    <span class="i18n-it">Punti critici della rete</span><span class="i18n-en">Network critical points</span>
+                </span>
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-on-surface mb-4">
+                    <span class="i18n-it">Peggiori hotspot</span><span class="i18n-en">Worst hotspots</span>
+                </h2>
+                <p class="text-secondary leading-relaxed mb-4">
+                    <span class="i18n-it">I punti della rete dove i tram perdono più tempo, aggregando tutte le fermate osservate nello stesso punto fisico.</span>
+                    <span class="i18n-en">The points in the network where trams lose the most time, aggregating all observed stops at the same physical location.</span>
+                </p>
+                <p class="text-xs text-secondary/60">
+                    <span class="i18n-it">Il tempo mostrato è l'attesa media osservata in quel punto.</span>
+                    <span class="i18n-en">The time shown is the average observed wait at that point.</span>
+                </p>
+            </div>
+            <!-- Right: ranked list -->
+            <div>
+                <h3 class="text-[0.6875rem] font-bold uppercase tracking-wider text-secondary mb-3">
+                    <span class="i18n-it">Top 6 · Attesa media</span><span class="i18n-en">Top 6 · Avg wait</span>
+                </h3>
+                <div id="home-hotspots-body">
+                    <p class="text-secondary">—</p>
+                </div>
+            </div>
+        </div>
+        <div id="home-hotspot-category" data-value="all" hidden></div>
+        <div class="mt-8 pt-6 border-t border-outline-variant/10 text-center">
+            <a href="{{ root_path }}/hotspots.html" class="inline-flex items-center gap-2 bg-primary text-white font-bold text-sm px-6 py-3 rounded-xl hover:bg-on-primary-fixed-variant transition-colors">
+                <span class="material-symbols-outlined text-lg">map</span>
+                <span class="i18n-it">Esplora tutti gli hotspot sulla mappa</span>
+                <span class="i18n-en">Explore all hotspots on the map</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
+        </div>
     </div>
 </section>
 
@@ -173,53 +188,40 @@
                 <span class="i18n-it">Linee tramviarie</span><span class="i18n-en">Tram lines</span>
             </h2>
         </div>
+        <div class="max-w-4xl">
         {% for group in grouped_lines %}
-        <div class="mb-10">
-            <h3 class="text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-primary mb-4">
+        <div class="mb-8">
+            <h3 class="text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-primary mb-3">
                 <span class="i18n-it">Linea</span><span class="i18n-en">Line</span> {{ group.line_number }}
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-1">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {% for line in group.directions %}
-                <a href="{{ root_path }}/lines/{{ line.line_key }}.html" class="bg-surface p-6 flex flex-col justify-between group hover:bg-primary transition-all cursor-pointer no-underline">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="flex items-center gap-4">
-                            <span class="text-3xl font-black tracking-tighter text-on-surface group-hover:text-white">{{ group.line_number }}</span>
-                            <div class="w-0.5 h-6 bg-primary-container group-hover:bg-white/60"></div>
-                            <div>
-                                <p class="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary group-hover:text-white/60">
-                                    <span class="i18n-it">Percorso</span><span class="i18n-en">Route</span>
-                                </p>
-                                <p class="font-bold leading-tight text-on-surface group-hover:text-white text-sm">
-                                    <span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary group-hover:text-white/60">
-                                <span class="i18n-it">Velocità</span><span class="i18n-en">Speed</span>
-                            </p>
-                            <p class="font-black text-on-surface group-hover:text-white">{{ "%.1f"|format(line.stats.speed.avg_trip) }} km/h</p>
-                        </div>
+                <a href="{{ root_path }}/lines/{{ line.line_key }}.html" class="bg-surface-container-lowest rounded-xl px-5 py-4 flex flex-col group hover:bg-primary transition-all cursor-pointer no-underline ambient-shadow">
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <span class="text-xl font-black tracking-tighter text-on-surface group-hover:text-white">{{ group.line_number }}</span>
+                        <div class="w-0.5 h-4 bg-primary-container group-hover:bg-white/60"></div>
+                        <p class="font-bold leading-tight text-on-surface group-hover:text-white text-sm truncate">
+                            <span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span>
+                        </p>
                     </div>
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-baseline">
                         <span class="text-xs text-secondary group-hover:text-white/60">
                             {{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km · {{ line.stats.total_stops }} <span class="i18n-it">fermate</span><span class="i18n-en">stops</span>
                         </span>
-                        {% if line.stats.avg_trip_duration > 0 and line.stats.priority_savings_incl_bottlenecks > 0 %}
-                        {% set pct = (line.stats.priority_savings_incl_bottlenecks / line.stats.avg_trip_duration * 100)|round(0)|int %}
-                        {% set secs = line.stats.priority_savings_incl_bottlenecks|int %}
-                        {% set mins = (secs // 60)|int %}
-                        {% set remainder = (secs % 60)|int %}
-                        <span class="text-xs font-bold text-primary-container group-hover:text-white">
-                            <span class="i18n-it">Potrebbe essere {{ pct }}% più veloce</span><span class="i18n-en">Could be {{ pct }}% faster</span>
-                        </span>
-                        {% endif %}
+                        <span class="font-black text-on-surface group-hover:text-white text-sm shrink-0 ml-3">{{ "%.1f"|format(line.stats.speed.avg_trip) }} km/h</span>
                     </div>
+                    {% if line.stats.avg_trip_duration > 0 and line.stats.priority_savings_incl_bottlenecks > 0 %}
+                    {% set pct = (line.stats.priority_savings_incl_bottlenecks / line.stats.avg_trip_duration * 100)|round(0)|int %}
+                    <p class="text-xs font-bold text-primary-container group-hover:text-white mt-1">
+                        <span class="i18n-it">Potrebbe essere {{ pct }}% più veloce</span><span class="i18n-en">Could be {{ pct }}% faster</span>
+                    </p>
+                    {% endif %}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endfor %}
+        </div>
     </div>
 </section>
 
