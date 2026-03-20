@@ -359,8 +359,8 @@ document.addEventListener("DOMContentLoaded", function () {
             var btn = document.createElement("button");
             btn.type = "button";
             btn.setAttribute("data-band", band);
-            btn.className = "hotspot-band-btn flex items-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-bold transition-all cursor-pointer";
-            btn.innerHTML = "<span class='material-symbols-outlined text-xs band-icon'>" + esc(meta.icon) + "</span> " + esc(meta.label);
+            btn.className = "hotspot-band-btn flex items-center gap-1.5 py-2.5 px-3.5 rounded-lg text-xs font-bold transition-all cursor-pointer";
+            btn.innerHTML = "<span class='material-symbols-outlined text-sm band-icon'>" + esc(meta.icon) + "</span> " + esc(meta.label);
             bandContainer.appendChild(btn);
         });
 
@@ -573,6 +573,23 @@ document.addEventListener("DOMContentLoaded", function () {
             applySelection(key, true);
         });
         renderAll();
+
+        // Back-to-top button for ranking list
+        var scrollTopBtn = document.getElementById("hotspots-scroll-top");
+        if (scrollTopBtn) {
+            listEl.addEventListener("scroll", function () {
+                if (listEl.scrollTop > 120) {
+                    scrollTopBtn.classList.remove("hidden");
+                    scrollTopBtn.classList.add("flex");
+                } else {
+                    scrollTopBtn.classList.add("hidden");
+                    scrollTopBtn.classList.remove("flex");
+                }
+            });
+            scrollTopBtn.addEventListener("click", function () {
+                listEl.scrollTo({ top: 0, behavior: "smooth" });
+            });
+        }
     }
 
     if (data) {

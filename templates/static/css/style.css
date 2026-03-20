@@ -169,9 +169,10 @@
     font-size: 0.75rem;
 }
 
-/* Leaflet container z-index fix */
+/* Leaflet container — font + keep below fixed navbar */
 .leaflet-container {
     font-family: Inter, -apple-system, sans-serif;
+    z-index: 0;
 }
 
 /* Custom scrollbar */
