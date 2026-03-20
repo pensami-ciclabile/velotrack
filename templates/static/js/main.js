@@ -266,39 +266,50 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function renderHomeRows(body, rows) {
-        if (!body) return;
+    var catIcons = {
+        traffic_light: "traffic",
+        combined: "layers",
+        tram_stop: "tram",
+        bottleneck: "alt_route"
+    };
+
+    function renderHomeCards(container, rows) {
+        if (!container) return;
         if (!rows || !rows.length) {
-            body.innerHTML = "<tr><td colspan='6'>—</td></tr>";
+            container.innerHTML = "<p class='text-secondary col-span-full'>—</p>";
             return;
         }
-
         var html = "";
         rows.forEach(function (row, idx) {
-            html += "<tr>"
-                + "<td>" + (idx + 1) + "</td>"
-                + "<td>" + esc(row.category || "unknown") + "</td>"
-                + "<td>" + num(row.mean_wait_s).toFixed(1) + "s</td>"
-                + "<td>" + num(row.obs_count) + "</td>"
-                + "<td>" + num(row.line_count) + "</td>"
-                + "<td>" + esc(linesSummary(row)) + "</td>"
-                + "</tr>";
+            var cat = row.category || "unknown";
+            var color = categoryColor(cat);
+            var icon = catIcons[cat] || "location_on";
+            var wait = num(row.mean_wait_s);
+            var waitStr = wait >= 60 ? Math.floor(wait / 60) + "m " + Math.round(wait % 60) + "s" : wait.toFixed(0) + "s";
+            var lines = linesSummary(row);
+            html += "<div class='bg-surface-container-lowest rounded-xl p-5 ambient-shadow flex flex-col gap-2'>"
+                + "<div class='flex items-center justify-between'>"
+                + "<div class='flex items-center gap-2'>"
+                + "<span class='text-xs font-bold text-secondary/60'>#" + (idx + 1) + "</span>"
+                + "<span class='material-symbols-outlined text-sm' style='color:" + color + "'>" + icon + "</span>"
+                + "<span class='text-[10px] font-bold uppercase tracking-wide text-secondary'>" + esc(categoryLabel(cat)) + "</span>"
+                + "</div>"
+                + "<span class='text-lg font-black tracking-tight text-on-surface'>" + waitStr + "</span>"
+                + "</div>"
+                + "<p class='text-xs text-secondary leading-snug'>" + num(row.obs_count) + " obs · " + num(row.line_count) + " lines</p>"
+                + "<p class='text-[11px] text-secondary/70 leading-snug'>" + esc(lines) + "</p>"
+                + "</div>";
         });
-        body.innerHTML = html;
+        container.innerHTML = html;
     }
 
-    // Home preview (pre-ranked slices)
+    // Home preview (pre-ranked slices — top 6, no filter)
     var slices = readJsonScript("hotspot-slices");
     var homeBody = document.getElementById("home-hotspots-body");
     var homeCat = document.getElementById("home-hotspot-category");
-    if (slices && homeBody && homeCat) {
-        function renderHome() {
-            var key = homeCat.value || "all";
-            var rows = slices[key] || [];
-            renderHomeRows(homeBody, rows.slice(0, 8));
-        }
-        homeCat.addEventListener("change", renderHome);
-        renderHome();
+    if (slices && homeBody) {
+        var rows = slices["all"] || [];
+        renderHomeCards(homeBody, rows.slice(0, 6));
     }
 
     // Full page (map-first hotspots UX)
@@ -306,9 +317,35 @@ document.addEventListener("DOMContentLoaded", function () {
     var dataUrlEl = document.getElementById("hotspot-data-url");
     var mapEl = document.getElementById("hotspots-map");
     var listEl = document.getElementById("hotspots-list");
-    var selCat = document.getElementById("hotspot-category");
-    var selBand = document.getElementById("hotspot-timeband");
-    if (!mapEl || !listEl || !selCat || !selBand) return;
+    var catContainer = document.getElementById("hotspot-category");
+    var bandContainer = document.getElementById("hotspot-timeband");
+    if (!mapEl || !listEl || !catContainer || !bandContainer) return;
+
+    // Category toggle helpers (multi-select)
+    function getActiveCategories() {
+        var btns = catContainer.querySelectorAll(".hotspot-cat-btn.is-active");
+        var cats = [];
+        for (var i = 0; i < btns.length; i++) {
+            cats.push(btns[i].getAttribute("data-category"));
+        }
+        return cats;
+    }
+
+    // Time band helpers (single-select)
+    function getActiveBand() {
+        var btn = bandContainer.querySelector(".hotspot-band-btn.is-active");
+        return btn ? btn.getAttribute("data-band") : "all";
+    }
+
+    var bandMeta = {
+        all:      { icon: "schedule",    label: "All" },
+        am_peak:  { icon: "light_mode",  label: "AM Peak" },
+        midday:   { icon: "wb_sunny",    label: "Midday" },
+        pm_peak:  { icon: "wb_twilight", label: "PM Peak" },
+        evening:  { icon: "nights_stay", label: "Evening" },
+        night:    { icon: "dark_mode",   label: "Night" },
+        unknown:  { icon: "help_outline",label: "Other" }
+    };
 
     function initHotspotsPage(dataset) {
         if (!Array.isArray(dataset)) {
@@ -316,11 +353,39 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        // Populate time band buttons dynamically
         timeBandKeys(dataset).forEach(function (band) {
-            var opt = document.createElement("option");
-            opt.value = band;
-            opt.textContent = band;
-            selBand.appendChild(opt);
+            var meta = bandMeta[band] || { icon: "help_outline", label: band };
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.setAttribute("data-band", band);
+            btn.className = "hotspot-band-btn flex items-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-bold transition-all cursor-pointer";
+            btn.innerHTML = "<span class='material-symbols-outlined text-xs band-icon'>" + esc(meta.icon) + "</span> " + esc(meta.label);
+            bandContainer.appendChild(btn);
+        });
+
+        // Category toggle click handler (multi-select)
+        catContainer.addEventListener("click", function (evt) {
+            var btn = evt.target.closest ? evt.target.closest(".hotspot-cat-btn") : null;
+            if (!btn) return;
+            btn.classList.toggle("is-active");
+            // Prevent deselecting all — if none active, re-activate this one
+            if (!catContainer.querySelector(".hotspot-cat-btn.is-active")) {
+                btn.classList.add("is-active");
+            }
+            renderAll();
+        });
+
+        // Time band toggle click handler (single-select)
+        bandContainer.addEventListener("click", function (evt) {
+            var btn = evt.target.closest ? evt.target.closest(".hotspot-band-btn") : null;
+            if (!btn) return;
+            var allBtns = bandContainer.querySelectorAll(".hotspot-band-btn");
+            for (var i = 0; i < allBtns.length; i++) {
+                allBtns[i].classList.remove("is-active");
+            }
+            btn.classList.add("is-active");
+            renderAll();
         });
 
         if (typeof L === "undefined") {
@@ -471,10 +536,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         function filteredRows() {
-            var cat = selCat.value;
-            var band = selBand.value;
+            var activeCats = getActiveCategories();
+            var band = getActiveBand();
             var rows = dataset.filter(function (row) {
-                if (cat !== "all" && row.category !== cat) return false;
+                if (activeCats.indexOf(row.category) === -1) return false;
                 var st = statForBand(row, band);
                 return !!st && num(st.obs_count) > 0;
             });
@@ -482,7 +547,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         function renderAll() {
-            var band = selBand.value;
+            var band = getActiveBand();
             activeBand = band;
             currentRows = filteredRows();
             renderMap(currentRows, band);
@@ -498,8 +563,6 @@ document.addEventListener("DOMContentLoaded", function () {
             applySelection(selectedKey, false);
         }
 
-        selCat.addEventListener("change", renderAll);
-        selBand.addEventListener("change", renderAll);
         listEl.addEventListener("click", function (evt) {
             var target = evt.target;
             if (!target) return;

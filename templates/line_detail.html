@@ -7,113 +7,163 @@
 {% macro fmt_pct(scenario, baseline) %}{% if baseline > 0 %}{{ "%+.1f"|format((scenario - baseline) / baseline * 100) }}%{% endif %}{% endmacro %}
 
 {% block content %}
-<section class="section">
-    <h1><span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span></h1>
-    <p class="subtitle">{{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km</p>
-
-    <div class="iframe-wrapper">
-        <iframe src="{{ root_path }}/maps/{{ line.line_key }}.html" loading="lazy" allowfullscreen></iframe>
-    </div>
+<div class="max-w-[1440px] mx-auto px-6 md:px-8 py-12 md:py-16">
+    <!-- Editorial Header -->
+    <section class="mb-12">
+        <span class="text-[0.6875rem] font-bold uppercase tracking-[0.15em] text-primary block mb-2">
+            <span class="i18n-it">Analisi della linea</span><span class="i18n-en">Line analysis</span>
+        </span>
+        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tighter text-on-surface mb-3">
+            <span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span>
+        </h1>
+        <p class="text-secondary text-lg">
+            {{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km
+        </p>
+    </section>
 
     {% set moving_time = line.stats.avg_trip_duration - line.stats.total_delay %}
     {% set boarding_time = line.stats.boarding_total %}
     {% set tl_time = line.stats.tl_wait_total %}
     {% set bottleneck_time = line.stats.cat_total_avg.bottleneck|default(0) %}
     {% set bar_total = moving_time + boarding_time + tl_time + bottleneck_time %}
-    {% if bar_total > 0 %}
-    {% set pct_moving = (moving_time / bar_total * 100)|round(1) %}
-    {% set pct_boarding = (boarding_time / bar_total * 100)|round(1) %}
-    {% set pct_tl = (tl_time / bar_total * 100)|round(1) %}
-    {% set pct_bottleneck = (100 - pct_moving - pct_boarding - pct_tl)|round(1) %}
-    <div class="stat-group">
-        <h3><span class="i18n-it">Ripartizione tempo</span><span class="i18n-en">Time breakdown</span></h3>
-        <div class="time-bar">
-            {% if pct_moving > 0 %}<div style="width:{{ pct_moving }}%;background:#598e47" title="Moving: {{ fmt_ms(moving_time) }}">&nbsp;</div>{% endif %}
-            {% if pct_boarding > 0 %}<div style="width:{{ pct_boarding }}%;background:#f4b256" title="Boarding: {{ fmt_ms(boarding_time) }}">&nbsp;</div>{% endif %}
-            {% if pct_tl > 0 %}<div style="width:{{ pct_tl }}%;background:#ed5f49" title="Traffic lights: {{ fmt_ms(tl_time) }}">&nbsp;</div>{% endif %}
-            {% if pct_bottleneck > 0 %}<div style="width:{{ pct_bottleneck }}%;background:#909090" title="Bottlenecks: {{ fmt_ms(bottleneck_time) }}">&nbsp;</div>{% endif %}
+    {% set cur = line.stats.avg_trip_duration %}
+
+    <!-- Top row: Speed + Stops left, Map right (map matches their combined height) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-6">
+        <!-- Left: Speed + Stops stacked -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+            <!-- Speed Stats -->
+            <div class="bg-surface-container-low p-8 rounded-2xl space-y-6 flex-1">
+                <h3 class="text-[0.6875rem] font-bold uppercase tracking-wider text-secondary mb-4">
+                    <span class="i18n-it">Velocità</span><span class="i18n-en">Speed</span>
+                </h3>
+                <div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-4xl font-bold tracking-tight">{{ "%.1f"|format(line.stats.speed.avg_trip) }}</span>
+                        <span class="text-secondary text-sm">km/h</span>
+                    </div>
+                    <p class="text-xs text-secondary mt-1">
+                        <span class="i18n-it">Velocità media corsa</span><span class="i18n-en">Avg trip speed</span>
+                    </p>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-baseline">
+                        <span class="text-sm text-secondary"><span class="i18n-it">In movimento</span><span class="i18n-en">Moving</span></span>
+                        <span class="font-semibold">{{ "%.1f"|format(line.stats.speed.avg_moving) }} km/h</span>
+                    </div>
+                    <div class="flex justify-between items-baseline">
+                        <span class="text-sm text-secondary"><span class="i18n-it">Mediana</span><span class="i18n-en">Median</span></span>
+                        <span class="font-semibold">{{ "%.1f"|format(line.stats.speed.median_moving) }} km/h</span>
+                    </div>
+                    <div class="flex justify-between items-baseline">
+                        <span class="text-sm text-secondary"><span class="i18n-it">Picco</span><span class="i18n-en">Peak</span></span>
+                        <span class="font-semibold">{{ "%.1f"|format(line.stats.speed.peak) }} km/h</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stops & Delays -->
+            <div class="bg-surface-container-low p-8 rounded-2xl space-y-3 flex-1">
+                <h3 class="text-[0.6875rem] font-bold uppercase tracking-wider text-secondary mb-4">
+                    <span class="i18n-it">Fermate e ritardi</span><span class="i18n-en">Stops & delays</span>
+                </h3>
+                <div class="flex justify-between items-baseline">
+                    <span class="text-sm text-secondary"><span class="i18n-it">Fermate totali</span><span class="i18n-en">Total stops</span></span>
+                    <span class="font-semibold">{{ line.stats.total_stops }}</span>
+                </div>
+                <div class="flex justify-between items-baseline">
+                    <span class="text-sm text-secondary"><span class="i18n-it">Ritardo totale</span><span class="i18n-en">Total delay</span></span>
+                    <span class="font-semibold">{{ fmt_ms(line.stats.total_delay) }}</span>
+                </div>
+                <div class="flex justify-between items-baseline">
+                    <span class="text-sm text-secondary"><span class="i18n-it">Attesa media</span><span class="i18n-en">Avg wait</span></span>
+                    <span class="font-semibold">{{ fmt_ms(line.stats.avg_wait) }}</span>
+                </div>
+                <div class="flex justify-between items-baseline">
+                    <span class="text-sm text-secondary"><span class="i18n-it">Durata corsa</span><span class="i18n-en">Trip duration</span></span>
+                    <span class="font-semibold">{{ fmt_ms(line.stats.avg_trip_duration) }}</span>
+                </div>
+            </div>
         </div>
-        <div class="time-bar-legend">
-            <span><span class="time-bar-swatch" style="background:#598e47"></span> <span class="i18n-it">In movimento</span><span class="i18n-en">Moving</span> {{ fmt_ms(moving_time) }} ({{ pct_moving }}%)</span>
-            <span><span class="time-bar-swatch" style="background:#f4b256"></span> <span class="i18n-it">Fermate tram</span><span class="i18n-en">Boarding</span> {{ fmt_ms(boarding_time) }} ({{ pct_boarding }}%)</span>
-            <span><span class="time-bar-swatch" style="background:#ed5f49"></span> <span class="i18n-it">Semafori</span><span class="i18n-en">Traffic lights</span> {{ fmt_ms(tl_time) }} ({{ pct_tl }}%)</span>
-            {% if pct_bottleneck > 0 %}<span><span class="time-bar-swatch" style="background:#909090"></span> <span class="i18n-it">Colli di bottiglia</span><span class="i18n-en">Bottlenecks</span> {{ fmt_ms(bottleneck_time) }} ({{ pct_bottleneck }}%)</span>{% endif %}
+
+        <!-- Right: Map (stretches to match left column height) -->
+        <div class="lg:col-span-8">
+            <div class="bg-surface-container-lowest rounded-3xl overflow-hidden ambient-shadow h-full min-h-[400px] relative">
+                <iframe src="{{ root_path }}/maps/{{ line.line_key }}.html" loading="lazy" allowfullscreen class="absolute inset-0 w-full h-full border-none"></iframe>
+            </div>
         </div>
     </div>
-    {% endif %}
 
-    <h2><span class="i18n-it">Statistiche</span><span class="i18n-en">Statistics</span></h2>
+    <!-- Bottom row: Time Breakdown left, Scenarios right (4 columns) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Time Breakdown -->
+        {% if bar_total > 0 %}
+        {% set pct_moving = (moving_time / bar_total * 100)|round(1) %}
+        {% set pct_boarding = (boarding_time / bar_total * 100)|round(1) %}
+        {% set pct_tl = (tl_time / bar_total * 100)|round(1) %}
+        {% set pct_bottleneck = (100 - pct_moving - pct_boarding - pct_tl)|round(1) %}
+        <div class="lg:col-span-4">
+            <div class="bg-surface-container-low p-8 rounded-2xl h-full">
+                <h3 class="text-[0.6875rem] font-bold uppercase tracking-wider text-secondary mb-4">
+                    <span class="i18n-it">Ripartizione tempo</span><span class="i18n-en">Time breakdown</span>
+                </h3>
+                <div class="time-bar mb-3">
+                    {% if pct_moving > 0 %}<div style="width:{{ pct_moving }}%;background:#598e47" title="Moving: {{ fmt_ms(moving_time) }}">&nbsp;</div>{% endif %}
+                    {% if pct_boarding > 0 %}<div style="width:{{ pct_boarding }}%;background:#f4b256" title="Boarding: {{ fmt_ms(boarding_time) }}">&nbsp;</div>{% endif %}
+                    {% if pct_tl > 0 %}<div style="width:{{ pct_tl }}%;background:#ed5f49" title="Traffic lights: {{ fmt_ms(tl_time) }}">&nbsp;</div>{% endif %}
+                    {% if pct_bottleneck > 0 %}<div style="width:{{ pct_bottleneck }}%;background:#909090" title="Bottlenecks: {{ fmt_ms(bottleneck_time) }}">&nbsp;</div>{% endif %}
+                </div>
+                <div class="time-bar-legend text-xs">
+                    <span><span class="time-bar-swatch" style="background:#598e47"></span> <span class="i18n-it">Movimento</span><span class="i18n-en">Moving</span> {{ pct_moving }}%</span>
+                    <span><span class="time-bar-swatch" style="background:#f4b256"></span> <span class="i18n-it">Fermate</span><span class="i18n-en">Boarding</span> {{ pct_boarding }}%</span>
+                    <span><span class="time-bar-swatch" style="background:#ed5f49"></span> <span class="i18n-it">Semafori</span><span class="i18n-en">Lights</span> {{ pct_tl }}%</span>
+                    {% if pct_bottleneck > 0 %}<span><span class="time-bar-swatch" style="background:#909090"></span> Bottleneck {{ pct_bottleneck }}%</span>{% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
-    <div class="stat-group">
-        <h3><span class="i18n-it">Velocità</span><span class="i18n-en">Speed</span></h3>
-        <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Velocità media corsa</span><span class="i18n-en">Avg trip speed</span></span>
-            <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.avg_trip) }} km/h</span>
-        </div>
-        <div class="stat-row-desc"><span class="i18n-it">Velocità media incluse tutte le fermate e i ritardi</span><span class="i18n-en">Average speed including all stops and delays</span></div>
-        <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Velocità media in movimento</span><span class="i18n-en">Avg moving speed</span></span>
-            <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.avg_moving) }} km/h</span>
-        </div>
-        <div class="stat-row-desc"><span class="i18n-it">Velocità media mentre il tram è in movimento</span><span class="i18n-en">Average speed while the tram is moving</span></div>
-        <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Mediana in movimento</span><span class="i18n-en">Median moving</span></span>
-            <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.median_moving) }} km/h</span>
-        </div>
-        <div class="stat-row-desc"><span class="i18n-it">Metà delle misurazioni sono sopra/sotto questo valore</span><span class="i18n-en">Half of measurements are above/below this</span></div>
-        <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Picco</span><span class="i18n-en">Peak</span></span>
-            <span class="stat-row-value">{{ "%.1f"|format(line.stats.speed.peak) }} km/h</span>
+        <!-- Scenarios: 4 columns -->
+        <div class="{% if bar_total > 0 %}lg:col-span-8{% else %}lg:col-span-12{% endif %}">
+            <div class="bg-surface-container-low p-8 rounded-2xl h-full">
+                <h3 class="text-[0.6875rem] font-bold uppercase tracking-wider text-secondary mb-6">
+                    <span class="i18n-it">Scenari durata corsa</span><span class="i18n-en">Trip duration scenarios</span>
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <!-- Current -->
+                    <div>
+                        <span class="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary block mb-2">
+                            <span class="i18n-it">Attuale</span><span class="i18n-en">Current</span>
+                        </span>
+                        <span class="text-2xl md:text-3xl font-black tracking-tight text-on-surface">{{ fmt_ms(cur) }}</span>
+                    </div>
+                    <!-- Green Wave -->
+                    <div>
+                        <span class="text-[0.6875rem] font-bold uppercase tracking-widest text-[#2a2] block mb-2">
+                            <span class="i18n-it">Onda verde</span><span class="i18n-en">Green wave</span>
+                        </span>
+                        <span class="text-2xl md:text-3xl font-black tracking-tight text-[#2a2]">{{ fmt_ms(line.stats.scenario_green_wave) }}</span>
+                        <span class="block text-xs font-semibold text-[#2a2] mt-1">{{ fmt_delta(line.stats.scenario_green_wave - cur) }} · {{ fmt_pct(line.stats.scenario_green_wave, cur) }}</span>
+                    </div>
+                    <!-- Red Wave -->
+                    <div>
+                        <span class="text-[0.6875rem] font-bold uppercase tracking-widest text-[#c33] block mb-2">
+                            <span class="i18n-it">Onda rossa</span><span class="i18n-en">Red wave</span>
+                        </span>
+                        <span class="text-2xl md:text-3xl font-black tracking-tight text-[#c33]">{{ fmt_ms(line.stats.scenario_red_wave) }}</span>
+                        <span class="block text-xs font-semibold text-[#c33] mt-1">{{ fmt_delta(line.stats.scenario_red_wave - cur) }} · {{ fmt_pct(line.stats.scenario_red_wave, cur) }}</span>
+                    </div>
+                    <!-- Best Case -->
+                    <div>
+                        <span class="text-[0.6875rem] font-bold uppercase tracking-widest text-[#07a] block mb-2">
+                            <span class="i18n-it">Caso migliore</span><span class="i18n-en">Best case</span>
+                        </span>
+                        <span class="text-2xl md:text-3xl font-black tracking-tight text-[#07a]">{{ fmt_ms(line.stats.scenario_best_case) }}</span>
+                        <span class="block text-xs font-semibold text-[#07a] mt-1">{{ fmt_delta(line.stats.scenario_best_case - cur) }} · {{ fmt_pct(line.stats.scenario_best_case, cur) }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="stat-group">
-        <h3><span class="i18n-it">Fermate e ritardi</span><span class="i18n-en">Stops & Delays</span></h3>
-        <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Fermate totali</span><span class="i18n-en">Total stops</span></span>
-            <span class="stat-row-value">{{ line.stats.total_stops }}</span>
-        </div>
-        <div class="stat-row-desc"><span class="i18n-it">Numero di fermate rilevate lungo il percorso</span><span class="i18n-en">Number of detected stops along the route</span></div>
-        <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Ritardo totale</span><span class="i18n-en">Total delay</span></span>
-            <span class="stat-row-value">{{ fmt_ms(line.stats.total_delay) }}</span>
-        </div>
-        <div class="stat-row-desc"><span class="i18n-it">Tempo di attesa combinato a tutte le fermate</span><span class="i18n-en">Combined waiting time at all stops</span></div>
-        <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Attesa media per fermata</span><span class="i18n-en">Avg wait per stop</span></span>
-            <span class="stat-row-value">{{ fmt_ms(line.stats.avg_wait) }}</span>
-        </div>
-        <div class="stat-row-desc"><span class="i18n-it">Durata media di ogni fermata</span><span class="i18n-en">Average duration of each stop</span></div>
-        <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Durata media corsa</span><span class="i18n-en">Avg trip duration</span></span>
-            <span class="stat-row-value">{{ fmt_ms(line.stats.avg_trip_duration) }}</span>
-        </div>
-        <div class="stat-row-desc"><span class="i18n-it">Tempo totale del viaggio dall'inizio alla fine</span><span class="i18n-en">Total journey time from start to end</span></div>
-    </div>
-
-    <div class="stat-group">
-        <h3><span class="i18n-it">Scenari durata corsa</span><span class="i18n-en">Trip duration scenarios</span></h3>
-        <div class="stat-row">
-            <span class="stat-row-label"><span class="i18n-it">Situazione attuale</span><span class="i18n-en">Current situation</span></span>
-            <span class="stat-row-value">{{ fmt_ms(line.stats.avg_trip_duration) }}</span>
-        </div>
-        <div class="stat-row-desc"><span class="i18n-it">Durata media della corsa registrata</span><span class="i18n-en">Average recorded trip duration</span></div>
-        {% set cur = line.stats.avg_trip_duration %}
-        <div class="stat-row">
-            <span class="stat-row-label" style="color:#2a2"><span class="i18n-it">Onda verde (priorità semaforica)</span><span class="i18n-en">Green wave (TL priority)</span></span>
-            <span class="stat-row-value" style="color:#2a2">{{ fmt_ms(line.stats.scenario_green_wave) }} <small>({{ fmt_delta(line.stats.scenario_green_wave - cur) }}, {{ fmt_pct(line.stats.scenario_green_wave, cur) }})</small></span>
-        </div>
-        <div class="stat-row-desc"><span class="i18n-it">Se i semafori dessero priorità ai tram (esclusi colli di bottiglia)</span><span class="i18n-en">If traffic lights gave trams priority (excl. bottlenecks)</span></div>
-        <div class="stat-row">
-            <span class="stat-row-label" style="color:#c33"><span class="i18n-it">Onda rossa (caso peggiore)</span><span class="i18n-en">Red wave (worst case)</span></span>
-            <span class="stat-row-value" style="color:#c33">{{ fmt_ms(line.stats.scenario_red_wave) }} <small>({{ fmt_delta(line.stats.scenario_red_wave - cur) }}, {{ fmt_pct(line.stats.scenario_red_wave, cur) }})</small></span>
-        </div>
-        <div class="stat-row-desc"><span class="i18n-it">Caso peggiore: ritardo massimo registrato ad ogni fermata</span><span class="i18n-en">Worst case: maximum recorded delay at each stop</span></div>
-        <div class="stat-row">
-            <span class="stat-row-label" style="color:#07a"><span class="i18n-it">Caso migliore</span><span class="i18n-en">Best case</span></span>
-            <span class="stat-row-value" style="color:#07a">{{ fmt_ms(line.stats.scenario_best_case) }} <small>({{ fmt_delta(line.stats.scenario_best_case - cur) }}, {{ fmt_pct(line.stats.scenario_best_case, cur) }})</small></span>
-        </div>
-        <div class="stat-row-desc"><span class="i18n-it">Priorità semaforica + nessun collo di bottiglia</span><span class="i18n-en">TL priority + no bottlenecks</span></div>
-    </div>
-</section>
+</div>
 {% endblock %}

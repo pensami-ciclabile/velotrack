@@ -19,18 +19,83 @@
       window.__veloLang=lang;
     })();
     </script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#9f4200",
+              "primary-container": "#f67a32",
+              "on-primary": "#ffffff",
+              "on-primary-container": "#5c2300",
+              "on-primary-fixed": "#341100",
+              "on-primary-fixed-variant": "#793100",
+              "primary-fixed": "#ffdbcb",
+              "primary-fixed-dim": "#ffb692",
+              "inverse-primary": "#ffb692",
+              "secondary": "#5f5e5e",
+              "secondary-container": "#e4e2e1",
+              "secondary-fixed": "#e4e2e1",
+              "secondary-fixed-dim": "#c8c6c6",
+              "on-secondary": "#ffffff",
+              "on-secondary-container": "#656464",
+              "on-secondary-fixed": "#1b1c1c",
+              "on-secondary-fixed-variant": "#474747",
+              "tertiary": "#5d5f5f",
+              "tertiary-container": "#9c9d9d",
+              "tertiary-fixed": "#e2e2e2",
+              "tertiary-fixed-dim": "#c6c6c7",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-container": "#333535",
+              "on-tertiary-fixed": "#1a1c1c",
+              "on-tertiary-fixed-variant": "#454747",
+              "surface": "#fbf9f8",
+              "surface-dim": "#dcd9d9",
+              "surface-bright": "#fbf9f8",
+              "surface-variant": "#e4e2e1",
+              "surface-container": "#f0eded",
+              "surface-container-low": "#f6f3f2",
+              "surface-container-high": "#eae8e7",
+              "surface-container-highest": "#e4e2e1",
+              "surface-container-lowest": "#ffffff",
+              "surface-tint": "#9f4200",
+              "on-surface": "#1b1c1c",
+              "on-surface-variant": "#574238",
+              "on-background": "#1b1c1c",
+              "background": "#fbf9f8",
+              "outline": "#8b7266",
+              "outline-variant": "#dec0b3",
+              "inverse-surface": "#303030",
+              "inverse-on-surface": "#f3f0f0",
+              "error": "#ba1a1a",
+              "error-container": "#ffdad6",
+              "on-error": "#ffffff",
+              "on-error-container": "#93000a",
+            },
+            fontFamily: {
+              "sans": ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica", "Arial", "sans-serif"],
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
     <link rel="stylesheet" href="{{ root_path }}/css/style.css">
     {% block head %}{% endblock %}
 </head>
-<body>
-    <nav class="navbar">
-        <div class="nav-inner">
-            <a href="{{ root_path }}/index.html" class="nav-brand">Velotrack</a>
-            <div class="nav-actions">
-                <a href="{{ root_path }}/hotspots.html" class="nav-link-text"><span class="i18n-it">Hotspot</span><span class="i18n-en">Hotspots</span></a>
-                <a href="{{ root_path }}/methodology.html" class="nav-link-text"><span class="i18n-it">Metodologia</span><span class="i18n-en">Methodology</span></a>
-                <a href="https://github.com/pensami-ciclabile/velotrack" target="_blank" rel="noopener" class="nav-github" aria-label="GitHub"><svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></a>
-                <button class="lang-switch" id="lang-switch" aria-label="Switch language"></button>
+<body class="bg-surface text-on-surface font-sans antialiased min-h-screen flex flex-col">
+    <nav class="glass-nav fixed top-0 w-full z-50 shadow-sm">
+        <div class="flex justify-between items-center w-full px-6 md:px-8 py-3 max-w-[1440px] mx-auto">
+            <a href="{{ root_path }}/index.html" class="text-lg font-bold tracking-tighter text-on-surface hover:no-underline">Velotrack</a>
+            <div class="nav-actions flex items-center gap-6">
+                <a href="{{ root_path }}/index.html" class="hidden md:inline text-secondary hover:text-on-surface transition-colors text-sm tracking-tight"><span class="i18n-it">Home</span><span class="i18n-en">Home</span></a>
+                <a href="{{ root_path }}/hotspots.html" class="hidden md:inline text-secondary hover:text-on-surface transition-colors text-sm tracking-tight"><span class="i18n-it">Hotspot</span><span class="i18n-en">Hotspots</span></a>
+                <a href="{{ root_path }}/methodology.html" class="hidden md:inline text-secondary hover:text-on-surface transition-colors text-sm tracking-tight"><span class="i18n-it">Metodologia</span><span class="i18n-en">Methodology</span></a>
+                <a href="https://github.com/pensami-ciclabile/velotrack" target="_blank" rel="noopener" class="text-secondary hover:text-on-surface transition-colors flex items-center" aria-label="GitHub"><svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></a>
+                <button class="bg-on-surface/5 hover:bg-on-surface/10 text-on-surface border-none rounded-lg px-2.5 py-1 text-[0.6875rem] font-bold cursor-pointer tracking-[0.05em] transition-colors" id="lang-switch" aria-label="Switch language"></button>
             </div>
             <script>
             (function(){
@@ -46,12 +111,14 @@
         </div>
     </nav>
 
-    <main>
+    <main class="flex-1 pt-16">
         {% block content %}{% endblock %}
     </main>
 
-    <footer>
-        <p><span class="i18n-it">Realizzato da</span><span class="i18n-en">Built by</span> <a href="https://pensamiciclabile.it" target="_blank" rel="noopener">PensaMiCiclabile</a> ❤️ <a href="https://velocipiedi.it" target="_blank" rel="noopener">Velocipiedi</a></p>
+    <footer class="bg-surface-container-low w-full py-8 px-6 md:px-8">
+        <div class="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-xs text-secondary"><span class="i18n-it">Realizzato da</span><span class="i18n-en">Built by</span> <a href="https://pensamiciclabile.it" target="_blank" rel="noopener" class="text-secondary hover:text-on-surface transition-colors">PensaMiCiclabile</a> ❤️ <a href="https://velocipiedi.it" target="_blank" rel="noopener" class="text-secondary hover:text-on-surface transition-colors">Velocipiedi</a></p>
+        </div>
     </footer>
     <script src="{{ root_path }}/js/main.js"></script>
 </body>

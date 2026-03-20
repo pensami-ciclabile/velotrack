@@ -3,233 +3,309 @@
 {% block title %}Velotrack — Milan Tram Ride Analysis{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <h1>Velotrack</h1>
-    <p><span class="i18n-it">Analisi GPS delle corse tramviarie a Milano. Mappe di velocità, rilevamento fermate e monitoraggio ritardi ai semafori.</span><span class="i18n-en">GPS-based tram ride analysis for Milan. Velocity heatmaps, stop detection, and traffic light delay tracking.</span></p>
+<!-- Hero Section -->
+<section class="px-6 md:px-8 py-16 md:py-24 max-w-[1440px] mx-auto">
+    <div class="max-w-3xl">
+        <span class="text-[0.6875rem] font-bold tracking-[0.15em] text-primary uppercase block mb-4">
+            <span class="i18n-it">Analisi GPS della rete tramviaria di Milano</span>
+            <span class="i18n-en">GPS analysis of Milan's tram network</span>
+        </span>
+        <h1 class="text-4xl md:text-[3.5rem] font-light leading-tight tracking-tight text-on-surface mb-6">
+            <span class="i18n-it">Il costo del <span class="font-bold italic">ritardo</span></span>
+            <span class="i18n-en">The cost of <span class="font-bold italic">delay</span></span>
+        </h1>
+        <p class="text-lg text-secondary leading-relaxed max-w-xl">
+            <span class="i18n-it">Analisi GPS delle corse tramviarie a Milano. Mappe di velocità, rilevamento fermate e monitoraggio ritardi ai semafori.</span>
+            <span class="i18n-en">GPS-based tram ride analysis for Milan. Velocity heatmaps, stop detection, and traffic light delay tracking.</span>
+        </p>
+    </div>
 </section>
 
 {% if tl_hours %}
-<section class="tl-highlight"
-         data-weekday="{{ tl_hours.weekday }}"
-         data-saturday="{{ tl_hours.saturday }}"
-         data-sunday="{{ tl_hours.sunday }}">
-    <div class="tl-number">
-        <span class="tl-hours-value">{{ tl_hours.weekday }}</span>
-        <span class="tl-unit"><span class="i18n-it">ore</span><span class="i18n-en">hours</span></span>
-    </div>
-    <div class="tl-text">
-        <p class="tl-main">
-            <span class="i18n-it">Solo oggi, ATM ha perso questo tempo aspettando i semafori milanesi</span>
-            <span class="i18n-en">Today alone, ATM lost this much time waiting at Milan's traffic lights</span>
-        </p>
-        <p class="tl-sub">
-            <span class="i18n-it">Tempo che avrebbe potuto usare per effettuare più corse, far lavorare più efficacemente i suoi lavoratori, ...</span>
-            <span class="i18n-en">Time that could have been used to run more trams, make its workers more productive, ...</span>
-        </p>
-        <p class="tl-disclaimer">
-            <span class="i18n-it">Basato su {{ tl_lines_count }} di {{ tl_total_lines }} linee tramviarie · oggi come <span class="tl-day-label">giorno feriale</span> ({{ tl_hours.weekday }} feriale, {{ tl_hours.saturday }} sabato, {{ tl_hours.sunday }} domenica)</span>
-            <span class="i18n-en">Based on {{ tl_lines_count }} of {{ tl_total_lines }} tram lines · today as a <span class="tl-day-label">weekday</span> ({{ tl_hours.weekday }} weekday, {{ tl_hours.saturday }} Saturday, {{ tl_hours.sunday }} Sunday)</span>
-        </p>
+<!-- Hero Metrics -->
+<section class="px-6 md:px-8 max-w-[1440px] mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <!-- Hours Lost -->
+        <div class="tl-highlight bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container"
+             data-weekday="{{ tl_hours.weekday }}"
+             data-saturday="{{ tl_hours.saturday }}"
+             data-sunday="{{ tl_hours.sunday }}">
+            <div class="flex items-center gap-2 text-primary mb-3">
+                <span class="material-symbols-outlined text-xl">timer</span>
+                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+                    <span class="i18n-it">Ore perse oggi</span>
+                    <span class="i18n-en">Hours lost today</span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-4">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tl-hours-value">{{ tl_hours.weekday }}</span>
+                <span class="text-lg font-medium text-secondary">
+                    <span class="i18n-it">ore</span><span class="i18n-en">hours</span>
+                </span>
+            </div>
+            <p class="text-sm text-secondary leading-relaxed mb-2">
+                <span class="i18n-it">Solo oggi, ATM ha perso questo tempo aspettando i semafori milanesi</span>
+                <span class="i18n-en">Today alone, ATM lost this much time waiting at Milan's traffic lights</span>
+            </p>
+            <p class="text-xs text-secondary/60">
+                <span class="i18n-it">Basato su {{ tl_lines_count }} di {{ tl_total_lines }} linee tramviarie · oggi come <span class="tl-day-label">giorno feriale</span> ({{ tl_hours.weekday }} feriale, {{ tl_hours.saturday }} sabato, {{ tl_hours.sunday }} domenica)</span>
+                <span class="i18n-en">Based on {{ tl_lines_count }} of {{ tl_total_lines }} tram lines · today as a <span class="tl-day-label">weekday</span> ({{ tl_hours.weekday }} weekday, {{ tl_hours.saturday }} Saturday, {{ tl_hours.sunday }} Sunday)</span>
+            </p>
+        </div>
+
+        {% if tl_extra_rides %}
+        <!-- Extra Rides -->
+        <div class="tl-highlight bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container"
+             data-rides-weekday="{{ tl_extra_rides.weekday }}"
+             data-rides-saturday="{{ tl_extra_rides.saturday }}"
+             data-rides-sunday="{{ tl_extra_rides.sunday }}">
+            <div class="flex items-center gap-2 text-primary mb-3">
+                <span class="material-symbols-outlined text-xl">directions_transit</span>
+                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+                    <span class="i18n-it">Corse extra possibili</span>
+                    <span class="i18n-en">Extra rides possible</span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-4">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tl-hours-value tl-rides-value">{{ tl_extra_rides.weekday }}</span>
+                <span class="text-lg font-medium text-secondary">
+                    <span class="i18n-it">corse in più</span><span class="i18n-en">extra rides</span>
+                </span>
+            </div>
+            <p class="text-sm text-secondary leading-relaxed mb-2">
+                <span class="i18n-it">Con la priorità semaforica, ATM potrebbe effettuare ogni giorno questo numero di corse in più — senza un solo tram o conducente aggiuntivo</span>
+                <span class="i18n-en">With tram priority at traffic lights, ATM could run this many extra rides every day — without a single extra tram or driver</span>
+            </p>
+            <p class="text-xs text-secondary/60">
+                <span class="i18n-it">Calcolato su {{ tl_lines_count }} linee misurate · tempo risparmiato ÷ durata media corsa</span>
+                <span class="i18n-en">Calculated from {{ tl_lines_count }} measured lines · time saved ÷ avg trip duration</span>
+            </p>
+        </div>
+        {% endif %}
     </div>
 </section>
 {% endif %}
 
-{% if tl_extra_rides %}
-<section class="tl-highlight"
-         data-rides-weekday="{{ tl_extra_rides.weekday }}"
-         data-rides-saturday="{{ tl_extra_rides.saturday }}"
-         data-rides-sunday="{{ tl_extra_rides.sunday }}">
-    <div class="tl-text">
-        <p class="tl-main">
-            <span class="i18n-it">Con la priorità semaforica, ATM potrebbe effettuare ogni giorno questo numero di corse in più — senza un solo tram o conducente aggiuntivo</span>
-            <span class="i18n-en">With tram priority at traffic lights, ATM could run this many extra rides every day — without a single extra tram or driver</span>
-        </p>
-        <p class="tl-sub">
-            <span class="i18n-it">Stessi tram, stessi conducenti, più corse. Il tempo risparmiato ai semafori si traduce direttamente in capacità extra.</span>
-            <span class="i18n-en">Same trams, same drivers, more rides. Time saved at traffic lights translates directly into extra capacity.</span>
-        </p>
-        <p class="tl-disclaimer">
-            <span class="i18n-it">Calcolato su {{ tl_lines_count }} linee misurate · tempo risparmiato ÷ durata media corsa</span>
-            <span class="i18n-en">Calculated from {{ tl_lines_count }} measured lines · time saved ÷ avg trip duration</span>
-        </p>
-    </div>
-    <div class="tl-number">
-        <span class="tl-hours-value tl-rides-value">{{ tl_extra_rides.weekday }}</span>
-        <span class="tl-unit"><span class="i18n-it">corse in più</span><span class="i18n-en">extra rides</span></span>
-    </div>
-</section>
-{% endif %}
-
-<script id="commute-data" type="application/json">{{ commute_lines_json }}</script>
-<section class="commute-highlight">
-    <div class="tl-number commute-number">
-        <span class="tl-hours-value" id="commute-month-value">—</span>
-        <span class="tl-unit"><span class="i18n-it">min / mese</span><span class="i18n-en">min / month</span></span>
-    </div>
-    <div class="commute-text">
-        <p class="tl-main">
-            <span class="i18n-it">Il tuo tram è fermo al rosso. Per quanto tempo?</span>
-            <span class="i18n-en">Your tram is stuck at a red light. For how long?</span>
-        </p>
-        <p class="tl-sub">
-            <span class="i18n-it">Calcola quanto tempo il tuo tram perde ai semafori nel tragitto casa-lavoro</span>
-            <span class="i18n-en">Calculate how much time your tram loses at traffic lights on your commute</span>
-        </p>
-        <p class="tl-disclaimer">
-            <span class="i18n-it">Stima proporzionale · andata e ritorno<br>22 giorni lavorativi/mese</span>
-            <span class="i18n-en">Proportional estimate · round trip<br>22 workdays/month</span>
-        </p>
-    </div>
-    <div class="commute-controls">
-        <select id="commute-line-select" class="commute-select">
-            <option value="" disabled selected>-- Linea / Line --</option>
-        </select>
-        <div class="commute-stops-row">
-            <select id="commute-from-select" class="commute-select" disabled>
-                <option value="" disabled selected>Partenza / From</option>
-            </select>
-            <select id="commute-to-select" class="commute-select" disabled>
-                <option value="" disabled selected>Arrivo / To</option>
-            </select>
-        </div>
-        <div id="commute-nodata" class="commute-nodata" style="display:none;">
-            <span class="i18n-it">Dati non ancora disponibili per questa linea</span>
-            <span class="i18n-en">Data not yet available for this line</span>
-        </div>
-    </div>
-</section>
-
-<script id="hotspot-slices" type="application/json">{{ hotspot_slices_json }}</script>
-<section class="hotspots-highlight">
-    <div class="hotspots-header">
-        <h2><span class="i18n-it">Hotspot di rete</span><span class="i18n-en">Network hotspots</span></h2>
-        <a class="hotspots-link" href="{{ root_path }}/hotspots.html"><span class="i18n-it">Vista completa</span><span class="i18n-en">Full view</span></a>
-    </div>
-    <p class="hotspots-sub">
-        <span class="i18n-it">Punti in cui i tram perdono più tempo (semafori, fermate condivise, colli di bottiglia), aggregando tutte le fermate osservate nello stesso punto fisico anche quando arrivano da linee diverse.</span>
-        <span class="i18n-en">Places where trams lose the most time (traffic lights, shared stops, bottlenecks), aggregating all observed waits at the same physical point even when they come from different lines.</span>
-    </p>
-    <div class="hotspots-controls">
-        <label for="home-hotspot-category"><span class="i18n-it">Categoria</span><span class="i18n-en">Category</span></label>
-        <select id="home-hotspot-category" class="commute-select">
-            <option value="all">All</option>
-            <option value="traffic_light">Traffic lights</option>
-            <option value="combined">Combined</option>
-            <option value="bottleneck">Bottlenecks</option>
-            <option value="tram_stop">Tram stops</option>
-        </select>
-    </div>
-    <div class="hotspots-table-wrap">
-        <table class="hotspots-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th><span class="i18n-it">Categoria</span><span class="i18n-en">Category</span></th>
-                    <th><span class="i18n-it">Attesa media</span><span class="i18n-en">Mean wait</span></th>
-                    <th><span class="i18n-it">Osservazioni</span><span class="i18n-en">Obs</span></th>
-                    <th><span class="i18n-it">Linee</span><span class="i18n-en">Lines</span></th>
-                    <th><span class="i18n-it">Contributi</span><span class="i18n-en">Contributions</span></th>
-                </tr>
-            </thead>
-            <tbody id="home-hotspots-body">
-                <tr><td colspan="6">—</td></tr>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<section class="cards">
-    {% for group in grouped_lines %}
-    <h2 class="line-group-heading"><span class="i18n-it">Linea</span><span class="i18n-en">Line</span> {{ group.line_number }}</h2>
-    <div class="direction-cards">
-        {% for line in group.directions %}
-        <a href="{{ root_path }}/lines/{{ line.line_key }}.html" class="card">
-            <h3><span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span></h3>
-            <div class="card-stats">
-                <div class="stat">
-                    <span class="stat-value">{{ "%.1f"|format(line.stats.speed.avg_trip) }} <small>km/h</small></span>
-                    <span class="stat-label"><span class="i18n-it">velocità media</span><span class="i18n-en">avg trip</span></span>
-                </div>
-                <div class="stat">
-                    <span class="stat-value">{{ line.stats.total_stops }}</span>
-                    <span class="stat-label"><span class="i18n-it">fermate</span><span class="i18n-en">stops</span></span>
+<!-- Commute Calculator -->
+<section class="bg-surface-container-low py-16 md:py-20">
+    <script id="commute-data" type="application/json">{{ commute_lines_json }}</script>
+    <div class="max-w-[1440px] mx-auto px-6 md:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-on-surface">
+                    <span class="i18n-it">Il tuo tram è fermo al rosso</span>
+                    <span class="i18n-en">Your tram is stuck at a red light</span>
+                </h2>
+                <p class="text-secondary text-lg leading-relaxed mb-2">
+                    <span class="i18n-it">Calcola quanto tempo il tuo tram perde ai semafori nel tragitto casa-lavoro</span>
+                    <span class="i18n-en">Calculate how much time your tram loses at traffic lights on your commute</span>
+                </p>
+                <p class="text-xs text-secondary/60">
+                    <span class="i18n-it">Stima proporzionale · andata e ritorno · 22 giorni lavorativi/mese</span>
+                    <span class="i18n-en">Proportional estimate · round trip · 22 workdays/month</span>
+                </p>
+            </div>
+            <div class="bg-surface-container-lowest p-8 md:p-10 rounded-2xl ambient-shadow">
+                <div class="flex flex-col items-center gap-6">
+                    <div class="text-center">
+                        <span class="text-6xl md:text-7xl font-black text-on-surface tracking-tighter" id="commute-month-value">—</span>
+                        <span class="block text-lg font-medium text-secondary mt-1">
+                            <span class="i18n-it">min / mese</span><span class="i18n-en">min / month</span>
+                        </span>
+                    </div>
+                    <div class="w-full space-y-3 max-w-xs">
+                        <select id="commute-line-select" class="commute-select w-full max-w-none">
+                            <option value="" disabled selected>-- Linea / Line --</option>
+                        </select>
+                        <div class="flex gap-3">
+                            <select id="commute-from-select" class="commute-select flex-1 min-w-0 max-w-none" disabled>
+                                <option value="" disabled selected>Partenza / From</option>
+                            </select>
+                            <select id="commute-to-select" class="commute-select flex-1 min-w-0 max-w-none" disabled>
+                                <option value="" disabled selected>Arrivo / To</option>
+                            </select>
+                        </div>
+                        <div id="commute-nodata" class="commute-nodata text-center text-sm text-secondary italic" style="display:none;">
+                            <span class="i18n-it">Dati non ancora disponibili per questa linea</span>
+                            <span class="i18n-en">Data not yet available for this line</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            {% if line.stats.avg_trip_duration > 0 and line.stats.priority_savings_incl_bottlenecks > 0 %}
-            {% set pct = (line.stats.priority_savings_incl_bottlenecks / line.stats.avg_trip_duration * 100)|round(0)|int %}
-            {% set secs = line.stats.priority_savings_incl_bottlenecks|int %}
-            {% set mins = (secs // 60)|int %}
-            {% set remainder = (secs % 60)|int %}
-            <p class="card-savings"><span class="i18n-it">Potrebbe essere il {{ pct }}% più veloce ({{ mins }}m {{ remainder }}s)</span><span class="i18n-en">Could be {{ pct }}% faster ({{ mins }}m {{ remainder }}s)</span></p>
-            {% endif %}
-            <p class="card-meta">{{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km</p>
+        </div>
+    </div>
+</section>
+
+<!-- Hotspots Preview -->
+<script id="hotspot-slices" type="application/json">{{ hotspot_slices_json }}</script>
+<section class="py-16 md:py-20 max-w-[1440px] mx-auto px-6 md:px-8">
+    <div class="mb-8">
+        <span class="text-[0.6875rem] font-bold uppercase tracking-[0.15em] text-primary block mb-2">
+            <span class="i18n-it">Punti critici della rete</span><span class="i18n-en">Network critical points</span>
+        </span>
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-on-surface">
+            <span class="i18n-it">Peggiori hotspot</span><span class="i18n-en">Worst hotspots</span>
+        </h2>
+        <p class="text-secondary mt-2 max-w-2xl leading-relaxed">
+            <span class="i18n-it">I punti della rete dove i tram perdono più tempo, aggregando tutte le fermate osservate nello stesso punto fisico.</span>
+            <span class="i18n-en">The points in the network where trams lose the most time, aggregating all observed stops at the same physical location.</span>
+        </p>
+    </div>
+    <div id="home-hotspots-body" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+        <p class="text-secondary col-span-full">—</p>
+    </div>
+    <div id="home-hotspot-category" data-value="all" hidden></div>
+    <div class="text-center">
+        <a href="{{ root_path }}/hotspots.html" class="inline-flex items-center gap-2 bg-primary text-white font-bold text-sm px-6 py-3 rounded-xl hover:bg-on-primary-fixed-variant transition-colors">
+            <span class="material-symbols-outlined text-lg">map</span>
+            <span class="i18n-it">Esplora tutti gli hotspot sulla mappa</span>
+            <span class="i18n-en">Explore all hotspots on the map</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
         </a>
+    </div>
+</section>
+
+<!-- Line Directory -->
+<section class="py-16 md:py-20 bg-surface-container-low">
+    <div class="max-w-[1440px] mx-auto px-6 md:px-8">
+        <div class="mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-on-surface">
+                <span class="i18n-it">Linee tramviarie</span><span class="i18n-en">Tram lines</span>
+            </h2>
+        </div>
+        {% for group in grouped_lines %}
+        <div class="mb-10">
+            <h3 class="text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-primary mb-4">
+                <span class="i18n-it">Linea</span><span class="i18n-en">Line</span> {{ group.line_number }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-1">
+                {% for line in group.directions %}
+                <a href="{{ root_path }}/lines/{{ line.line_key }}.html" class="bg-surface p-6 flex flex-col justify-between group hover:bg-primary transition-all cursor-pointer no-underline">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex items-center gap-4">
+                            <span class="text-3xl font-black tracking-tighter text-on-surface group-hover:text-white">{{ group.line_number }}</span>
+                            <div class="w-0.5 h-6 bg-primary-container group-hover:bg-white/60"></div>
+                            <div>
+                                <p class="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary group-hover:text-white/60">
+                                    <span class="i18n-it">Percorso</span><span class="i18n-en">Route</span>
+                                </p>
+                                <p class="font-bold leading-tight text-on-surface group-hover:text-white text-sm">
+                                    <span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary group-hover:text-white/60">
+                                <span class="i18n-it">Velocità</span><span class="i18n-en">Speed</span>
+                            </p>
+                            <p class="font-black text-on-surface group-hover:text-white">{{ "%.1f"|format(line.stats.speed.avg_trip) }} km/h</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-secondary group-hover:text-white/60">
+                            {{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km · {{ line.stats.total_stops }} <span class="i18n-it">fermate</span><span class="i18n-en">stops</span>
+                        </span>
+                        {% if line.stats.avg_trip_duration > 0 and line.stats.priority_savings_incl_bottlenecks > 0 %}
+                        {% set pct = (line.stats.priority_savings_incl_bottlenecks / line.stats.avg_trip_duration * 100)|round(0)|int %}
+                        {% set secs = line.stats.priority_savings_incl_bottlenecks|int %}
+                        {% set mins = (secs // 60)|int %}
+                        {% set remainder = (secs % 60)|int %}
+                        <span class="text-xs font-bold text-primary-container group-hover:text-white">
+                            <span class="i18n-it">Potrebbe essere {{ pct }}% più veloce</span><span class="i18n-en">Could be {{ pct }}% faster</span>
+                        </span>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
         {% endfor %}
     </div>
-    {% endfor %}
 </section>
 
 {% if tl_breakdown %}
-<section class="tl-footnote">
-    <details>
-        <summary><span class="i18n-it">Come calcoliamo le ore perse ai semafori</span><span class="i18n-en">How we calculate hours lost at traffic lights</span></summary>
-        <p>
-            <span class="i18n-it">Per ogni linea tramviaria misurata, rileviamo il tempo medio perso ai semafori per corsa tramite analisi GPS. Moltiplichiamo quel valore per il numero di corse giornaliere previste dal GTFS (orario ATM). Se abbiamo dati per entrambe le direzioni, usiamo la media. Il totale è la somma su tutte le linee misurate.</span>
-            <span class="i18n-en">For each measured tram line, we detect the average time lost at traffic lights per trip via GPS analysis. We multiply that value by the number of daily trips scheduled in GTFS (ATM timetable). If we have data for both directions, we use the average. The total is the sum across all measured lines.</span>
-        </p>
-        <p class="tl-formula">
-            <span class="i18n-it">Formula: Σ (attesa semafori per corsa × corse giornaliere) ÷ 3600</span>
-            <span class="i18n-en">Formula: Σ (traffic light wait per trip × daily trips) ÷ 3600</span>
-        </p>
-        <table class="tl-breakdown-table">
-            <thead>
-                <tr>
-                    <th><span class="i18n-it">Linea</span><span class="i18n-en">Line</span></th>
-                    <th><span class="i18n-it">Attesa semafori/corsa</span><span class="i18n-en">TL wait/trip</span></th>
-                    <th><span class="i18n-it">Dir.</span><span class="i18n-en">Dir.</span></th>
-                    <th><span class="i18n-it">Corse/giorno</span><span class="i18n-en">Trips/day</span></th>
-                    <th><span class="i18n-it">Ore perse</span><span class="i18n-en">Hours lost</span></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in tl_breakdown %}
-                <tr>
-                    <td>{{ row.line }}</td>
-                    <td>{{ row.tl_wait_s }}s</td>
-                    <td>{{ row.directions }}</td>
-                    <td>{{ row.trips }}</td>
-                    <td>{{ row.hours }}</td>
-                </tr>
-                {% endfor %}
-                <tr class="tl-breakdown-total">
-                    <td colspan="4"><strong><span class="i18n-it">Totale (feriale)</span><span class="i18n-en">Total (weekday)</span></strong></td>
-                    <td><strong>{{ tl_hours.weekday }}</strong></td>
-                </tr>
-            </tbody>
-        </table>
-        <p class="tl-footnote-source">
-            <span class="i18n-it">Corse giornaliere da GTFS ATM Milano. Attesa ai semafori da rilevamento GPS con classificazione automatica delle fermate.</span>
-            <span class="i18n-en">Daily trips from ATM Milan GTFS. Traffic light wait from GPS tracking with automatic stop classification.</span>
-        </p>
-    </details>
-</section>
+<!-- TL Breakdown Details -->
+<section class="py-16 md:py-20 max-w-[1440px] mx-auto px-6 md:px-8">
+    <div class="space-y-6">
+        <details class="bg-surface-container-lowest rounded-2xl ambient-shadow">
+            <summary class="px-6 py-4 text-sm text-secondary cursor-pointer hover:text-on-surface transition-colors">
+                <span class="i18n-it">Come calcoliamo le ore perse ai semafori</span>
+                <span class="i18n-en">How we calculate hours lost at traffic lights</span>
+            </summary>
+            <div class="px-6 pb-6 space-y-4">
+                <p class="text-sm text-secondary leading-relaxed">
+                    <span class="i18n-it">Per ogni linea tramviaria misurata, rileviamo il tempo medio perso ai semafori per corsa tramite analisi GPS. Moltiplichiamo quel valore per il numero di corse giornaliere previste dal GTFS (orario ATM). Se abbiamo dati per entrambe le direzioni, usiamo la media. Il totale è la somma su tutte le linee misurate.</span>
+                    <span class="i18n-en">For each measured tram line, we detect the average time lost at traffic lights per trip via GPS analysis. We multiply that value by the number of daily trips scheduled in GTFS (ATM timetable). If we have data for both directions, we use the average. The total is the sum across all measured lines.</span>
+                </p>
+                <p class="font-mono text-xs text-secondary/60 bg-surface-container px-4 py-2 rounded-lg inline-block">
+                    <span class="i18n-it">Formula: Σ (attesa semafori per corsa × corse giornaliere) ÷ 3600</span>
+                    <span class="i18n-en">Formula: Σ (traffic light wait per trip × daily trips) ÷ 3600</span>
+                </p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-xs font-bold uppercase tracking-widest text-secondary">
+                                <th class="text-left py-3 pr-4"><span class="i18n-it">Linea</span><span class="i18n-en">Line</span></th>
+                                <th class="text-right py-3 px-4"><span class="i18n-it">Attesa semafori/corsa</span><span class="i18n-en">TL wait/trip</span></th>
+                                <th class="text-right py-3 px-4"><span class="i18n-it">Dir.</span><span class="i18n-en">Dir.</span></th>
+                                <th class="text-right py-3 px-4"><span class="i18n-it">Corse/giorno</span><span class="i18n-en">Trips/day</span></th>
+                                <th class="text-right py-3 pl-4"><span class="i18n-it">Ore perse</span><span class="i18n-en">Hours lost</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-on-surface">
+                            {% for row in tl_breakdown %}
+                            <tr>
+                                <td class="text-left py-2 pr-4">{{ row.line }}</td>
+                                <td class="text-right py-2 px-4">{{ row.tl_wait_s }}s</td>
+                                <td class="text-right py-2 px-4">{{ row.directions }}</td>
+                                <td class="text-right py-2 px-4">{{ row.trips }}</td>
+                                <td class="text-right py-2 pl-4">{{ row.hours }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr class="font-bold border-t border-outline-variant/20">
+                                <td colspan="4" class="text-left py-2 pr-4"><span class="i18n-it">Totale (feriale)</span><span class="i18n-en">Total (weekday)</span></td>
+                                <td class="text-right py-2 pl-4">{{ tl_hours.weekday }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-secondary/60">
+                    <span class="i18n-it">Corse giornaliere da GTFS ATM Milano. Attesa ai semafori da rilevamento GPS con classificazione automatica delle fermate.</span>
+                    <span class="i18n-en">Daily trips from ATM Milan GTFS. Traffic light wait from GPS tracking with automatic stop classification.</span>
+                </p>
+            </div>
+        </details>
 
-<section class="tl-footnote">
-    <details>
-        <summary><span class="i18n-it">Come calcoliamo le corse in più</span><span class="i18n-en">How we calculate extra rides</span></summary>
-        <p>
-            <span class="i18n-it">Per ogni linea misurata, moltiplichiamo il tempo medio perso ai semafori per il numero di corse giornaliere: questo dà il tempo totale recuperabile. Dividiamo poi per la durata media di una corsa della stessa linea per ottenere quante corse aggiuntive si potrebbero effettuare. Il totale è la somma su tutte le linee misurate.</span>
-            <span class="i18n-en">For each measured line, we multiply the average traffic light wait by the number of daily trips: this gives the total recoverable time. We then divide by the average trip duration of that same line to get how many additional rides could be run. The total is the sum across all measured lines.</span>
-        </p>
-        <p class="tl-formula">
-            <span class="i18n-it">Formula: Σ (attesa semafori per corsa × corse giornaliere ÷ durata media corsa)</span>
-            <span class="i18n-en">Formula: Σ (TL wait per trip × daily trips ÷ avg trip duration)</span>
-        </p>
-        <p class="tl-footnote-source">
-            <span class="i18n-it">Durata media corsa e attesa ai semafori da rilevamento GPS. Corse giornaliere da GTFS ATM Milano. Il calcolo assume che il tempo risparmiato possa essere interamente riutilizzato per corse aggiuntive — una stima teorica ottimistica.</span>
-            <span class="i18n-en">Average trip duration and traffic light wait from GPS tracking. Daily trips from ATM Milan GTFS. The calculation assumes all saved time can be fully reused for additional rides — an optimistic theoretical estimate.</span>
-        </p>
-    </details>
+        <details class="bg-surface-container-lowest rounded-2xl ambient-shadow">
+            <summary class="px-6 py-4 text-sm text-secondary cursor-pointer hover:text-on-surface transition-colors">
+                <span class="i18n-it">Come calcoliamo le corse in più</span>
+                <span class="i18n-en">How we calculate extra rides</span>
+            </summary>
+            <div class="px-6 pb-6 space-y-4">
+                <p class="text-sm text-secondary leading-relaxed">
+                    <span class="i18n-it">Per ogni linea misurata, moltiplichiamo il tempo medio perso ai semafori per il numero di corse giornaliere: questo dà il tempo totale recuperabile. Dividiamo poi per la durata media di una corsa della stessa linea per ottenere quante corse aggiuntive si potrebbero effettuare. Il totale è la somma su tutte le linee misurate.</span>
+                    <span class="i18n-en">For each measured line, we multiply the average traffic light wait by the number of daily trips: this gives the total recoverable time. We then divide by the average trip duration of that same line to get how many additional rides could be run. The total is the sum across all measured lines.</span>
+                </p>
+                <p class="font-mono text-xs text-secondary/60 bg-surface-container px-4 py-2 rounded-lg inline-block">
+                    <span class="i18n-it">Formula: Σ (attesa semafori per corsa × corse giornaliere ÷ durata media corsa)</span>
+                    <span class="i18n-en">Formula: Σ (TL wait per trip × daily trips ÷ avg trip duration)</span>
+                </p>
+                <p class="text-xs text-secondary/60">
+                    <span class="i18n-it">Durata media corsa e attesa ai semafori da rilevamento GPS. Corse giornaliere da GTFS ATM Milano. Il calcolo assume che il tempo risparmiato possa essere interamente riutilizzato per corse aggiuntive — una stima teorica ottimistica.</span>
+                    <span class="i18n-en">Average trip duration and traffic light wait from GPS tracking. Daily trips from ATM Milan GTFS. The calculation assumes all saved time can be fully reused for additional rides — an optimistic theoretical estimate.</span>
+                </p>
+            </div>
+        </details>
+
+        <div class="text-center pt-4">
+            <a href="{{ root_path }}/methodology.html" class="inline-flex items-center gap-2 text-primary font-bold text-sm hover:text-on-primary-fixed-variant transition-colors">
+                <span class="material-symbols-outlined text-lg">science</span>
+                <span class="i18n-it">Scopri la metodologia completa</span>
+                <span class="i18n-en">Discover the full methodology</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
+        </div>
+    </div>
 </section>
 {% endif %}
 {% endblock %}

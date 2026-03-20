@@ -11,68 +11,88 @@
 <script id="hotspot-data" type="application/json">{{ location_stats_json }}</script>
 <div id="hotspot-data-url" data-url="{{ root_path }}/data/location_stats.json" hidden></div>
 
-<section class="section">
-    <h1><span class="i18n-it">Hotspot di rete</span><span class="i18n-en">Network hotspots</span></h1>
-    <p class="subtitle">
-        <span class="i18n-it">Qui analizziamo i punti fisici della rete (semafori, fermate, colli di bottiglia) dove i tram restano fermi più a lungo. Sommiamo tutte le fermate osservate in quel punto, anche se arrivano da linee diverse: se il semaforo è lo stesso, i dati vengono uniti. Ogni osservazione è una fermata reale registrata nei tracciati GPS.</span>
-        <span class="i18n-en">This page tracks physical network points (traffic lights, stops, bottlenecks) where trams wait the most. We combine all observed waits at the same physical point, even across different lines: if it is the same traffic light, data is merged. Each observation is a real stop captured in GPS rides.</span>
-    </p>
-    <div class="hotspot-category-guide">
-        <p class="hotspot-category-guide-title">
-            <span class="i18n-it">Come leggere le categorie</span>
-            <span class="i18n-en">How to read categories</span>
-        </p>
-        <ul>
-            <li>
-                <strong>Traffic light:</strong>
-                <span class="i18n-it"> fermata vicino a un semaforo mappato.</span>
-                <span class="i18n-en"> stop close to a mapped traffic light.</span>
-            </li>
-            <li>
-                <strong>Tram stop:</strong>
-                <span class="i18n-it"> fermata vicino a una fermata tram GTFS.</span>
-                <span class="i18n-en"> stop close to a GTFS tram stop.</span>
-            </li>
-            <li>
-                <strong>Bottleneck:</strong>
-                <span class="i18n-it"> fermata non associata né a semaforo né a fermata tram (congestione/incrocio).</span>
-                <span class="i18n-en"> stop not matched to either a traffic light or a tram stop (congestion/intersection).</span>
-            </li>
-            <li>
-                <strong>Combined:</strong>
-                <span class="i18n-it"> fermata vicina sia a fermata tram sia a semaforo. In questa pagina il tempo mostrato è il tempo totale di sosta osservato in quel punto (salita/discesa passeggeri + attesa semaforica), non solo la quota stimata dovuta al semaforo.</span>
-                <span class="i18n-en"> stop close to both a tram stop and a traffic light. On this page, shown wait time is the full observed stop time at that point (boarding/alighting + signal wait), not only the estimated traffic-light component.</span>
-            </li>
-        </ul>
-    </div>
-
-    <div class="hotspots-controls hotspots-controls-wide">
-        <label for="hotspot-category"><span class="i18n-it">Categoria</span><span class="i18n-en">Category</span></label>
-        <select id="hotspot-category" class="commute-select">
-            <option value="all">All</option>
-            <option value="traffic_light">Traffic lights</option>
-            <option value="combined">Combined</option>
-            <option value="bottleneck">Bottlenecks</option>
-            <option value="tram_stop">Tram stops</option>
-        </select>
-
-        <label for="hotspot-timeband"><span class="i18n-it">Fascia oraria</span><span class="i18n-en">Time band</span></label>
-        <select id="hotspot-timeband" class="commute-select">
-            <option value="all">All</option>
-        </select>
-    </div>
-
-    <div class="hotspots-layout">
-        <div class="hotspots-map-wrap">
-            <div id="hotspots-map" class="hotspots-map"></div>
+<div class="h-screen flex flex-col -mt-16 pt-16">
+    <div class="flex flex-1 overflow-hidden flex-col md:flex-row">
+        <!-- Map -->
+        <div class="flex-1 relative">
+            <div id="hotspots-map" class="absolute inset-0 w-full h-full"></div>
         </div>
 
-        <div class="hotspots-panel">
-            <h2><span class="i18n-it">Peggiori hotspot</span><span class="i18n-en">Worst hotspots</span></h2>
-            <div id="hotspots-list" class="hotspots-list">
-                <p class="hotspots-empty">—</p>
+        <!-- Side Panel -->
+        <aside class="w-full md:w-[420px] bg-surface-container-lowest/95 backdrop-blur-2xl md:border-l border-t md:border-t-0 border-outline-variant/10 flex flex-col overflow-hidden h-[50vh] md:h-auto">
+            <div class="p-6 pb-4 shrink-0">
+                <div class="mb-5">
+                    <span class="text-[0.6875rem] font-bold uppercase tracking-[0.15em] text-primary">
+                        <span class="i18n-it">Intelligenza</span><span class="i18n-en">Intelligence</span>
+                    </span>
+                    <h1 class="text-2xl font-bold tracking-tight mt-1 text-on-surface">
+                        <span class="i18n-it">Hotspot di rete</span><span class="i18n-en">Network hotspots</span>
+                    </h1>
+                </div>
+
+                <!-- Category Toggle Buttons -->
+                <div class="mb-5">
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-secondary block mb-2">
+                        <span class="i18n-it">Categoria</span><span class="i18n-en">Category</span>
+                    </label>
+                    <div id="hotspot-category" class="grid grid-cols-2 gap-1.5">
+                        <button type="button" data-category="traffic_light" class="hotspot-cat-btn is-active flex items-center gap-2 p-2.5 rounded-xl transition-all cursor-pointer text-left">
+                            <span class="material-symbols-outlined text-sm cat-icon" style="color:#d64545">traffic</span>
+                            <div class="overflow-hidden">
+                                <p class="text-[10px] font-bold leading-tight cat-label">Traffic light</p>
+                                <p class="text-[9px] cat-desc"><span class="i18n-it">Vicino a semaforo</span><span class="i18n-en">Near mapped light</span></p>
+                            </div>
+                        </button>
+                        <button type="button" data-category="tram_stop" class="hotspot-cat-btn is-active flex items-center gap-2 p-2.5 rounded-xl transition-all cursor-pointer text-left">
+                            <span class="material-symbols-outlined text-sm cat-icon" style="color:#3f9f67">tram</span>
+                            <div class="overflow-hidden">
+                                <p class="text-[10px] font-bold leading-tight cat-label">Tram stop</p>
+                                <p class="text-[9px] cat-desc"><span class="i18n-it">Vicino a fermata</span><span class="i18n-en">Near GTFS stop</span></p>
+                            </div>
+                        </button>
+                        <button type="button" data-category="bottleneck" class="hotspot-cat-btn is-active flex items-center gap-2 p-2.5 rounded-xl transition-all cursor-pointer text-left">
+                            <span class="material-symbols-outlined text-sm cat-icon" style="color:#2d6fae">alt_route</span>
+                            <div class="overflow-hidden">
+                                <p class="text-[10px] font-bold leading-tight cat-label">Bottleneck</p>
+                                <p class="text-[9px] cat-desc"><span class="i18n-it">Nessuna corrisp.</span><span class="i18n-en">No match found</span></p>
+                            </div>
+                        </button>
+                        <button type="button" data-category="combined" class="hotspot-cat-btn is-active flex items-center gap-2 p-2.5 rounded-xl transition-all cursor-pointer text-left">
+                            <span class="material-symbols-outlined text-sm cat-icon" style="color:#e2722c">layers</span>
+                            <div class="overflow-hidden">
+                                <p class="text-[10px] font-bold leading-tight cat-label">Combined</p>
+                                <p class="text-[9px] cat-desc"><span class="i18n-it">Semaforo + fermata</span><span class="i18n-en">Light + Tram</span></p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Time Band Toggle Buttons -->
+                <div class="mb-4">
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-secondary block mb-2">
+                        <span class="i18n-it">Fascia oraria</span><span class="i18n-en">Time band</span>
+                    </label>
+                    <div id="hotspot-timeband" class="flex flex-wrap gap-1 p-1 bg-on-surface/[0.03] rounded-xl">
+                        <button type="button" data-band="all" class="hotspot-band-btn is-active flex items-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-bold transition-all cursor-pointer">
+                            <span class="material-symbols-outlined text-xs band-icon">schedule</span>
+                            All
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <div class="h-px bg-outline-variant/10 mx-6"></div>
+
+            <!-- Ranking List -->
+            <div class="flex-1 overflow-y-auto px-6 py-4 hide-scrollbar">
+                <h3 class="text-[10px] font-bold uppercase tracking-widest text-secondary mb-3">
+                    <span class="i18n-it">Peggiori hotspot</span><span class="i18n-en">Worst hotspots</span>
+                </h3>
+                <div id="hotspots-list" class="hotspots-list">
+                    <p class="hotspots-empty">—</p>
+                </div>
+            </div>
+        </aside>
     </div>
-</section>
+</div>
 {% endblock %}
