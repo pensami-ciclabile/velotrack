@@ -133,33 +133,61 @@
                     <!-- Current -->
                     <div>
                         <span class="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary block mb-2">
-                            <span class="i18n-it">Attuale</span><span class="i18n-en">Current</span>
+                            <span class="i18n-it">Media attuale</span><span class="i18n-en">Current avg</span>
+                            <span class="relative inline-block ml-1 cursor-help group">
+                                <span class="material-symbols-outlined text-secondary/50 font-normal normal-case tracking-normal !text-[14px] !leading-none align-middle">info</span>
+                                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-48 p-2 rounded-lg bg-on-surface text-surface text-[0.625rem] leading-snug font-normal normal-case tracking-normal hidden group-hover:block z-10 shadow-lg">
+                                    <span class="i18n-it">Durata media della corsa calcolata sulle corse GPS analizzate.</span>
+                                    <span class="i18n-en">Average trip duration calculated from the analysed GPS rides.</span>
+                                </span>
+                            </span>
                         </span>
                         <span class="text-2xl md:text-3xl font-black tracking-tight text-on-surface">{{ fmt_ms(cur) }}</span>
-                    </div>
-                    <!-- Green Wave -->
-                    <div>
-                        <span class="text-[0.6875rem] font-bold uppercase tracking-widest text-[#2a2] block mb-2">
-                            <span class="i18n-it">Onda verde</span><span class="i18n-en">Green wave</span>
-                        </span>
-                        <span class="text-2xl md:text-3xl font-black tracking-tight text-[#2a2]">{{ fmt_ms(line.stats.scenario_green_wave) }}</span>
-                        <span class="block text-xs font-semibold text-[#2a2] mt-1">{{ fmt_delta(line.stats.scenario_green_wave - cur) }} · {{ fmt_pct(line.stats.scenario_green_wave, cur) }}</span>
-                    </div>
-                    <!-- Red Wave -->
-                    <div>
-                        <span class="text-[0.6875rem] font-bold uppercase tracking-widest text-[#c33] block mb-2">
-                            <span class="i18n-it">Onda rossa</span><span class="i18n-en">Red wave</span>
-                        </span>
-                        <span class="text-2xl md:text-3xl font-black tracking-tight text-[#c33]">{{ fmt_ms(line.stats.scenario_red_wave) }}</span>
-                        <span class="block text-xs font-semibold text-[#c33] mt-1">{{ fmt_delta(line.stats.scenario_red_wave - cur) }} · {{ fmt_pct(line.stats.scenario_red_wave, cur) }}</span>
                     </div>
                     <!-- Best Case -->
                     <div>
                         <span class="text-[0.6875rem] font-bold uppercase tracking-widest text-[#07a] block mb-2">
                             <span class="i18n-it">Caso migliore</span><span class="i18n-en">Best case</span>
+                            <span class="relative inline-block ml-1 cursor-help group">
+                                <span class="material-symbols-outlined text-[#07a]/50 font-normal normal-case tracking-normal !text-[14px] !leading-none align-middle">info</span>
+                                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-48 p-2 rounded-lg bg-on-surface text-surface text-[0.625rem] leading-snug font-normal normal-case tracking-normal hidden group-hover:block z-10 shadow-lg">
+                                    <span class="i18n-it">Nessuna attesa ai semafori e nessun collo di bottiglia. Limite teorico inferiore.</span>
+                                    <span class="i18n-en">Zero traffic-light waits and no bottlenecks. Theoretical lower bound.</span>
+                                </span>
+                            </span>
                         </span>
                         <span class="text-2xl md:text-3xl font-black tracking-tight text-[#07a]">{{ fmt_ms(line.stats.scenario_best_case) }}</span>
                         <span class="block text-xs font-semibold text-[#07a] mt-1">{{ fmt_delta(line.stats.scenario_best_case - cur) }} · {{ fmt_pct(line.stats.scenario_best_case, cur) }}</span>
+                    </div>
+                    <!-- Signal Priority (was Green Wave) -->
+                    <div>
+                        <span class="text-[0.6875rem] font-bold uppercase tracking-widest text-[#2a2] block mb-2">
+                            <span class="i18n-it">Priorit&agrave; semaforica</span><span class="i18n-en">Signal priority</span>
+                            <span class="relative inline-block ml-1 cursor-help group">
+                                <span class="material-symbols-outlined text-[#2a2]/50 font-normal normal-case tracking-normal !text-[14px] !leading-none align-middle">info</span>
+                                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-48 p-2 rounded-lg bg-on-surface text-surface text-[0.625rem] leading-snug font-normal normal-case tracking-normal hidden group-hover:block z-10 shadow-lg">
+                                    <span class="i18n-it">Durata se il tram avesse priorit&agrave; semaforica e non aspettasse mai al rosso.</span>
+                                    <span class="i18n-en">Trip time if the tram had signal priority and never waited at red lights.</span>
+                                </span>
+                            </span>
+                        </span>
+                        <span class="text-2xl md:text-3xl font-black tracking-tight text-[#2a2]">{{ fmt_ms(line.stats.scenario_green_wave) }}</span>
+                        <span class="block text-xs font-semibold text-[#2a2] mt-1">{{ fmt_delta(line.stats.scenario_green_wave - cur) }} · {{ fmt_pct(line.stats.scenario_green_wave, cur) }}</span>
+                    </div>
+                    <!-- Worst Case (was Red Wave) -->
+                    <div>
+                        <span class="text-[0.6875rem] font-bold uppercase tracking-widest text-[#c33] block mb-2">
+                            <span class="i18n-it">Caso peggiore</span><span class="i18n-en">Worst case</span>
+                            <span class="relative inline-block ml-1 cursor-help group">
+                                <span class="material-symbols-outlined text-[#c33]/50 font-normal normal-case tracking-normal !text-[14px] !leading-none align-middle">info</span>
+                                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-48 p-2 rounded-lg bg-on-surface text-surface text-[0.625rem] leading-snug font-normal normal-case tracking-normal hidden group-hover:block z-10 shadow-lg">
+                                    <span class="i18n-it">Durata se il tram trovasse il rosso a ogni semaforo per l'intero ciclo.</span>
+                                    <span class="i18n-en">Trip time if the tram hit every red light for the full signal cycle.</span>
+                                </span>
+                            </span>
+                        </span>
+                        <span class="text-2xl md:text-3xl font-black tracking-tight text-[#c33]">{{ fmt_ms(line.stats.scenario_red_wave) }}</span>
+                        <span class="block text-xs font-semibold text-[#c33] mt-1">{{ fmt_delta(line.stats.scenario_red_wave - cur) }} · {{ fmt_pct(line.stats.scenario_red_wave, cur) }}</span>
                     </div>
                 </div>
             </div>

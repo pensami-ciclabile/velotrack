@@ -620,12 +620,12 @@ def _stats_html(stats: dict) -> str:
         <div style="border-top:1px solid #eee;margin:6px 0 4px"></div>
         <div style="font-weight:bold;margin-bottom:2px;">Trip duration scenarios:</div>
         <div style="display:flex;justify-content:space-between">
-            <span>Current:</span>
+            <span>Current avg:</span>
             <span><b>{_fmt_duration(stats['avg_trip_duration'])}</b></span>
         </div>
-        {_scenario_row('#2a2', 'Green wave (TL priority)', stats['scenario_green_wave'], stats['avg_trip_duration'])}
-        {_scenario_row('#c33', 'Red wave (worst case)', stats['scenario_red_wave'], stats['avg_trip_duration'])}
         {_scenario_row('#07a', 'Best case (no TL + no bottlenecks)', stats['scenario_best_case'], stats['avg_trip_duration'])}
+        {_scenario_row('#2a2', 'Signal priority (no TL waits)', stats['scenario_green_wave'], stats['avg_trip_duration'])}
+        {_scenario_row('#c33', 'Worst case (all reds)', stats['scenario_red_wave'], stats['avg_trip_duration'])}
     </div>
     """
 
