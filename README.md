@@ -32,6 +32,10 @@ The GPS tracking app stops recording points when you're not moving, creating tim
 - **Combined** — near both a tram stop and a traffic light
 - **Bottleneck** — none of the above (congestion, intersections, etc.)
 
+**GPS track snapping:** Raw GPS traces have 5–10 m of inherent inaccuracy. Before analysis, each ride's points are snapped to the corresponding tram line's track geometry from OpenStreetMap (`railway=tram` ways). Snapping uses a forward-chain continuity bonus so points stay on the same track through junctions and parallel tracks. Only lat/lon are updated for map visualization — original distances and velocities are preserved to maintain smooth acceleration curves.
+
+**Teleport filter:** GPS receivers can lose lock and produce "teleport" artifacts — points that bounce back and forth over hundreds of meters. These are automatically detected using a sliding window that compares cumulative distance to net displacement: if the ratio exceeds 5×, those points are removed and the polyline breaks cleanly at the gap.
+
 **Velocity outlier removal:** GPS jitter can produce unrealistic speed spikes. Velocities above the configured max (default 50 km/h) are clamped before computing statistics or rendering the heatmap.
 
 When multiple rides share the same tram line, wait times and velocities are averaged.
@@ -53,14 +57,17 @@ Velotrack uses a **hybrid analytics model**:
 #    Naming convention: line<N>_<destination>_<description>.gpx
 #    Example: line1_roserio_repubblica_xxsettembre.gpx
 
-# 2. (Optional) Add traffic light locations
+# 2. Download OSM tram track geometry (one-time, for GPS snapping)
+uv run main.py download-osm
+
+# 3. (Optional) Add traffic light locations
 uv run main.py template          # creates data/traffic_lights.csv
 # Edit the CSV with lat, lon, name, notes
 
-# 3. Generate maps
+# 5. Generate maps
 uv run main.py analyze
 
-# 4. Open the result
+# 6. Open the result
 open outputs/line1_roserio.html
 ```
 
@@ -195,9 +202,10 @@ velotrack/
   main.py                  # CLI entry point
   velotrack/
     config.py              # thresholds, paths, colors
-    gpx_parser.py          # GPX → DataFrame with velocity
+    gpx_parser.py          # GPX → DataFrame with velocity, teleport filter
     stop_detector.py       # detect + classify stops
     gtfs.py                # download/parse GTFS tram stops
+    osm_tracks.py          # download OSM tram tracks, snap GPS to tracks
     map_builder.py         # folium map generation
     location_analytics.py  # normalized stop events + global location stats
     site_builder.py        # static site generation (Jinja2)
@@ -210,6 +218,7 @@ velotrack/
     rides/                 # your GPX files go here
     tram_stops.csv         # cached tram stop locations (committed)
     traffic_lights.csv     # user-provided traffic light locations
+    osm_tracks.json        # cached OSM tram track geometry (committed)
     gtfs/                  # raw GTFS download, gitignored
   outputs/                 # generated HTML maps, gitignored
   site/                    # generated static website, gitignored

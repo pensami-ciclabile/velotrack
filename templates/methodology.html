@@ -101,10 +101,52 @@
             </p>
         </div>
 
-        <!-- 3. Stop Detection -->
+        <!-- 3. Track Snapping & Teleport Filter -->
+        <div class="md:col-span-12 bg-surface-container-low rounded-xl p-8 md:p-10 hover:bg-surface-bright transition-colors duration-500">
+            <span class="material-symbols-outlined text-3xl text-primary mb-4 block">route</span>
+            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">3. Allineamento ai binari e filtro teleport</span><span class="i18n-en">3. Track snapping &amp; teleport filter</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-sm font-bold text-on-surface mb-2"><span class="i18n-it">Allineamento OSM</span><span class="i18n-en">OSM track snapping</span></h3>
+                    <p class="text-sm text-secondary leading-relaxed mb-4">
+                        <span class="i18n-it">
+                            I punti GPS hanno un'imprecisione di 5–10 m. Per ottenere una geometria pulita sulle mappe,
+                            ogni punto viene proiettato sui binari reali della linea tramviaria corrispondente, usando la geometria
+                            <code class="bg-surface-container px-1.5 py-0.5 rounded text-xs">railway=tram</code> di OpenStreetMap.
+                            Un bonus di continuità favorisce segmenti adiacenti, evitando salti tra binari paralleli o agli scambi.
+                            Solo latitudine e longitudine vengono aggiornate — distanze e velocità originali sono preservate per mantenere curve di accelerazione realistiche.
+                        </span>
+                        <span class="i18n-en">
+                            GPS points have 5–10 m of inherent inaccuracy. For clean map geometry,
+                            each point is projected onto the actual tram tracks for its line, using OpenStreetMap
+                            <code class="bg-surface-container px-1.5 py-0.5 rounded text-xs">railway=tram</code> geometry.
+                            A forward-chain continuity bonus favors adjacent segments, preventing jumps between parallel tracks or at switches.
+                            Only lat/lon are updated — original distances and velocities are preserved to maintain realistic acceleration curves.
+                        </span>
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-on-surface mb-2"><span class="i18n-it">Filtro teleport</span><span class="i18n-en">Teleport filter</span></h3>
+                    <p class="text-sm text-secondary leading-relaxed mb-4">
+                        <span class="i18n-it">
+                            Quando il ricevitore GPS perde il segnale, i punti possono "teletrasportarsi" avanti e indietro per centinaia di metri.
+                            Una finestra scorrevole confronta la distanza cumulativa con lo spostamento netto: se il rapporto supera 5×,
+                            quei punti vengono rimossi e la traccia si interrompe in modo pulito.
+                        </span>
+                        <span class="i18n-en">
+                            When the GPS receiver loses lock, points can "teleport" back and forth over hundreds of meters.
+                            A sliding window compares cumulative distance to net displacement: if the ratio exceeds 5×,
+                            those points are removed and the trace breaks cleanly at the gap.
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Stop Detection -->
         <div class="md:col-span-4 bg-surface-container-low rounded-xl p-8 md:p-10 hover:bg-surface-bright transition-colors duration-500">
             <span class="material-symbols-outlined text-3xl text-primary mb-4 block">departure_board</span>
-            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">3. Rilevamento fermate</span><span class="i18n-en">3. Stop detection</span></h2>
+            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">4. Rilevamento fermate</span><span class="i18n-en">4. Stop detection</span></h2>
             <p class="text-sm text-secondary leading-relaxed mb-4">
                 <span class="i18n-it">Una fermata viene identificata quando il gap temporale è &gt;5s e lo spostamento &lt;15m.</span>
                 <span class="i18n-en">A stop is identified when the time gap is &gt;5s and movement &lt;15m.</span>
@@ -120,7 +162,7 @@
         <!-- 4. Stop Classification -->
         <div class="md:col-span-8 bg-surface-container-low rounded-xl p-8 md:p-10 hover:bg-surface-bright transition-colors duration-500">
             <span class="material-symbols-outlined text-3xl text-primary mb-4 block">category</span>
-            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">4. Classificazione fermate</span><span class="i18n-en">4. Stop classification</span></h2>
+            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">5. Classificazione fermate</span><span class="i18n-en">5. Stop classification</span></h2>
             <p class="text-sm text-secondary leading-relaxed mb-4">
                 <span class="i18n-it">Ogni fermata rilevata viene classificata in base alla prossimità a punti di riferimento noti:</span>
                 <span class="i18n-en">Each detected stop is classified based on proximity to known reference points:</span>
@@ -144,7 +186,7 @@
         <!-- 5. Multi-ride Averaging -->
         <div class="md:col-span-6 bg-surface-container-low rounded-xl p-8 md:p-10 hover:bg-surface-bright transition-colors duration-500">
             <span class="material-symbols-outlined text-3xl text-primary mb-4 block">compare_arrows</span>
-            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">5. Corse multiple e medie</span><span class="i18n-en">5. Multi-ride averaging</span></h2>
+            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">6. Corse multiple e medie</span><span class="i18n-en">6. Multi-ride averaging</span></h2>
             <p class="text-sm text-secondary leading-relaxed mb-4">
                 <span class="i18n-it">Più tracce GPS per la stessa linea vengono combinate per aumentare la precisione. Le fermate vengono unite per punto fisico e le statistiche usano medie pesate per frequenza.</span>
                 <span class="i18n-en">Multiple GPS traces for the same line are combined for accuracy. Stops are merged by physical point and statistics use frequency-weighted averages.</span>
@@ -158,7 +200,7 @@
         <!-- 6. Speed Metrics -->
         <div class="md:col-span-6 bg-surface-container-low rounded-xl p-8 md:p-10 hover:bg-surface-bright transition-colors duration-500">
             <span class="material-symbols-outlined text-3xl text-primary mb-4 block">speed</span>
-            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">6. Metriche di velocità</span><span class="i18n-en">6. Speed metrics</span></h2>
+            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">7. Metriche di velocità</span><span class="i18n-en">7. Speed metrics</span></h2>
             <table class="w-full text-sm">
                 <tbody class="text-secondary">
                     <tr><td class="py-2 pr-4 font-semibold text-on-surface whitespace-nowrap"><span class="i18n-it">Media in movimento</span><span class="i18n-en">Avg moving</span></td><td class="py-2"><span class="i18n-it">Distanza ÷ tempo in movimento</span><span class="i18n-en">Distance ÷ moving time</span></td></tr>
@@ -173,7 +215,7 @@
         <!-- 7. Scenario Analysis -->
         <div class="md:col-span-5 bg-surface-container-low rounded-xl p-8 md:p-10 hover:bg-surface-bright transition-colors duration-500">
             <span class="material-symbols-outlined text-3xl text-primary mb-4 block">labs</span>
-            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">7. Analisi scenari</span><span class="i18n-en">7. Scenario analysis</span></h2>
+            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">8. Analisi scenari</span><span class="i18n-en">8. Scenario analysis</span></h2>
             <table class="w-full text-sm">
                 <tbody class="text-secondary">
                     <tr><td class="py-2 pr-4 font-semibold text-[#2a2]">Green wave</td><td class="py-2"><span class="i18n-it">Senza attese ai semafori</span><span class="i18n-en">No traffic light waits</span></td></tr>
@@ -186,7 +228,7 @@
         <!-- 8. Network Hotspots -->
         <div class="md:col-span-7 bg-surface-container-low rounded-xl p-8 md:p-10 hover:bg-surface-bright transition-colors duration-500">
             <span class="material-symbols-outlined text-3xl text-primary mb-4 block">pin_drop</span>
-            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">8. Hotspot di rete</span><span class="i18n-en">8. Network hotspots</span></h2>
+            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">9. Hotspot di rete</span><span class="i18n-en">9. Network hotspots</span></h2>
             <p class="text-sm text-secondary leading-relaxed mb-4">
                 <span class="i18n-it">Aggreghiamo i dati per posizione fisica, unendo le osservazioni anche da linee diverse. Per ogni hotspot calcoliamo numero di osservazioni, attesa media, mediana, percentili, ripartizione per fascia oraria e contributo per linea.</span>
                 <span class="i18n-en">We aggregate data by physical location, merging observations across lines. For each hotspot we compute observation count, mean wait, median, percentiles, time band breakdown, and per-line contributions.</span>
@@ -200,7 +242,7 @@
         <!-- 9. System-wide Projections -->
         <div class="md:col-span-12 bg-surface-container-low rounded-xl p-8 md:p-10 hover:bg-surface-bright transition-colors duration-500">
             <span class="material-symbols-outlined text-3xl text-primary mb-4 block">analytics</span>
-            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">9. Proiezioni di rete</span><span class="i18n-en">9. System-wide projections</span></h2>
+            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">10. Proiezioni di rete</span><span class="i18n-en">10. System-wide projections</span></h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                     <p class="text-sm text-secondary leading-relaxed">
@@ -227,7 +269,7 @@
         <!-- 10. Limitations -->
         <div class="md:col-span-7 bg-surface-container-low rounded-xl p-8 md:p-10 hover:bg-surface-bright transition-colors duration-500">
             <span class="material-symbols-outlined text-3xl text-primary mb-4 block">info</span>
-            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">10. Limitazioni e trasparenza</span><span class="i18n-en">10. Limitations and transparency</span></h2>
+            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">11. Limitazioni e trasparenza</span><span class="i18n-en">11. Limitations and transparency</span></h2>
             <ul class="text-sm text-secondary space-y-3 list-disc pl-5">
                 <li><span class="i18n-it"><strong>Campione</strong>: registrazioni volontarie, non statisticamente rappresentative. Più corse = medie più affidabili.</span><span class="i18n-en"><strong>Sample</strong>: volunteer recordings, not statistically representative. More rides = more reliable averages.</span></li>
                 <li><span class="i18n-it"><strong>GPS</strong>: precisione 3–10m. Filtriamo anomalie ma piccole imprecisioni possono influire sulla classificazione.</span><span class="i18n-en"><strong>GPS</strong>: 3–10m accuracy. We filter anomalies but small inaccuracies can affect classification.</span></li>
@@ -240,7 +282,7 @@
         <!-- 11. How to Contribute -->
         <div class="md:col-span-5 bg-surface-container-low rounded-xl p-8 md:p-10 hover:bg-surface-bright transition-colors duration-500">
             <span class="material-symbols-outlined text-3xl text-primary mb-4 block">volunteer_activism</span>
-            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">11. Come contribuire</span><span class="i18n-en">11. How to contribute</span></h2>
+            <h2 class="text-xl font-semibold mb-4"><span class="i18n-it">12. Come contribuire</span><span class="i18n-en">12. How to contribute</span></h2>
             <p class="text-sm text-secondary leading-relaxed mb-6">
                 <span class="i18n-it">
                     Chiunque può contribuire registrando una corsa in tram con una app GPS e condividendo il file GPX.
@@ -252,7 +294,7 @@
                 </span>
             </p>
 
-            <h2 class="text-xl font-semibold mb-4 mt-8"><span class="i18n-it">12. Contatti</span><span class="i18n-en">12. Contact</span></h2>
+            <h2 class="text-xl font-semibold mb-4 mt-8"><span class="i18n-it">13. Contatti</span><span class="i18n-en">13. Contact</span></h2>
             <p class="text-sm text-secondary leading-relaxed">
                 <span class="i18n-it">
                     Per domande sulla metodologia, richieste dati o collaborazioni, contattaci attraverso il

@@ -14,11 +14,13 @@ from pathlib import Path
 from velotrack.config import (
     MAPS_DIR,
     MAX_REALISTIC_SPEED,
+    OSM_TRACKS_JSON,
     OUTPUT_DIR,
     RIDES_DIR,
     TRAFFIC_LIGHTS_CSV,
 )
-from velotrack.gpx_parser import parse_gpx
+from velotrack.gpx_parser import filter_teleports, parse_gpx, recalculate_distances
+from velotrack.osm_tracks import download_osm_tracks, load_line_tracks, snap_to_tracks
 from velotrack.gtfs import download_gtfs, load_tram_stops
 from velotrack.location_analytics import (
     aggregate_location_events,
@@ -33,6 +35,11 @@ from velotrack.stop_detector import classify_stops, detect_stops, load_traffic_l
 def cmd_download_gtfs():
     download_gtfs()
     print("GTFS download complete.")
+
+
+def cmd_download_osm():
+    download_osm_tracks()
+    print("OSM tram track download complete.")
 
 
 def cmd_template():
@@ -230,6 +237,19 @@ def cmd_inspect(gpx_paths: list[str]):
         if outlier_count > 0:
             print(f"  ⚠ {outlier_count} velocity outliers clamped to {MAX_REALISTIC_SPEED} km/h")
 
+        # Filter GPS teleport artifacts
+        df, teleport_count = filter_teleports(df)
+        if teleport_count > 0:
+            print(f"  ⚠ {teleport_count} teleport points removed")
+            df, _ = recalculate_distances(df)
+
+        # Snap to OSM tram tracks if data is available
+        line_match = re.search(r"line(\d+)", path.name)
+        if line_match and OSM_TRACKS_JSON.exists():
+            tracks = load_line_tracks(line_match.group(1))
+            if tracks:
+                df = snap_to_tracks(df, tracks)
+
         m = build_inspect_map(df, title=path.stem, gpx_path=str(path.resolve()))
         out_path = OUTPUT_DIR / f"inspect_{path.stem}.html"
         m.save(str(out_path))
@@ -274,6 +294,20 @@ def _process_rides(gpx_paths: list[str] | None = None):
             if df.empty:
                 print(f"  WARNING: No points in {name}, skipping.")
                 continue
+
+            # Filter GPS teleport artifacts
+            df, teleport_count = filter_teleports(df)
+            if teleport_count > 0:
+                print(f"  ⚠ {teleport_count} teleport points removed")
+                df, _ = recalculate_distances(df)
+
+            # Snap to OSM tram tracks if data is available
+            line_num = re.search(r"line(\d+)", line_key)
+            if line_num and OSM_TRACKS_JSON.exists():
+                tracks = load_line_tracks(line_num.group(1))
+                if tracks:
+                    df = snap_to_tracks(df, tracks)
+
             ride_dfs.append(df)
             valid_ride_files.append((ride_path, name))
             stops = detect_stops(df)
@@ -387,6 +421,7 @@ def main():
     if len(sys.argv) < 2:
         print("Usage:")
         print("  uv run main.py download-gtfs          Download Milan GTFS tram stop data")
+        print("  uv run main.py download-osm           Download OSM tram track geometry")
         print("  uv run main.py template                Create traffic_lights.csv template")
         print("  uv run main.py traffic-lights [--watch]     View traffic lights on a map")
         print("  uv run main.py inspect [files]         Inspect individual GPX rides on a map")
@@ -398,6 +433,8 @@ def main():
     cmd = sys.argv[1]
     if cmd == "download-gtfs":
         cmd_download_gtfs()
+    elif cmd == "download-osm":
+        cmd_download_osm()
     elif cmd == "template":
         cmd_template()
     elif cmd == "traffic-lights":

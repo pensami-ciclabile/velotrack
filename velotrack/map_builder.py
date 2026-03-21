@@ -227,6 +227,27 @@ def build_traffic_lights_map(
     return m
 
 
+_DIST_CELL = '<td style="padding:1px 4px;text-align:center">{}</td>'
+_DIST_HDR = '<td style="padding:1px 4px;text-align:center;color:#888;font-size:10px">{}</td>'
+
+
+def _distribution_table(
+    values: tuple[float, float, float, float, float],
+    unit: str = "",
+    fmt: str = ".0f",
+) -> str:
+    """Render a compact 5-number summary as a mini HTML table."""
+    labels = ("Min", "P25", "Med", "P75", "Max")
+    hdr_cells = "".join(_DIST_HDR.format(l) for l in labels)
+    val_cells = "".join(
+        _DIST_CELL.format(f"{v:{fmt}}{unit}") for v in values
+    )
+    return (
+        '<table style="border-collapse:collapse;font-size:12px;margin:2px 0">'
+        f"<tr>{hdr_cells}</tr><tr>{val_cells}</tr></table>"
+    )
+
+
 def velocity_color(speed_kmh: float) -> str:
     """Map a velocity to a color."""
     for max_speed, color in VELOCITY_COLORS:
@@ -897,7 +918,8 @@ def _average_route(ride_dfs: list[pd.DataFrame], step_m: float = 10.0) -> pd.Dat
     """
     SNAP_M = 50.0
     COLS = ["cum_dist", "lat", "lon", "velocity_kmh",
-            "n_rides", "median_kmh", "p25_kmh", "p75_kmh"]
+            "n_rides", "median_kmh", "p25_kmh", "p75_kmh",
+            "min_kmh", "max_kmh"]
 
     rides = [r for df in ride_dfs if (r := _resample_ride(df, step_m)) is not None]
     if not rides:
@@ -961,12 +983,14 @@ def _average_route(ride_dfs: list[pd.DataFrame], step_m: float = 10.0) -> pd.Dat
             np.median(vels),                           # median_kmh
             np.percentile(vels, 25) if n >= 2 else vels[0],  # p25_kmh
             np.percentile(vels, 75) if n >= 2 else vels[0],  # p75_kmh
+            vels.min(),                                # min_kmh
+            vels.max(),                                # max_kmh
         ])
 
     # Splice unmatched runs (reverse order so indices stay valid)
     splices.sort(key=lambda x: x[0], reverse=True)
     for pos, pts in splices:
-        extra = [[0, p[0], p[1], p[2], 1, p[2], p[2], p[2]] for p in pts]
+        extra = [[0, p[0], p[1], p[2], 1, p[2], p[2], p[2], p[2], p[2]] for p in pts]
         rows[pos:pos] = extra
 
     # Reassign cum_dist after splicing
@@ -1028,12 +1052,14 @@ def build_map(
             median = row["median_kmh"]
             p25 = row["p25_kmh"]
             p75 = row["p75_kmh"]
+            vmin = row["min_kmh"]
+            vmax = row["max_kmh"]
             color = velocity_color(speed)
+            dist_tbl = _distribution_table((vmin, p25, median, p75, vmax), fmt=".1f")
             popup_text = (
                 f"<b>{speed:.1f} km/h</b> (avg)"
-                f"<br>Median: {median:.1f} km/h"
-                f"<br>P25–P75: {p25:.1f}–{p75:.1f} km/h"
-                f"<br>Rides: {n}/{num_rides}"
+                f"{dist_tbl}"
+                f"Rides: {n}/{num_rides}"
             )
             folium.PolyLine(
                 coords,
@@ -1049,8 +1075,14 @@ def build_map(
 
     for (lat, lon), events in merged_stops.items():
         category = _majority_category(events)
-        avg_duration = sum(e.duration for e in events) / len(events)
-        count = len(events)
+        durations = sorted(e.duration for e in events)
+        count = len(durations)
+        avg_dur = sum(durations) / count
+        min_dur = durations[0]
+        max_dur = durations[-1]
+        med_dur = durations[count // 2] if count % 2 else (durations[count // 2 - 1] + durations[count // 2]) / 2
+        p25_dur = durations[max(0, int(count * 0.25))]
+        p75_dur = durations[min(count - 1, int(count * 0.75))]
 
         nearest_name = next((e.nearest_stop_name for e in events if e.nearest_stop_name), "?")
 
@@ -1064,13 +1096,18 @@ def build_map(
             popup_parts.append(f"Nearest stop: {nearest_name}")
             if nearest_dist is not None:
                 popup_parts.append(f"Distance: {nearest_dist:.0f}m")
+        dist_tbl = _distribution_table(
+            (min_dur, p25_dur, med_dur, p75_dur, max_dur), unit="s",
+        )
         popup_parts.extend([
-            f"Avg wait: {avg_duration:.0f}s",
-            f"Occurrences: {count}/{num_rides} rides",
+            f"Avg wait: {avg_dur:.0f}s",
+            dist_tbl,
+            f"Rides: {count}/{num_rides}",
         ])
         if category == "combined":
-            avg_tl_wait = sum(e.traffic_light_wait or 0 for e in events) / len(events)
-            popup_parts.append(f"Est. traffic light wait: {avg_tl_wait:.0f}s")
+            tl_waits = sorted(e.traffic_light_wait or 0 for e in events)
+            avg_tl = sum(tl_waits) / len(tl_waits)
+            popup_parts.append(f"Est. traffic light wait: {avg_tl:.0f}s")
 
         color = STOP_COLORS.get(category, "gray")
         folium.CircleMarker(
@@ -1080,7 +1117,10 @@ def build_map(
             fill=True,
             fill_color=color,
             fill_opacity=0.7,
-            popup=folium.Popup("<br>".join(popup_parts), max_width=250),
+            popup=folium.Popup("".join(
+                f"<br>{p}" if not p.startswith("<table") else p
+                for p in popup_parts
+            ), max_width=300),
         ).add_to(stop_groups.get(category, route_group))
 
     route_group.add_to(m)
@@ -1120,9 +1160,20 @@ def build_inspect_map(df: pd.DataFrame, title: str = "Ride Inspector",
     m = folium.Map(location=[center_lat, center_lon], zoom_start=13,
                    tiles="cartodbpositron")
 
-    # Draw the route polyline
-    coords = list(zip(df["lat"], df["lon"]))
-    folium.PolyLine(coords, color="#3388ff", weight=3, opacity=0.5).add_to(m)
+    # Draw the route polyline, splitting at gaps (where dist was zeroed after teleport removal)
+    segments = []
+    current_seg = []
+    for i in range(len(df)):
+        if i > 0 and df.iloc[i]["dist"] == 0.0 and df.iloc[i]["dt"] > 10:
+            # Gap: large time jump with zero distance means teleport was removed
+            if len(current_seg) >= 2:
+                segments.append(current_seg)
+            current_seg = []
+        current_seg.append((df.iloc[i]["lat"], df.iloc[i]["lon"]))
+    if len(current_seg) >= 2:
+        segments.append(current_seg)
+    for seg in segments:
+        folium.PolyLine(seg, color="#3388ff", weight=3, opacity=0.5).add_to(m)
 
     # Cumulative distance
     cum_dist = df["dist"].cumsum()
