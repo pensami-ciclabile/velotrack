@@ -23,13 +23,22 @@ This guide explains architecture, analytics contracts, and test expectations for
 ### Ingestion and stop classification
 - `/Volumes/T7/velotrack/main.py::_process_rides()`
   - Parses GPX with `parse_gpx()`.
+  - Filters GPS teleport artifacts with `filter_teleports()`.
+  - Snaps GPS points to OSM tram tracks with `snap_to_tracks()` (lat/lon only, preserves original dist/velocity).
   - Detects stops with `detect_stops()`.
   - Classifies stops with `classify_stops()`.
   - Returns `rides_by_line` with aligned arrays: `ride_files`, `ride_dfs`, `all_stops`.
 
 - `/Volumes/T7/velotrack/velotrack/gpx_parser.py`
   - GPX -> DataFrame (`lat`, `lon`, `time`, `dt`, `dist`, `velocity_kmh`).
+  - `recalculate_distances()`: recomputes dt/dist/velocity from lat/lon (used after teleport filtering).
+  - `filter_teleports()`: sliding-window detector for GPS back-and-forth artifacts (cumulative distance >> net displacement).
   - Clamps unrealistic speed spikes.
+
+- `/Volumes/T7/velotrack/velotrack/osm_tracks.py`
+  - `download_osm_tracks()`: downloads tram ways and route relations from Overpass API, caches to `data/osm_tracks.json`.
+  - `load_line_tracks(line_number)`: filters cached tracks by OSM route relation matching the line number.
+  - `snap_to_tracks(df, tracks)`: forward-chain snapping with spatial grid index and continuity bonus for junctions. Updates lat/lon only — dist/velocity are preserved.
 
 - `/Volumes/T7/velotrack/velotrack/stop_detector.py`
   - Categories: `tram_stop`, `traffic_light`, `combined`, `bottleneck`.
