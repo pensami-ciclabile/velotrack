@@ -227,6 +227,27 @@ def build_traffic_lights_map(
     return m
 
 
+_DIST_CELL = '<td style="padding:1px 4px;text-align:center">{}</td>'
+_DIST_HDR = '<td style="padding:1px 4px;text-align:center;color:#888;font-size:10px">{}</td>'
+
+
+def _distribution_table(
+    values: tuple[float, float, float, float, float],
+    unit: str = "",
+    fmt: str = ".0f",
+) -> str:
+    """Render a compact 5-number summary as a mini HTML table."""
+    labels = ("Min", "P25", "Med", "P75", "Max")
+    hdr_cells = "".join(_DIST_HDR.format(l) for l in labels)
+    val_cells = "".join(
+        _DIST_CELL.format(f"{v:{fmt}}{unit}") for v in values
+    )
+    return (
+        '<table style="border-collapse:collapse;font-size:12px;margin:2px 0">'
+        f"<tr>{hdr_cells}</tr><tr>{val_cells}</tr></table>"
+    )
+
+
 def velocity_color(speed_kmh: float) -> str:
     """Map a velocity to a color."""
     for max_speed, color in VELOCITY_COLORS:
@@ -1034,11 +1055,11 @@ def build_map(
             vmin = row["min_kmh"]
             vmax = row["max_kmh"]
             color = velocity_color(speed)
+            dist_tbl = _distribution_table((vmin, p25, median, p75, vmax), fmt=".1f")
             popup_text = (
                 f"<b>{speed:.1f} km/h</b> (avg)"
-                f"<br>Min: {vmin:.1f} · P25: {p25:.1f} · Med: {median:.1f}"
-                f" · P75: {p75:.1f} · Max: {vmax:.1f}"
-                f"<br>Rides: {n}/{num_rides}"
+                f"{dist_tbl}"
+                f"Rides: {n}/{num_rides}"
             )
             folium.PolyLine(
                 coords,
@@ -1075,10 +1096,12 @@ def build_map(
             popup_parts.append(f"Nearest stop: {nearest_name}")
             if nearest_dist is not None:
                 popup_parts.append(f"Distance: {nearest_dist:.0f}m")
+        dist_tbl = _distribution_table(
+            (min_dur, p25_dur, med_dur, p75_dur, max_dur), unit="s",
+        )
         popup_parts.extend([
             f"Avg wait: {avg_dur:.0f}s",
-            f"Min: {min_dur:.0f}s · P25: {p25_dur:.0f}s · Med: {med_dur:.0f}s"
-            f" · P75: {p75_dur:.0f}s · Max: {max_dur:.0f}s",
+            dist_tbl,
             f"Rides: {count}/{num_rides}",
         ])
         if category == "combined":
@@ -1094,7 +1117,10 @@ def build_map(
             fill=True,
             fill_color=color,
             fill_opacity=0.7,
-            popup=folium.Popup("<br>".join(popup_parts), max_width=250),
+            popup=folium.Popup("".join(
+                f"<br>{p}" if not p.startswith("<table") else p
+                for p in popup_parts
+            ), max_width=300),
         ).add_to(stop_groups.get(category, route_group))
 
     route_group.add_to(m)
