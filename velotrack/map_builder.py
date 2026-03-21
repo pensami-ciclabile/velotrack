@@ -897,7 +897,8 @@ def _average_route(ride_dfs: list[pd.DataFrame], step_m: float = 10.0) -> pd.Dat
     """
     SNAP_M = 50.0
     COLS = ["cum_dist", "lat", "lon", "velocity_kmh",
-            "n_rides", "median_kmh", "p25_kmh", "p75_kmh"]
+            "n_rides", "median_kmh", "p25_kmh", "p75_kmh",
+            "min_kmh", "max_kmh"]
 
     rides = [r for df in ride_dfs if (r := _resample_ride(df, step_m)) is not None]
     if not rides:
@@ -961,12 +962,14 @@ def _average_route(ride_dfs: list[pd.DataFrame], step_m: float = 10.0) -> pd.Dat
             np.median(vels),                           # median_kmh
             np.percentile(vels, 25) if n >= 2 else vels[0],  # p25_kmh
             np.percentile(vels, 75) if n >= 2 else vels[0],  # p75_kmh
+            vels.min(),                                # min_kmh
+            vels.max(),                                # max_kmh
         ])
 
     # Splice unmatched runs (reverse order so indices stay valid)
     splices.sort(key=lambda x: x[0], reverse=True)
     for pos, pts in splices:
-        extra = [[0, p[0], p[1], p[2], 1, p[2], p[2], p[2]] for p in pts]
+        extra = [[0, p[0], p[1], p[2], 1, p[2], p[2], p[2], p[2], p[2]] for p in pts]
         rows[pos:pos] = extra
 
     # Reassign cum_dist after splicing
@@ -1028,11 +1031,13 @@ def build_map(
             median = row["median_kmh"]
             p25 = row["p25_kmh"]
             p75 = row["p75_kmh"]
+            vmin = row["min_kmh"]
+            vmax = row["max_kmh"]
             color = velocity_color(speed)
             popup_text = (
                 f"<b>{speed:.1f} km/h</b> (avg)"
-                f"<br>Median: {median:.1f} km/h"
-                f"<br>P25–P75: {p25:.1f}–{p75:.1f} km/h"
+                f"<br>Min: {vmin:.1f} · P25: {p25:.1f} · Med: {median:.1f}"
+                f" · P75: {p75:.1f} · Max: {vmax:.1f}"
                 f"<br>Rides: {n}/{num_rides}"
             )
             folium.PolyLine(
@@ -1049,8 +1054,14 @@ def build_map(
 
     for (lat, lon), events in merged_stops.items():
         category = _majority_category(events)
-        avg_duration = sum(e.duration for e in events) / len(events)
-        count = len(events)
+        durations = sorted(e.duration for e in events)
+        count = len(durations)
+        avg_dur = sum(durations) / count
+        min_dur = durations[0]
+        max_dur = durations[-1]
+        med_dur = durations[count // 2] if count % 2 else (durations[count // 2 - 1] + durations[count // 2]) / 2
+        p25_dur = durations[max(0, int(count * 0.25))]
+        p75_dur = durations[min(count - 1, int(count * 0.75))]
 
         nearest_name = next((e.nearest_stop_name for e in events if e.nearest_stop_name), "?")
 
@@ -1065,12 +1076,15 @@ def build_map(
             if nearest_dist is not None:
                 popup_parts.append(f"Distance: {nearest_dist:.0f}m")
         popup_parts.extend([
-            f"Avg wait: {avg_duration:.0f}s",
-            f"Occurrences: {count}/{num_rides} rides",
+            f"Avg wait: {avg_dur:.0f}s",
+            f"Min: {min_dur:.0f}s · P25: {p25_dur:.0f}s · Med: {med_dur:.0f}s"
+            f" · P75: {p75_dur:.0f}s · Max: {max_dur:.0f}s",
+            f"Rides: {count}/{num_rides}",
         ])
         if category == "combined":
-            avg_tl_wait = sum(e.traffic_light_wait or 0 for e in events) / len(events)
-            popup_parts.append(f"Est. traffic light wait: {avg_tl_wait:.0f}s")
+            tl_waits = sorted(e.traffic_light_wait or 0 for e in events)
+            avg_tl = sum(tl_waits) / len(tl_waits)
+            popup_parts.append(f"Est. traffic light wait: {avg_tl:.0f}s")
 
         color = STOP_COLORS.get(category, "gray")
         folium.CircleMarker(
