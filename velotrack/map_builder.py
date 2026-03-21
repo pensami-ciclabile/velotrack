@@ -1120,9 +1120,20 @@ def build_inspect_map(df: pd.DataFrame, title: str = "Ride Inspector",
     m = folium.Map(location=[center_lat, center_lon], zoom_start=13,
                    tiles="cartodbpositron")
 
-    # Draw the route polyline
-    coords = list(zip(df["lat"], df["lon"]))
-    folium.PolyLine(coords, color="#3388ff", weight=3, opacity=0.5).add_to(m)
+    # Draw the route polyline, splitting at gaps (where dist was zeroed after teleport removal)
+    segments = []
+    current_seg = []
+    for i in range(len(df)):
+        if i > 0 and df.iloc[i]["dist"] == 0.0 and df.iloc[i]["dt"] > 10:
+            # Gap: large time jump with zero distance means teleport was removed
+            if len(current_seg) >= 2:
+                segments.append(current_seg)
+            current_seg = []
+        current_seg.append((df.iloc[i]["lat"], df.iloc[i]["lon"]))
+    if len(current_seg) >= 2:
+        segments.append(current_seg)
+    for seg in segments:
+        folium.PolyLine(seg, color="#3388ff", weight=3, opacity=0.5).add_to(m)
 
     # Cumulative distance
     cum_dist = df["dist"].cumsum()

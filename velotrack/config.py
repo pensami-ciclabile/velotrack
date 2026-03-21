@@ -10,6 +10,11 @@ TRAFFIC_LIGHTS_CSV = DATA_DIR / "traffic_lights.csv"
 TRAM_STOPS_CSV = DATA_DIR / "tram_stops.csv"
 DAILY_TRIPS_JSON = DATA_DIR / "daily_trips.json"
 GTFS_STOPS_JSON = DATA_DIR / "gtfs_stops.json"
+OSM_TRACKS_JSON = DATA_DIR / "osm_tracks.json"
+
+# OSM track snapping
+SNAP_MAX_DISTANCE = 30.0      # meters — skip points farther than this
+SNAP_CONTINUITY_BONUS = 10.0  # meters — preference for contiguous segments
 
 # Site generation
 SITE_DIR = PROJECT_ROOT / "site"
