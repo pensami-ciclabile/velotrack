@@ -211,3 +211,4 @@ __marimo__/
 
 # Velotrack
 data/gtfs/
+.DS_Store
