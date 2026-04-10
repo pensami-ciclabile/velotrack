@@ -29,6 +29,33 @@ document.addEventListener("DOMContentLoaded", function () {
     if (span) span.textContent = rides;
 });
 
+/* Expand / collapse extra stats */
+document.addEventListener("DOMContentLoaded", function () {
+    var btn = document.getElementById("toggle-stats");
+    var wrapper = document.getElementById("more-stats-wrapper");
+    var panel = document.getElementById("more-stats");
+    var fade = document.getElementById("more-stats-fade");
+    if (!btn || !wrapper || !panel) return;
+    var expanded = false;
+
+    btn.addEventListener("click", function () {
+        expanded = !expanded;
+        if (expanded) {
+            wrapper.style.maxHeight = panel.scrollHeight + "px";
+            if (fade) fade.style.opacity = "0";
+        } else {
+            wrapper.style.maxHeight = "100px";
+            if (fade) fade.style.opacity = "1";
+        }
+        var icon = btn.querySelector(".toggle-icon");
+        if (icon) icon.style.transform = expanded ? "rotate(180deg)" : "";
+        var showLabel = btn.querySelector(".toggle-label-show");
+        var hideLabel = btn.querySelector(".toggle-label-hide");
+        if (showLabel) showLabel.hidden = expanded;
+        if (hideLabel) hideLabel.hidden = !expanded;
+    });
+});
+
 /* Commute calculator */
 document.addEventListener("DOMContentLoaded", function () {
     var dataEl = document.getElementById("commute-data");

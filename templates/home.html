@@ -24,7 +24,7 @@
 {% if tl_hours %}
 <!-- Hero Metrics -->
 <section class="px-6 md:px-8 max-w-[1440px] mx-auto">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Hours Lost -->
         <div class="tl-highlight bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container"
              data-weekday="{{ tl_hours.weekday }}"
@@ -83,6 +83,136 @@
         </div>
         {% endif %}
     </div>
+
+    {% if extra_stats %}
+    <!-- Expandable Stats -->
+    <div id="more-stats-wrapper" class="relative mt-6 overflow-hidden" style="max-height: 100px;">
+        <div id="more-stats-fade" class="absolute bottom-0 left-0 right-0 h-24 z-10 pointer-events-none" style="background: linear-gradient(to bottom, transparent, var(--surface, #FBF9F8));"></div>
+    <div id="more-stats" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {% if extra_stats.avg_network_speed %}
+        <!-- Average Network Speed -->
+        <div class="bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container">
+            <div class="flex items-center gap-2 text-primary mb-3">
+                <span class="material-symbols-outlined text-xl">speed</span>
+                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+                    <span class="i18n-it">Velocit&agrave; media della rete</span>
+                    <span class="i18n-en">Average network speed</span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-4">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter">{{ extra_stats.avg_network_speed }}</span>
+                <span class="text-lg font-medium text-secondary">km/h</span>
+            </div>
+            <p class="text-sm text-secondary leading-relaxed mb-2">
+                <span class="i18n-it">La velocit&agrave; commerciale media dei tram milanesi, incluse tutte le fermate e i semafori</span>
+                <span class="i18n-en">The average commercial speed of Milan's trams, including all stops and traffic lights</span>
+            </p>
+            <p class="text-xs text-secondary/60">
+                <span class="i18n-it">Media su {{ tl_lines_count }} linee misurate</span>
+                <span class="i18n-en">Average across {{ tl_lines_count }} measured lines</span>
+            </p>
+        </div>
+        {% endif %}
+
+        {% if extra_stats.tl_time_pct %}
+        <!-- Time at Red Lights -->
+        <div class="bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container">
+            <div class="flex items-center gap-2 text-primary mb-3">
+                <span class="material-symbols-outlined text-xl">traffic</span>
+                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+                    <span class="i18n-it">Tempo ai semafori</span>
+                    <span class="i18n-en">Time at red lights</span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-4">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter">{{ extra_stats.tl_time_pct }}</span>
+                <span class="text-lg font-medium text-secondary">%</span>
+            </div>
+            <p class="text-sm text-secondary leading-relaxed mb-2">
+                <span class="i18n-it">La percentuale media del viaggio che un tram trascorre fermo ai semafori</span>
+                <span class="i18n-en">The average percentage of a tram trip spent waiting at traffic lights</span>
+            </p>
+            <p class="text-xs text-secondary/60">
+                <span class="i18n-it">Rapporto attesa semafori / durata corsa</span>
+                <span class="i18n-en">Traffic light wait / trip duration ratio</span>
+            </p>
+        </div>
+        {% endif %}
+
+        {% if extra_stats.tl_stops_per_trip %}
+        <!-- Traffic Light Stops per Trip -->
+        <div class="bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container">
+            <div class="flex items-center gap-2 text-primary mb-3">
+                <span class="material-symbols-outlined text-xl">pin_drop</span>
+                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+                    <span class="i18n-it">Soste ai semafori per corsa</span>
+                    <span class="i18n-en">Traffic light stops per trip</span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-4">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter">{{ extra_stats.tl_stops_per_trip }}</span>
+                <span class="text-lg font-medium text-secondary">
+                    <span class="i18n-it">soste</span><span class="i18n-en">stops</span>
+                </span>
+            </div>
+            <p class="text-sm text-secondary leading-relaxed mb-2">
+                <span class="i18n-it">Quante volte in media un tram si ferma ai semafori durante una corsa</span>
+                <span class="i18n-en">How many times on average a tram stops at traffic lights during a single trip</span>
+            </p>
+            <p class="text-xs text-secondary/60">
+                <span class="i18n-it">Include semafori puri e fermate combinate</span>
+                <span class="i18n-en">Includes pure traffic lights and combined stops</span>
+            </p>
+        </div>
+        {% endif %}
+
+        {% if extra_stats.potential_speed %}
+        <!-- Potential Speed with Priority -->
+        <div class="bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container">
+            <div class="flex items-center gap-2 text-primary mb-3">
+                <span class="material-symbols-outlined text-xl">rocket_launch</span>
+                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+                    <span class="i18n-it">Velocit&agrave; possibile</span>
+                    <span class="i18n-en">Possible speed</span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-4">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter">{{ extra_stats.potential_speed }}</span>
+                <span class="text-lg font-medium text-secondary">km/h</span>
+            </div>
+            <p class="text-sm text-secondary leading-relaxed mb-2">
+                <span class="i18n-it">La velocit&agrave; media raggiungibile con priorit&agrave; semaforica, rispetto agli attuali {{ extra_stats.current_speed }} km/h</span>
+                <span class="i18n-en">The average speed achievable with signal priority, compared to the current {{ extra_stats.current_speed }} km/h</span>
+            </p>
+            <p class="text-xs text-secondary/60">
+                <span class="i18n-it">Calcolato rimuovendo le attese ai semafori e colli di bottiglia</span>
+                <span class="i18n-en">Calculated by removing traffic light waits and bottlenecks</span>
+            </p>
+        </div>
+        {% endif %}
+
+    </div>
+    </div>
+
+    <!-- Toggle Button -->
+    <div class="text-center mt-6 mb-12">
+        <button id="toggle-stats" type="button"
+                class="inline-flex items-center gap-2 text-primary font-bold text-sm bg-surface-container-low px-6 py-3 rounded-xl hover:bg-surface-container transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-lg toggle-icon transition-transform duration-300">expand_more</span>
+            <span class="toggle-label-show">
+                <span class="i18n-it">Mostra altre statistiche</span>
+                <span class="i18n-en">Show more stats</span>
+            </span>
+            <span class="toggle-label-hide" hidden>
+                <span class="i18n-it">Mostra meno</span>
+                <span class="i18n-en">Show less</span>
+            </span>
+        </button>
+    </div>
+    {% else %}
+    <div class="mb-12"></div>
+    {% endif %}
 </section>
 {% endif %}
 

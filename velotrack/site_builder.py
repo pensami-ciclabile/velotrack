@@ -180,6 +180,47 @@ def build_site(
                     total_extra += (trip_counts[line_num] * avg_wait) / avg_dur
             tl_extra_rides[day_type] = round(total_extra)
 
+    # Compute aggregate network stats for expandable section
+    extra_stats = {}
+    speeds = []
+    tl_pcts = []
+    tl_stop_counts = []
+    potential_speeds = []
+    current_speeds = []
+    for li in lines:
+        s = li.stats
+        avg_spd = s.get("speed", {}).get("avg_trip", 0)
+        dur = s.get("avg_trip_duration", 0)
+        tl_wait = s.get("tl_wait_total", 0)
+        cat = s.get("cat_counts", {})
+        priority = s.get("priority_savings_incl_bottlenecks", 0)
+        if avg_spd > 0:
+            speeds.append(avg_spd)
+        if dur > 0 and tl_wait > 0:
+            tl_pcts.append(tl_wait / dur * 100)
+        tl_stops = cat.get("traffic_light", 0) + cat.get("combined", 0)
+        if tl_stops > 0:
+            tl_stop_counts.append(tl_stops)
+        if dur > 0 and priority > 0 and li.total_distance_km > 0:
+            potential_spd = li.total_distance_km / ((dur - priority) / 3600)
+            potential_speeds.append(potential_spd)
+            current_speeds.append(avg_spd)
+    if speeds:
+        extra_stats["avg_network_speed"] = round(sum(speeds) / len(speeds), 1)
+    if tl_pcts:
+        extra_stats["tl_time_pct"] = round(sum(tl_pcts) / len(tl_pcts))
+    if tl_stop_counts:
+        extra_stats["tl_stops_per_trip"] = round(
+            sum(tl_stop_counts) / len(tl_stop_counts), 1
+        )
+    if potential_speeds:
+        extra_stats["potential_speed"] = round(
+            sum(potential_speeds) / len(potential_speeds), 1
+        )
+        extra_stats["current_speed"] = round(
+            sum(current_speeds) / len(current_speeds), 1
+        )
+
     # Load GTFS stop sequences from cache file
     gtfs_stops_by_line: dict[int, list[str]] = {}
     if GTFS_STOPS_JSON.exists():
@@ -217,6 +258,7 @@ def build_site(
             tl_extra_rides=tl_extra_rides,
             commute_lines_json=commute_lines_json,
             hotspot_slices_json=Markup(json.dumps(hotspot_slices, ensure_ascii=False)),
+            extra_stats=extra_stats,
         )
     )
 
