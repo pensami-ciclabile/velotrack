@@ -13,6 +13,76 @@
     -webkit-backdrop-filter: blur(20px);
 }
 
+/* Metric cards */
+.metric-card-grid {
+    align-items: stretch;
+}
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Info tooltip — circled (i) next to card labels */
+.info-tip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: help;
+    color: #b8b3b1;
+    line-height: 1;
+    outline: none;
+}
+.info-tip:hover,
+.info-tip:focus-visible {
+    color: #9f4200;
+}
+.info-tip-icon {
+    font-size: 15px !important;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+.info-tip-bubble {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    width: max-content;
+    max-width: 240px;
+    padding: 0.55rem 0.7rem;
+    background: #1b1c1c;
+    color: #fbf9f8;
+    font-size: 0.72rem;
+    font-weight: 400;
+    line-height: 1.4;
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(27, 28, 28, 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 50;
+    text-align: left;
+    white-space: normal;
+}
+.info-tip-bubble::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1b1c1c;
+}
+.info-tip:hover .info-tip-bubble,
+.info-tip:focus-visible .info-tip-bubble {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Sparkline charts */
+.sparkline-chart {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
 /* Expandable stats panel */
 #more-stats-wrapper {
     transition: max-height 0.5s ease-in-out;

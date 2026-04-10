@@ -22,173 +22,210 @@
 </section>
 
 {% if tl_hours %}
-<!-- Hero Metrics -->
+<!-- Metric Cards -->
 <section class="px-6 md:px-8 max-w-[1440px] mx-auto">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Hours Lost -->
-        <div class="tl-highlight bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container"
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 metric-card-grid">
+        <!-- Hours lost today -->
+        <div class="tl-highlight metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl"
              data-weekday="{{ tl_hours.weekday }}"
              data-saturday="{{ tl_hours.saturday }}"
              data-sunday="{{ tl_hours.sunday }}">
-            <div class="flex items-center gap-2 text-primary mb-3">
-                <span class="material-symbols-outlined text-xl">timer</span>
-                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
                     <span class="i18n-it">Ore perse oggi</span>
                     <span class="i18n-en">Hours lost today</span>
                 </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Σ (attesa media ai semafori per corsa &times; corse giornaliere GTFS) ÷ 3600. Aggregato su tutte le linee misurate.</span>
+                        <span class="i18n-en">Σ (avg traffic-light wait per trip &times; daily GTFS trips) ÷ 3600. Aggregated across all measured lines.</span>
+                    </span>
+                </span>
             </div>
             <div class="flex items-baseline gap-2 mb-4">
-                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tl-hours-value">{{ tl_hours.weekday }}</span>
-                <span class="text-lg font-medium text-secondary">
+                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums tl-hours-value">{{ tl_hours.weekday }}</span>
+                <span class="text-lg font-medium text-secondary/60">
                     <span class="i18n-it">ore</span><span class="i18n-en">hours</span>
                 </span>
             </div>
-            <p class="text-sm text-secondary leading-relaxed mb-2">
-                <span class="i18n-it">Solo oggi, ATM ha perso questo tempo aspettando i semafori milanesi</span>
-                <span class="i18n-en">Today alone, ATM lost this much time waiting at Milan's traffic lights</span>
+            {% if extra_stats.hours_shifts %}
+            <p class="text-sm text-secondary">
+                <span class="i18n-it">Equivalente a {{ extra_stats.hours_shifts }} turni di guida completi</span>
+                <span class="i18n-en">Equivalent to {{ extra_stats.hours_shifts }} full driver shifts</span>
             </p>
-            <p class="text-xs text-secondary/60">
-                <span class="i18n-it">Basato su {{ tl_lines_count }} di {{ tl_total_lines }} linee tramviarie · oggi come <span class="tl-day-label">giorno feriale</span> ({{ tl_hours.weekday }} feriale, {{ tl_hours.saturday }} sabato, {{ tl_hours.sunday }} domenica)</span>
-                <span class="i18n-en">Based on {{ tl_lines_count }} of {{ tl_total_lines }} tram lines · today as a <span class="tl-day-label">weekday</span> ({{ tl_hours.weekday }} weekday, {{ tl_hours.saturday }} Saturday, {{ tl_hours.sunday }} Sunday)</span>
-            </p>
+            {% endif %}
         </div>
 
         {% if tl_extra_rides %}
-        <!-- Extra Rides -->
-        <div class="tl-highlight bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container"
+        <!-- Extra rides possible -->
+        <div class="tl-highlight metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl"
              data-rides-weekday="{{ tl_extra_rides.weekday }}"
              data-rides-saturday="{{ tl_extra_rides.saturday }}"
              data-rides-sunday="{{ tl_extra_rides.sunday }}">
-            <div class="flex items-center gap-2 text-primary mb-3">
-                <span class="material-symbols-outlined text-xl">directions_transit</span>
-                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
                     <span class="i18n-it">Corse extra possibili</span>
                     <span class="i18n-en">Extra rides possible</span>
                 </span>
-            </div>
-            <div class="flex items-baseline gap-2 mb-4">
-                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tl-hours-value tl-rides-value">{{ tl_extra_rides.weekday }}</span>
-                <span class="text-lg font-medium text-secondary">
-                    <span class="i18n-it">corse in più</span><span class="i18n-en">extra rides</span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Tempo recuperabile dai semafori diviso per la durata media di una corsa, sommato su tutte le linee. Stima teorica.</span>
+                        <span class="i18n-en">Recoverable traffic-light time divided by the average trip duration, summed across all lines. Theoretical estimate.</span>
+                    </span>
                 </span>
             </div>
-            <p class="text-sm text-secondary leading-relaxed mb-2">
-                <span class="i18n-it">Con la priorità semaforica, ATM potrebbe effettuare ogni giorno questo numero di corse in più — senza un solo tram o conducente aggiuntivo</span>
-                <span class="i18n-en">With tram priority at traffic lights, ATM could run this many extra rides every day — without a single extra tram or driver</span>
-            </p>
-            <p class="text-xs text-secondary/60">
-                <span class="i18n-it">Calcolato su {{ tl_lines_count }} linee misurate · tempo risparmiato ÷ durata media corsa</span>
-                <span class="i18n-en">Calculated from {{ tl_lines_count }} measured lines · time saved ÷ avg trip duration</span>
+            <div class="flex items-baseline gap-2 mb-4">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tabular-nums tl-rides-value">{{ tl_extra_rides.weekday }}</span>
+                <span class="text-lg font-medium text-secondary/60">
+                    <span class="i18n-it">corse</span><span class="i18n-en">rides</span>
+                </span>
+            </div>
+            <p class="text-sm text-secondary">
+                <span class="i18n-it">Senza un solo tram o conducente aggiuntivo</span>
+                <span class="i18n-en">Without a single extra tram or driver</span>
             </p>
         </div>
         {% endif %}
     </div>
 
     {% if extra_stats %}
-    <!-- Expandable Stats -->
+    <!-- Expandable cards -->
     <div id="more-stats-wrapper" class="relative mt-6 overflow-hidden" style="max-height: 100px;">
         <div id="more-stats-fade" class="absolute bottom-0 left-0 right-0 h-24 z-10 pointer-events-none" style="background: linear-gradient(to bottom, transparent, var(--surface, #FBF9F8));"></div>
-    <div id="more-stats" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div id="more-stats" class="grid grid-cols-1 md:grid-cols-2 gap-6 metric-card-grid">
 
         {% if extra_stats.avg_network_speed %}
-        <!-- Average Network Speed -->
-        <div class="bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container">
-            <div class="flex items-center gap-2 text-primary mb-3">
-                <span class="material-symbols-outlined text-xl">speed</span>
-                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+        <!-- Network speed — chart support -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
                     <span class="i18n-it">Velocit&agrave; media della rete</span>
                     <span class="i18n-en">Average network speed</span>
                 </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Media ponderata della velocit&agrave; di crociera GPS su tutte le linee misurate.</span>
+                        <span class="i18n-en">Weighted average of GPS cruising speed across all measured lines.</span>
+                    </span>
+                </span>
             </div>
-            <div class="flex items-baseline gap-2 mb-4">
-                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter">{{ extra_stats.avg_network_speed }}</span>
-                <span class="text-lg font-medium text-secondary">km/h</span>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums">{{ extra_stats.avg_network_speed }}</span>
+                <span class="text-lg font-medium text-secondary/60">km/h</span>
             </div>
-            <p class="text-sm text-secondary leading-relaxed mb-2">
-                <span class="i18n-it">La velocit&agrave; commerciale media dei tram milanesi, incluse tutte le fermate e i semafori</span>
-                <span class="i18n-en">The average commercial speed of Milan's trams, including all stops and traffic lights</span>
+            <p class="text-sm text-secondary mb-5">
+                <span class="i18n-it">Pi&ugrave; lento di una bicicletta urbana (~15 km/h)</span>
+                <span class="i18n-en">Slower than an urban bicycle (~15 km/h)</span>
             </p>
-            <p class="text-xs text-secondary/60">
-                <span class="i18n-it">Media su {{ tl_lines_count }} linee misurate</span>
-                <span class="i18n-en">Average across {{ tl_lines_count }} measured lines</span>
-            </p>
+            {% if extra_stats.speed_chart %}
+            <div class="mt-auto w-full">{{ extra_stats.speed_chart }}</div>
+            {% endif %}
         </div>
         {% endif %}
 
         {% if extra_stats.tl_time_pct %}
-        <!-- Time at Red Lights -->
-        <div class="bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container">
-            <div class="flex items-center gap-2 text-primary mb-3">
-                <span class="material-symbols-outlined text-xl">traffic</span>
-                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+        <!-- Time at red lights — chart support -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
                     <span class="i18n-it">Tempo ai semafori</span>
                     <span class="i18n-en">Time at red lights</span>
                 </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Quota della durata media di una corsa trascorsa fermi ai semafori.</span>
+                        <span class="i18n-en">Share of the average trip duration spent waiting at traffic lights.</span>
+                    </span>
+                </span>
             </div>
-            <div class="flex items-baseline gap-2 mb-4">
-                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter">{{ extra_stats.tl_time_pct }}</span>
-                <span class="text-lg font-medium text-secondary">%</span>
+            <div class="flex items-baseline gap-2 mb-5">
+                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums">{{ extra_stats.tl_time_pct }}</span>
+                <span class="text-lg font-medium text-secondary/60">%</span>
             </div>
-            <p class="text-sm text-secondary leading-relaxed mb-2">
-                <span class="i18n-it">La percentuale media del viaggio che un tram trascorre fermo ai semafori</span>
-                <span class="i18n-en">The average percentage of a tram trip spent waiting at traffic lights</span>
-            </p>
-            <p class="text-xs text-secondary/60">
-                <span class="i18n-it">Rapporto attesa semafori / durata corsa</span>
-                <span class="i18n-en">Traffic light wait / trip duration ratio</span>
-            </p>
+            {% if extra_stats.tl_pct_chart %}
+            <div class="mt-auto w-full">{{ extra_stats.tl_pct_chart }}</div>
+            {% endif %}
         </div>
         {% endif %}
 
         {% if extra_stats.tl_stops_per_trip %}
-        <!-- Traffic Light Stops per Trip -->
-        <div class="bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container">
-            <div class="flex items-center gap-2 text-primary mb-3">
-                <span class="material-symbols-outlined text-xl">pin_drop</span>
-                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+        <!-- TL stops per trip — insight support -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
                     <span class="i18n-it">Soste ai semafori per corsa</span>
                     <span class="i18n-en">Traffic light stops per trip</span>
                 </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Numero medio di soste a semafori e incroci per corsa, su {{ tl_lines_count }} linee misurate.</span>
+                        <span class="i18n-en">Average number of stops at traffic lights and intersections per trip, across {{ tl_lines_count }} measured lines.</span>
+                    </span>
+                </span>
             </div>
-            <div class="flex items-baseline gap-2 mb-4">
-                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter">{{ extra_stats.tl_stops_per_trip }}</span>
-                <span class="text-lg font-medium text-secondary">
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums">{{ extra_stats.tl_stops_per_trip }}</span>
+                <span class="text-lg font-medium text-secondary/60">
                     <span class="i18n-it">soste</span><span class="i18n-en">stops</span>
                 </span>
             </div>
-            <p class="text-sm text-secondary leading-relaxed mb-2">
-                <span class="i18n-it">Quante volte in media un tram si ferma ai semafori durante una corsa</span>
-                <span class="i18n-en">How many times on average a tram stops at traffic lights during a single trip</span>
+            {% if extra_stats.tl_seconds_per_stop %}
+            <p class="text-sm text-secondary mt-auto">
+                <span class="i18n-it">Circa una sosta ogni {{ extra_stats.tl_seconds_per_stop }} secondi di viaggio</span>
+                <span class="i18n-en">Roughly one stop every {{ extra_stats.tl_seconds_per_stop }} seconds of travel</span>
             </p>
-            <p class="text-xs text-secondary/60">
-                <span class="i18n-it">Include semafori puri e fermate combinate</span>
-                <span class="i18n-en">Includes pure traffic lights and combined stops</span>
-            </p>
+            {% endif %}
         </div>
         {% endif %}
 
         {% if extra_stats.potential_speed %}
-        <!-- Potential Speed with Priority -->
-        <div class="bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container">
-            <div class="flex items-center gap-2 text-primary mb-3">
-                <span class="material-symbols-outlined text-xl">rocket_launch</span>
-                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
-                    <span class="i18n-it">Velocit&agrave; possibile</span>
-                    <span class="i18n-en">Possible speed</span>
+        <!-- Potential speed — chart support -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
+                    <span class="i18n-it">Velocit&agrave; possibile con priorit&agrave;</span>
+                    <span class="i18n-en">Possible speed with priority</span>
+                </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Velocit&agrave; ricalcolata rimuovendo le attese ai semafori e i rallentamenti nei colli di bottiglia.</span>
+                        <span class="i18n-en">Speed recalculated after removing traffic-light waits and bottleneck slowdowns.</span>
+                    </span>
                 </span>
             </div>
-            <div class="flex items-baseline gap-2 mb-4">
-                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter">{{ extra_stats.potential_speed }}</span>
-                <span class="text-lg font-medium text-secondary">km/h</span>
+            <div class="flex items-baseline gap-2 mb-1">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tabular-nums">{{ extra_stats.potential_speed }}</span>
+                <span class="text-lg font-medium text-secondary/60">km/h</span>
             </div>
-            <p class="text-sm text-secondary leading-relaxed mb-2">
-                <span class="i18n-it">La velocit&agrave; media raggiungibile con priorit&agrave; semaforica, rispetto agli attuali {{ extra_stats.current_speed }} km/h</span>
-                <span class="i18n-en">The average speed achievable with signal priority, compared to the current {{ extra_stats.current_speed }} km/h</span>
+            {% if extra_stats.speed_gain_pct %}
+            <p class="text-sm font-medium text-primary mb-4">+{{ extra_stats.speed_gain_pct }}%
+                <span class="font-normal text-secondary">
+                    <span class="i18n-it">rispetto agli attuali {{ extra_stats.current_speed }}</span>
+                    <span class="i18n-en">vs current {{ extra_stats.current_speed }}</span>
+                </span>
             </p>
-            <p class="text-xs text-secondary/60">
-                <span class="i18n-it">Calcolato rimuovendo le attese ai semafori e colli di bottiglia</span>
-                <span class="i18n-en">Calculated by removing traffic light waits and bottlenecks</span>
-            </p>
+            {% endif %}
+            {% if extra_stats.comparison_chart %}
+            <div class="mt-auto w-full">
+                {{ extra_stats.comparison_chart }}
+                <div class="flex gap-4 mt-1.5">
+                    <span class="text-[10px] text-secondary/50 flex items-center gap-1">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-secondary/50"></span>
+                        <span class="i18n-it">attuale</span><span class="i18n-en">current</span>
+                    </span>
+                    <span class="text-[10px] text-primary flex items-center gap-1">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        <span class="i18n-it">con priorit&agrave;</span><span class="i18n-en">with priority</span>
+                    </span>
+                </div>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
 

@@ -75,6 +75,162 @@ def _group_lines(lines: list[LineInfo]) -> list[dict]:
     ]
 
 
+def _svg_lollipop_chart(
+    data: list[tuple[str, float]],
+    color: str = "#5F5E5E",
+    highlight_color: str = "#9F4200",
+) -> str:
+    """Generate a minimal SVG lollipop chart from (label, value) pairs.
+
+    Thin stems with small circles at the top. Sorted by value descending.
+    The highest value is highlighted. No Y-axis — shape only.
+    """
+    if not data:
+        return ""
+    # Average directions per line number, then sort descending
+    merged: dict[str, list[float]] = {}
+    for label, val in data:
+        merged.setdefault(label, []).append(val)
+    items = sorted(
+        [(k, sum(v) / len(v)) for k, v in merged.items()],
+        key=lambda x: x[1],
+        reverse=True,
+    )
+    max_val = max(v for _, v in items)
+    if max_val <= 0:
+        return ""
+
+    label_h = 12
+    top_pad = 6
+    width = 240
+    height = 56
+    chart_h = height - label_h - top_pad
+    n = len(items)
+    spacing = width / n
+    dot_r = 2.5
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}"'
+        f' viewBox="0 0 {width} {height}" class="sparkline-chart"'
+        f' style="font-family:Inter,system-ui,sans-serif">'
+    ]
+
+    label_style = 'font-size="6.5" text-anchor="middle"'
+    for i, (label, val) in enumerate(items):
+        cx = round(spacing * (i + 0.5), 1)
+        h = max(2, val / max_val * (chart_h - dot_r * 2))
+        cy = round(top_pad + chart_h - h, 1)
+        baseline_y = top_pad + chart_h
+        is_top = i == 0
+        c = highlight_color if is_top else color
+        opacity = "1" if is_top else "0.45"
+
+        # Stem
+        parts.append(
+            f'<line x1="{cx}" y1="{baseline_y}" x2="{cx}" y2="{cy}"'
+            f' stroke="{c}" stroke-width="1.5" opacity="{opacity}"/>'
+        )
+        # Dot
+        parts.append(
+            f'<circle cx="{cx}" cy="{cy}" r="{dot_r}"'
+            f' fill="{c}" opacity="{opacity}"/>'
+        )
+        # Label
+        ly = height - 1
+        parts.append(
+            f'<text x="{cx}" y="{ly}" {label_style}'
+            f' fill="{highlight_color if is_top else "#5F5E5E"}"'
+            f' font-weight="{700 if is_top else 400}">{label}</text>'
+        )
+
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def _svg_paired_lollipop_chart(
+    data: list[tuple[str, float, float]],
+    color_a: str = "#5F5E5E",
+    color_b: str = "#9F4200",
+) -> str:
+    """Generate a minimal SVG with paired lollipops (current vs potential).
+
+    Two dots per line, connected by a thin stem from current to potential.
+    Sorted by potential descending. No Y-axis.
+    """
+    if not data:
+        return ""
+    merged: dict[str, tuple[list[float], list[float]]] = {}
+    for label, a, b in data:
+        entry = merged.setdefault(label, ([], []))
+        entry[0].append(a)
+        entry[1].append(b)
+    items = sorted(
+        [
+            (k, sum(va) / len(va), sum(vb) / len(vb))
+            for k, (va, vb) in merged.items()
+        ],
+        key=lambda x: x[2],
+        reverse=True,
+    )
+    max_val = max(max(a, b) for _, a, b in items)
+    if max_val <= 0:
+        return ""
+
+    label_h = 12
+    top_pad = 6
+    width = 240
+    height = 56
+    chart_h = height - label_h - top_pad
+    n = len(items)
+    spacing = width / n
+    dot_r = 2.5
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}"'
+        f' viewBox="0 0 {width} {height}" class="sparkline-chart"'
+        f' style="font-family:Inter,system-ui,sans-serif">'
+    ]
+
+    label_style = 'fill="#5F5E5E" font-size="6.5" text-anchor="middle"'
+    for i, (label, val_a, val_b) in enumerate(items):
+        cx = round(spacing * (i + 0.5), 1)
+        h_a = max(2, val_a / max_val * (chart_h - dot_r * 2))
+        h_b = max(2, val_b / max_val * (chart_h - dot_r * 2))
+        cy_a = round(top_pad + chart_h - h_a, 1)
+        cy_b = round(top_pad + chart_h - h_b, 1)
+        baseline_y = top_pad + chart_h
+
+        # Stem from baseline to lower dot (current)
+        parts.append(
+            f'<line x1="{cx}" y1="{baseline_y}" x2="{cx}" y2="{cy_a}"'
+            f' stroke="{color_a}" stroke-width="1" opacity="0.3"/>'
+        )
+        # Stem from current to potential
+        parts.append(
+            f'<line x1="{cx}" y1="{cy_a}" x2="{cx}" y2="{cy_b}"'
+            f' stroke="{color_b}" stroke-width="1.5" opacity="0.7"/>'
+        )
+        # Current dot (smaller, muted)
+        parts.append(
+            f'<circle cx="{cx}" cy="{cy_a}" r="2"'
+            f' fill="{color_a}" opacity="0.5"/>'
+        )
+        # Potential dot (larger, highlighted)
+        parts.append(
+            f'<circle cx="{cx}" cy="{cy_b}" r="{dot_r}"'
+            f' fill="{color_b}" opacity="0.9"/>'
+        )
+        # Label
+        ly = height - 1
+        parts.append(f'<text x="{cx}" y="{ly}" {label_style}>{label}</text>')
+
+    parts.append("</svg>")
+
+    parts.append("</svg>")
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
 def build_site(
     lines: list[LineInfo],
     location_stats: list[dict[str, Any]] | None = None,
@@ -182,44 +338,71 @@ def build_site(
 
     # Compute aggregate network stats for expandable section
     extra_stats = {}
-    speeds = []
-    tl_pcts = []
-    tl_stop_counts = []
-    potential_speeds = []
-    current_speeds = []
+    per_line_speed: list[tuple[str, float]] = []
+    per_line_tl_pct: list[tuple[str, float]] = []
+    per_line_tl_stops: list[tuple[str, float]] = []
+    per_line_stops_with_dur: list[tuple[float, float]] = []  # (stops, dur_sec)
+    per_line_comparison: list[tuple[str, float, float]] = []
     for li in lines:
         s = li.stats
+        match = re.search(r"line(\d+)", li.line_key)
+        label = match.group(1) if match else li.line_key
         avg_spd = s.get("speed", {}).get("avg_trip", 0)
         dur = s.get("avg_trip_duration", 0)
         tl_wait = s.get("tl_wait_total", 0)
         cat = s.get("cat_counts", {})
         priority = s.get("priority_savings_incl_bottlenecks", 0)
         if avg_spd > 0:
-            speeds.append(avg_spd)
+            per_line_speed.append((label, avg_spd))
         if dur > 0 and tl_wait > 0:
-            tl_pcts.append(tl_wait / dur * 100)
+            per_line_tl_pct.append((label, tl_wait / dur * 100))
         tl_stops = cat.get("traffic_light", 0) + cat.get("combined", 0)
         if tl_stops > 0:
-            tl_stop_counts.append(tl_stops)
+            per_line_tl_stops.append((label, float(tl_stops)))
+            if dur > 0:
+                per_line_stops_with_dur.append((float(tl_stops), dur))
         if dur > 0 and priority > 0 and li.total_distance_km > 0:
             potential_spd = li.total_distance_km / ((dur - priority) / 3600)
-            potential_speeds.append(potential_spd)
-            current_speeds.append(avg_spd)
-    if speeds:
-        extra_stats["avg_network_speed"] = round(sum(speeds) / len(speeds), 1)
-    if tl_pcts:
-        extra_stats["tl_time_pct"] = round(sum(tl_pcts) / len(tl_pcts))
-    if tl_stop_counts:
-        extra_stats["tl_stops_per_trip"] = round(
-            sum(tl_stop_counts) / len(tl_stop_counts), 1
+            per_line_comparison.append((label, avg_spd, potential_spd))
+
+    # Aggregate values + charts
+    if per_line_speed:
+        vals = [v for _, v in per_line_speed]
+        extra_stats["avg_network_speed"] = round(sum(vals) / len(vals), 1)
+        extra_stats["speed_chart"] = Markup(_svg_lollipop_chart(
+            per_line_speed, color="#5F5E5E", highlight_color="#9F4200",
+        ))
+    if per_line_tl_pct:
+        vals = [v for _, v in per_line_tl_pct]
+        extra_stats["tl_time_pct"] = round(sum(vals) / len(vals))
+        extra_stats["tl_pct_chart"] = Markup(_svg_lollipop_chart(
+            per_line_tl_pct, color="#5F5E5E", highlight_color="#c44030",
+        ))
+    if per_line_tl_stops:
+        vals = [v for _, v in per_line_tl_stops]
+        extra_stats["tl_stops_per_trip"] = round(sum(vals) / len(vals), 1)
+        if per_line_stops_with_dur:
+            avg_stops = sum(s for s, _ in per_line_stops_with_dur) / len(per_line_stops_with_dur)
+            avg_dur = sum(d for _, d in per_line_stops_with_dur) / len(per_line_stops_with_dur)
+            if avg_stops > 0:
+                extra_stats["tl_seconds_per_stop"] = round(avg_dur / avg_stops)
+    if per_line_comparison:
+        avg_potential = sum(v for _, _, v in per_line_comparison) / len(
+            per_line_comparison
         )
-    if potential_speeds:
-        extra_stats["potential_speed"] = round(
-            sum(potential_speeds) / len(potential_speeds), 1
+        avg_current = sum(v for _, v, _ in per_line_comparison) / len(
+            per_line_comparison
         )
-        extra_stats["current_speed"] = round(
-            sum(current_speeds) / len(current_speeds), 1
-        )
+        extra_stats["potential_speed"] = round(avg_potential, 1)
+        extra_stats["current_speed"] = round(avg_current, 1)
+        pct_faster = round((avg_potential / avg_current - 1) * 100)
+        extra_stats["speed_gain_pct"] = pct_faster
+        extra_stats["comparison_chart"] = Markup(_svg_paired_lollipop_chart(
+            per_line_comparison, color_a="#5F5E5E", color_b="#9F4200",
+        ))
+    # Insight for hours-lost card: equivalent driver shifts (8h shift)
+    if tl_hours:
+        extra_stats["hours_shifts"] = round(tl_hours.get("weekday", 0) / 8)
 
     # Load GTFS stop sequences from cache file
     gtfs_stops_by_line: dict[int, list[str]] = {}
