@@ -3,7 +3,7 @@
 <p align="center">
   <img src="assets/img/teaser.png" alt="Velotrack teaser — interactive tram speed map of Milan" width="700">
 </p>
-<p align="center"><strong>🚋 Try Velotrack:</strong> <a href="https://pensamiciclabile.it/velotrack/">pensamiciclabile.it/velotrack/</a></p>
+<p align="center"><strong>🚋 Try Velotrack:</strong> <a href="https://velotrack.pensamiciclabile.it/">velotrack.pensamiciclabile.it</a></p>
 
 Analyze GPS recordings of tram rides in Milan to produce interactive maps with velocity heatmaps and classified stop events.
 

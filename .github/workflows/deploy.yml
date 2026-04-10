@@ -35,6 +35,9 @@ jobs:
       - name: Build site
         run: uv run main.py build-site
 
+      - name: Add CNAME for custom domain
+        run: echo 'velotrack.pensamiciclabile.it' > site/CNAME
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
