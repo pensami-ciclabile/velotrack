@@ -413,6 +413,7 @@ def cmd_build_site():
         line_infos,
         location_stats=serialize_location_aggregates(location_aggregates),
         hotspot_slices=hotspot_slices,
+        rides_by_line=rides_by_line,
     )
     print("\nSite build complete!")
 

@@ -10,6 +10,7 @@ TRAFFIC_LIGHTS_CSV = DATA_DIR / "traffic_lights.csv"
 TRAM_STOPS_CSV = DATA_DIR / "tram_stops.csv"
 DAILY_TRIPS_JSON = DATA_DIR / "daily_trips.json"
 GTFS_STOPS_JSON = DATA_DIR / "gtfs_stops.json"
+LINE_STOPS_JSON = DATA_DIR / "line_stops.json"
 OSM_TRACKS_JSON = DATA_DIR / "osm_tracks.json"
 
 # OSM track snapping

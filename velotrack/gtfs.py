@@ -7,7 +7,14 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from velotrack.config import DAILY_TRIPS_JSON, GTFS_DIR, GTFS_STOPS_JSON, GTFS_URL, TRAM_STOPS_CSV
+from velotrack.config import (
+    DAILY_TRIPS_JSON,
+    GTFS_DIR,
+    GTFS_STOPS_JSON,
+    GTFS_URL,
+    LINE_STOPS_JSON,
+    TRAM_STOPS_CSV,
+)
 
 
 def _extract_tram_stops_from_gtfs() -> pd.DataFrame:
@@ -51,6 +58,7 @@ def download_gtfs() -> Path:
     print(f"Exported {len(tram_stops)} tram stops to {TRAM_STOPS_CSV}")
 
     extract_gtfs_stops()
+    extract_line_stops_with_coords()
     extract_daily_trips()
 
     return GTFS_DIR
@@ -90,6 +98,109 @@ def extract_gtfs_stops() -> None:
 
     GTFS_STOPS_JSON.write_text(json.dumps(stops_by_line, ensure_ascii=False, indent=2))
     print(f"Exported stop sequences for {len(stops_by_line)} lines to {GTFS_STOPS_JSON}")
+
+
+def extract_line_stops_with_coords() -> None:
+    """Extract per-line stop sequences with coordinates from raw GTFS.
+
+    Same "longest trip per route" logic as extract_gtfs_stops, but also pulls
+    stop_id, stop_lat, stop_lon. Output: data/line_stops.json shape:
+        {"1": [{"stop_id": "...", "name": "...", "lat": ..., "lon": ...}, ...]}
+    """
+    import json
+
+    routes = pd.read_csv(GTFS_DIR / "routes.txt", dtype={"route_id": str})
+    trips = pd.read_csv(GTFS_DIR / "trips.txt", dtype=str)
+    stop_times = pd.read_csv(
+        GTFS_DIR / "stop_times.txt",
+        usecols=["trip_id", "stop_id", "stop_sequence"],
+        dtype=str,
+    )
+    stop_times["stop_sequence"] = stop_times["stop_sequence"].astype(int)
+    all_stops = pd.read_csv(GTFS_DIR / "stops.txt", dtype={"stop_id": str})
+
+    tram_routes = routes[routes["route_type"] == 0]
+    line_stops: dict[str, list[dict]] = {}
+    for _, route in tram_routes.iterrows():
+        route_num = str(route["route_short_name"])
+        rt = trips[trips["route_id"] == route["route_id"]]
+        # Pick the longest trip across both directions (= most stops covered)
+        if rt.empty:
+            continue
+        trip_stop_counts = stop_times[stop_times["trip_id"].isin(rt["trip_id"])].groupby("trip_id").size()
+        if trip_stop_counts.empty:
+            continue
+        best_trip = trip_stop_counts.idxmax()
+        st = stop_times[stop_times["trip_id"] == best_trip].sort_values("stop_sequence")
+        merged = st.merge(
+            all_stops[["stop_id", "stop_name", "stop_lat", "stop_lon"]],
+            on="stop_id",
+        )
+        line_stops[route_num] = [
+            {
+                "stop_id": str(row["stop_id"]),
+                "name": str(row["stop_name"]),
+                "lat": float(row["stop_lat"]),
+                "lon": float(row["stop_lon"]),
+            }
+            for _, row in merged.iterrows()
+        ]
+
+    LINE_STOPS_JSON.parent.mkdir(parents=True, exist_ok=True)
+    LINE_STOPS_JSON.write_text(json.dumps(line_stops, ensure_ascii=False, indent=2))
+    print(f"Exported per-line stop coordinates for {len(line_stops)} lines to {LINE_STOPS_JSON}")
+
+
+def build_line_stops_from_cache() -> dict[str, list[dict]]:
+    """Build line_stops mapping by joining gtfs_stops.json (names) with
+    tram_stops.csv (coords). Used when raw GTFS_DIR is not available.
+
+    Names match in case (both lowercased). For duplicate names (multiple
+    platforms/directions), pick the row whose coords are closest to the
+    previously chosen stop in the line sequence — a greedy walk along the line.
+    """
+    import json
+    from velotrack.gpx_parser import haversine
+
+    if not GTFS_STOPS_JSON.exists() or not TRAM_STOPS_CSV.exists():
+        return {}
+
+    raw = json.loads(GTFS_STOPS_JSON.read_text())
+    stops_df = pd.read_csv(TRAM_STOPS_CSV, dtype={"stop_id": str})
+    # Index rows by name → list of (stop_id, lat, lon)
+    by_name: dict[str, list[tuple[str, float, float]]] = {}
+    for _, row in stops_df.iterrows():
+        name = str(row["stop_name"]).strip().lower()
+        try:
+            lat = float(row["lat"])
+            lon = float(row["lon"])
+        except (TypeError, ValueError):
+            continue
+        by_name.setdefault(name, []).append((str(row["stop_id"]), lat, lon))
+
+    line_stops: dict[str, list[dict]] = {}
+    for line_num, names in raw.items():
+        sequence: list[dict] = []
+        prev_lat: float | None = None
+        prev_lon: float | None = None
+        for name in names:
+            key = str(name).strip().lower()
+            candidates = by_name.get(key, [])
+            if not candidates:
+                continue
+            if len(candidates) == 1 or prev_lat is None:
+                sid, lat, lon = candidates[0]
+            else:
+                sid, lat, lon = min(
+                    candidates,
+                    key=lambda c: haversine(prev_lat, prev_lon, c[1], c[2]),  # type: ignore[arg-type]
+                )
+            sequence.append({"stop_id": sid, "name": key, "lat": lat, "lon": lon})
+            prev_lat, prev_lon = lat, lon
+        if sequence:
+            line_stops[str(line_num)] = sequence
+
+    return line_stops
 
 
 def extract_daily_trips() -> None:
