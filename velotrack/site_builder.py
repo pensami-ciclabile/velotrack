@@ -3,7 +3,7 @@
 import json
 import re
 import shutil
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
@@ -18,6 +18,7 @@ from velotrack.config import (
     SITE_DIR,
     TEMPLATES_DIR,
 )
+from velotrack.lines import MODE_LABELS, RAPID_BUS, TRAM, mode_for_line_number
 
 
 @dataclass
@@ -27,6 +28,12 @@ class LineInfo:
     num_rides: int
     stats: dict
     total_distance_km: float
+    mode: str = field(default=TRAM)
+
+    def __post_init__(self) -> None:
+        match = re.search(r"line(\d+)", self.line_key)
+        if match:
+            self.mode = mode_for_line_number(match.group(1))
 
 
 def _destination_name(line_key: str) -> str:
@@ -55,30 +62,203 @@ def _display_name_it(line_key: str) -> str:
 
 
 def _group_lines(lines: list[LineInfo]) -> list[dict]:
-    """Group lines by line number for the home page.
+    """Group lines by mode, then by line number, for the home page.
 
-    Returns list of {"line_number": int, "directions": [LineInfo, ...]}
-    sorted by line number.
+    Returns a list of one entry per mode, each shaped as::
+
+        {"mode": "tram", "label_it": "Linee tramviarie",
+         "label_en": "Tram lines",
+         "groups": [{"line_number": 1, "directions": [LineInfo, ...]}, ...]}
+
+    Tram block is always rendered first, rapid-bus second. Within each mode,
+    groups are sorted numerically by line number.
     """
-    groups: dict[int, list[LineInfo]] = {}
+    by_mode: dict[str, dict[int, list[LineInfo]]] = {TRAM: {}, RAPID_BUS: {}}
     for li in lines:
         match = re.search(r"line(\d+)", li.line_key)
-        if match:
-            num = int(match.group(1))
-            groups.setdefault(num, []).append(li)
-        else:
-            groups.setdefault(0, []).append(li)
+        num = int(match.group(1)) if match else 0
+        by_mode.setdefault(li.mode, {}).setdefault(num, []).append(li)
 
-    return [
-        {"line_number": num, "directions": dirs}
-        for num, dirs in sorted(groups.items())
+    out: list[dict] = []
+    for mode in (TRAM, RAPID_BUS):
+        groups_for_mode = by_mode.get(mode, {})
+        if not groups_for_mode:
+            continue
+        out.append({
+            "mode": mode,
+            "label_it": MODE_LABELS[mode]["it_plural"],
+            "label_en": MODE_LABELS[mode]["en_plural"],
+            "chip_it": MODE_LABELS[mode]["it_singular"],
+            "chip_en": MODE_LABELS[mode]["en_singular"],
+            "groups": [
+                {"line_number": num, "directions": dirs}
+                for num, dirs in sorted(groups_for_mode.items())
+            ],
+        })
+    return out
+
+
+def _svg_lollipop_chart(
+    data: list[tuple[str, float]],
+    color: str = "#5F5E5E",
+    highlight_color: str = "#9F4200",
+) -> str:
+    """Generate a minimal SVG lollipop chart from (label, value) pairs.
+
+    Thin stems with small circles at the top. Sorted by value descending.
+    The highest value is highlighted. No Y-axis — shape only.
+    """
+    if not data:
+        return ""
+    # Average directions per line number, then sort descending
+    merged: dict[str, list[float]] = {}
+    for label, val in data:
+        merged.setdefault(label, []).append(val)
+    items = sorted(
+        [(k, sum(v) / len(v)) for k, v in merged.items()],
+        key=lambda x: x[1],
+        reverse=True,
+    )
+    max_val = max(v for _, v in items)
+    if max_val <= 0:
+        return ""
+
+    label_h = 12
+    top_pad = 6
+    width = 240
+    height = 56
+    chart_h = height - label_h - top_pad
+    n = len(items)
+    spacing = width / n
+    dot_r = 2.5
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}"'
+        f' viewBox="0 0 {width} {height}" class="sparkline-chart"'
+        f' style="font-family:Inter,system-ui,sans-serif">'
     ]
+
+    label_style = 'font-size="6.5" text-anchor="middle"'
+    for i, (label, val) in enumerate(items):
+        cx = round(spacing * (i + 0.5), 1)
+        h = max(2, val / max_val * (chart_h - dot_r * 2))
+        cy = round(top_pad + chart_h - h, 1)
+        baseline_y = top_pad + chart_h
+        is_top = i == 0
+        c = highlight_color if is_top else color
+        opacity = "1" if is_top else "0.45"
+
+        # Stem
+        parts.append(
+            f'<line x1="{cx}" y1="{baseline_y}" x2="{cx}" y2="{cy}"'
+            f' stroke="{c}" stroke-width="1.5" opacity="{opacity}"/>'
+        )
+        # Dot
+        parts.append(
+            f'<circle cx="{cx}" cy="{cy}" r="{dot_r}"'
+            f' fill="{c}" opacity="{opacity}"/>'
+        )
+        # Label
+        ly = height - 1
+        parts.append(
+            f'<text x="{cx}" y="{ly}" {label_style}'
+            f' fill="{highlight_color if is_top else "#5F5E5E"}"'
+            f' font-weight="{700 if is_top else 400}">{label}</text>'
+        )
+
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def _svg_paired_lollipop_chart(
+    data: list[tuple[str, float, float]],
+    color_a: str = "#5F5E5E",
+    color_b: str = "#9F4200",
+) -> str:
+    """Generate a minimal SVG with paired lollipops (current vs potential).
+
+    Two dots per line, connected by a thin stem from current to potential.
+    Sorted by potential descending. No Y-axis.
+    """
+    if not data:
+        return ""
+    merged: dict[str, tuple[list[float], list[float]]] = {}
+    for label, a, b in data:
+        entry = merged.setdefault(label, ([], []))
+        entry[0].append(a)
+        entry[1].append(b)
+    items = sorted(
+        [
+            (k, sum(va) / len(va), sum(vb) / len(vb))
+            for k, (va, vb) in merged.items()
+        ],
+        key=lambda x: x[2],
+        reverse=True,
+    )
+    max_val = max(max(a, b) for _, a, b in items)
+    if max_val <= 0:
+        return ""
+
+    label_h = 12
+    top_pad = 6
+    width = 240
+    height = 56
+    chart_h = height - label_h - top_pad
+    n = len(items)
+    spacing = width / n
+    dot_r = 2.5
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}"'
+        f' viewBox="0 0 {width} {height}" class="sparkline-chart"'
+        f' style="font-family:Inter,system-ui,sans-serif">'
+    ]
+
+    label_style = 'fill="#5F5E5E" font-size="6.5" text-anchor="middle"'
+    for i, (label, val_a, val_b) in enumerate(items):
+        cx = round(spacing * (i + 0.5), 1)
+        h_a = max(2, val_a / max_val * (chart_h - dot_r * 2))
+        h_b = max(2, val_b / max_val * (chart_h - dot_r * 2))
+        cy_a = round(top_pad + chart_h - h_a, 1)
+        cy_b = round(top_pad + chart_h - h_b, 1)
+        baseline_y = top_pad + chart_h
+
+        # Stem from baseline to lower dot (current)
+        parts.append(
+            f'<line x1="{cx}" y1="{baseline_y}" x2="{cx}" y2="{cy_a}"'
+            f' stroke="{color_a}" stroke-width="1" opacity="0.3"/>'
+        )
+        # Stem from current to potential
+        parts.append(
+            f'<line x1="{cx}" y1="{cy_a}" x2="{cx}" y2="{cy_b}"'
+            f' stroke="{color_b}" stroke-width="1.5" opacity="0.7"/>'
+        )
+        # Current dot (smaller, muted)
+        parts.append(
+            f'<circle cx="{cx}" cy="{cy_a}" r="2"'
+            f' fill="{color_a}" opacity="0.5"/>'
+        )
+        # Potential dot (larger, highlighted)
+        parts.append(
+            f'<circle cx="{cx}" cy="{cy_b}" r="{dot_r}"'
+            f' fill="{color_b}" opacity="0.9"/>'
+        )
+        # Label
+        ly = height - 1
+        parts.append(f'<text x="{cx}" y="{ly}" {label_style}>{label}</text>')
+
+    parts.append("</svg>")
+
+    parts.append("</svg>")
+    parts.append("</svg>")
+    return "\n".join(parts)
 
 
 def build_site(
     lines: list[LineInfo],
     location_stats: list[dict[str, Any]] | None = None,
     hotspot_slices: dict[str, list[dict[str, Any]]] | None = None,
+    rides_by_line: dict[str, dict] | None = None,
 ) -> None:
     """Render the full static site into SITE_DIR."""
     # Prepare output dirs
@@ -107,10 +287,17 @@ def build_site(
     # Group lines by number for home page
     grouped_lines = _group_lines(lines)
 
-    # Compute traffic light hours lost (if trip counts available)
+    # Compute traffic light hours lost (if trip counts available).
+    # tl_total_lines is derived from the GTFS-stop cache so the denominator
+    # in the "X of Y lines" footnote naturally tracks tram + rapid-bus scope.
     tl_hours = None
     tl_lines_count = 0
-    tl_total_lines = 17
+    tl_total_lines = 0
+    if GTFS_STOPS_JSON.exists():
+        try:
+            tl_total_lines = len(json.loads(GTFS_STOPS_JSON.read_text()))
+        except (OSError, ValueError):
+            tl_total_lines = 0
     tl_breakdown = []
     # Group directions by line number, averaging tl_wait across directions
     line_tl_wait: dict[str, list[float]] = {}
@@ -180,6 +367,74 @@ def build_site(
                     total_extra += (trip_counts[line_num] * avg_wait) / avg_dur
             tl_extra_rides[day_type] = round(total_extra)
 
+    # Compute aggregate network stats for expandable section
+    extra_stats = {}
+    per_line_speed: list[tuple[str, float]] = []
+    per_line_tl_pct: list[tuple[str, float]] = []
+    per_line_tl_stops: list[tuple[str, float]] = []
+    per_line_stops_with_dur: list[tuple[float, float]] = []  # (stops, dur_sec)
+    per_line_comparison: list[tuple[str, float, float]] = []
+    for li in lines:
+        s = li.stats
+        match = re.search(r"line(\d+)", li.line_key)
+        label = match.group(1) if match else li.line_key
+        avg_spd = s.get("speed", {}).get("avg_trip", 0)
+        dur = s.get("avg_trip_duration", 0)
+        tl_wait = s.get("tl_wait_total", 0)
+        cat = s.get("cat_counts", {})
+        priority = s.get("priority_savings_incl_bottlenecks", 0)
+        if avg_spd > 0:
+            per_line_speed.append((label, avg_spd))
+        if dur > 0 and tl_wait > 0:
+            per_line_tl_pct.append((label, tl_wait / dur * 100))
+        tl_stops = cat.get("traffic_light", 0) + cat.get("combined", 0)
+        if tl_stops > 0:
+            per_line_tl_stops.append((label, float(tl_stops)))
+            if dur > 0:
+                per_line_stops_with_dur.append((float(tl_stops), dur))
+        if dur > 0 and priority > 0 and li.total_distance_km > 0:
+            potential_spd = li.total_distance_km / ((dur - priority) / 3600)
+            per_line_comparison.append((label, avg_spd, potential_spd))
+
+    # Aggregate values + charts
+    if per_line_speed:
+        vals = [v for _, v in per_line_speed]
+        extra_stats["avg_network_speed"] = round(sum(vals) / len(vals), 1)
+        extra_stats["speed_chart"] = Markup(_svg_lollipop_chart(
+            per_line_speed, color="#5F5E5E", highlight_color="#9F4200",
+        ))
+    if per_line_tl_pct:
+        vals = [v for _, v in per_line_tl_pct]
+        extra_stats["tl_time_pct"] = round(sum(vals) / len(vals))
+        extra_stats["tl_pct_chart"] = Markup(_svg_lollipop_chart(
+            per_line_tl_pct, color="#5F5E5E", highlight_color="#c44030",
+        ))
+    if per_line_tl_stops:
+        vals = [v for _, v in per_line_tl_stops]
+        extra_stats["tl_stops_per_trip"] = round(sum(vals) / len(vals), 1)
+        if per_line_stops_with_dur:
+            avg_stops = sum(s for s, _ in per_line_stops_with_dur) / len(per_line_stops_with_dur)
+            avg_dur = sum(d for _, d in per_line_stops_with_dur) / len(per_line_stops_with_dur)
+            if avg_stops > 0:
+                extra_stats["tl_seconds_per_stop"] = round(avg_dur / avg_stops)
+    if per_line_comparison:
+        avg_potential = sum(v for _, _, v in per_line_comparison) / len(
+            per_line_comparison
+        )
+        avg_current = sum(v for _, v, _ in per_line_comparison) / len(
+            per_line_comparison
+        )
+        extra_stats["potential_speed"] = round(avg_potential, 1)
+        extra_stats["current_speed"] = round(avg_current, 1)
+        pct_faster = round((avg_potential / avg_current - 1) * 100)
+        extra_stats["speed_gain_pct"] = pct_faster
+        extra_stats["comparison_chart"] = Markup(_svg_paired_lollipop_chart(
+            per_line_comparison, color_a="#5F5E5E", color_b="#9F4200",
+        ))
+    # Insight for hours-lost card: equivalent driver shifts (8h shift)
+    if tl_hours:
+        extra_stats["hours_shifts"] = round(tl_hours.get("weekday", 0) / 8)
+
     # Load GTFS stop sequences from cache file
     gtfs_stops_by_line: dict[int, list[str]] = {}
     if GTFS_STOPS_JSON.exists():
@@ -187,15 +442,31 @@ def build_site(
         gtfs_stops_by_line = {int(k): v for k, v in raw.items()}
 
     commute_lines = []
-    for route_num in [1,2,3,4,5,7,9,10,12,14,15,16,19,24,27,31,33]:
+    for route_num in [1,2,3,4,5,7,9,10,12,14,15,16,19,24,27,31,33,90,91,92,93]:
         num_str = str(route_num)
         waits = line_tl_wait.get(num_str, [])
         commute_lines.append({
             "line": route_num,
+            "mode": mode_for_line_number(num_str),
             "tl_wait": round(sum(waits)/len(waits), 1) if waits else None,
             "stops": gtfs_stops_by_line.get(route_num, []),
         })
     commute_lines_json = Markup(json.dumps(commute_lines, ensure_ascii=False))
+
+    # Compute coverage once — reused by home (for the veil) and status pages.
+    line_coverage: dict[str, dict] | None = None
+    city_coverage: dict | None = None
+    if rides_by_line is not None:
+        from velotrack.coverage import (
+            compute_city_coverage,
+            compute_line_coverage,
+            load_or_build_line_stops,
+        )
+
+        line_stops = load_or_build_line_stops()
+        if line_stops:
+            line_coverage = compute_line_coverage(rides_by_line, line_stops)
+            city_coverage = compute_city_coverage(line_coverage)
 
     # Setup Jinja2
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
@@ -217,6 +488,8 @@ def build_site(
             tl_extra_rides=tl_extra_rides,
             commute_lines_json=commute_lines_json,
             hotspot_slices_json=Markup(json.dumps(hotspot_slices, ensure_ascii=False)),
+            extra_stats=extra_stats,
+            city_coverage=city_coverage,
         )
     )
 
@@ -241,5 +514,71 @@ def build_site(
     (SITE_DIR / "methodology.html").write_text(
         tmpl.render(root_path=".")
     )
+
+    # Render mapping status page
+    if line_coverage is not None and city_coverage is not None:
+        # Build per-line cards: sort ascending by pct, then by line number
+        cards: list[dict[str, Any]] = []
+        for line_num, cov in line_coverage.items():
+            try:
+                sort_num = int(line_num)
+            except (TypeError, ValueError):
+                sort_num = 9999
+            cards.append({
+                "line_num": line_num,
+                "sort_num": sort_num,
+                "mode": mode_for_line_number(str(line_num)),
+                "total": cov["total"],
+                "covered": cov["covered"],
+                "missing_count": cov["missing_count"],
+                "pct": cov["pct"],
+                "missing_names": cov["missing_names"],
+            })
+        cards.sort(key=lambda c: (c["pct"], c["sort_num"]))
+
+        # Split into tram vs rapid-bus sections for the two-section layout
+        card_sections: list[dict[str, Any]] = []
+        for mode in (TRAM, RAPID_BUS):
+            mode_cards = [c for c in cards if c["mode"] == mode]
+            if not mode_cards:
+                continue
+            card_sections.append({
+                "mode": mode,
+                "label_it": MODE_LABELS[mode]["it_plural"],
+                "label_en": MODE_LABELS[mode]["en_plural"],
+                "chip_it": MODE_LABELS[mode]["it_singular"],
+                "chip_en": MODE_LABELS[mode]["en_singular"],
+                "cards": mode_cards,
+            })
+
+        # Compact JSON for client-side map rendering — only the data the
+        # browser needs (stop coords + covered flag), keyed by line number.
+        map_data = {
+            ln: [
+                {
+                    "n": s["name"],
+                    "y": round(s["lat"], 6),
+                    "x": round(s["lon"], 6),
+                    "c": 1 if s["covered"] else 0,
+                }
+                for s in cov["stops"]
+            ]
+            for ln, cov in line_coverage.items()
+        }
+
+        tmpl = env.get_template("status.html")
+        (SITE_DIR / "status.html").write_text(
+            tmpl.render(
+                root_path=".",
+                city_coverage=city_coverage,
+                cards=cards,
+                card_sections=card_sections,
+                coverage_json=Markup(json.dumps(map_data, ensure_ascii=False)),
+            )
+        )
+        print(
+            f"Coverage: {city_coverage['pct']}% of city stops mapped "
+            f"({city_coverage['covered']}/{city_coverage['total']})"
+        )
 
     print(f"Site built: {SITE_DIR}")

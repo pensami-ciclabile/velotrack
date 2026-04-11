@@ -16,6 +16,14 @@
         <h1 class="text-3xl md:text-5xl font-extrabold tracking-tighter text-on-surface mb-3">
             <span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span>
         </h1>
+        {% if line.mode == "rapid_bus" %}
+        <div class="mb-3">
+            <span class="inline-flex items-center gap-1.5 text-[0.625rem] font-bold uppercase tracking-wider bg-primary-container text-on-primary-container px-2.5 py-1 rounded">
+                <span class="material-symbols-outlined text-sm">directions_bus</span>
+                <span class="i18n-it">Linea di forza · Corridoio ATM</span><span class="i18n-en">Rapid bus · ATM BRT corridor</span>
+            </span>
+        </div>
+        {% endif %}
         <p class="text-secondary text-lg">
             {{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km
         </p>

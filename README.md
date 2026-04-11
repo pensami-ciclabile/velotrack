@@ -5,9 +5,9 @@
 </p>
 <p align="center"><strong>🚋 Try Velotrack:</strong> <a href="https://velotrack.pensamiciclabile.it/">velotrack.pensamiciclabile.it</a></p>
 
-Analyze GPS recordings of tram rides in Milan to produce interactive maps with velocity heatmaps and classified stop events.
+Analyze GPS recordings of Milan surface public transport rides — trams and ATM's rapid-bus corridors (linee di forza 90, 91, 92, 93) — to produce interactive maps with velocity heatmaps and classified stop events.
 
-Record your tram rides with any GPS tracking app, drop the GPX files into the project, and Velotrack will generate an HTML map showing how fast the tram moved along the route and where it stopped — distinguishing between tram stops, traffic lights, and bottlenecks.
+Record your rides with any GPS tracking app, drop the GPX files into the project, and Velotrack will generate an HTML map showing how fast the vehicle moved along the route and where it stopped — distinguishing between transit stops, traffic lights, and bottlenecks.
 It also aggregates multiple rides on the same line to produce average speed and wait time maps, and provides a statistics panel with insights on potential improvements like traffic light priority and other interesting insights.
 In addition to line-by-line analysis, the site now builds a cross-line infrastructure view ("Network hotspots") with one aggregate per physical location, plus nested breakdowns by time band and by contributing lines.
 
@@ -24,15 +24,15 @@ In addition to line-by-line analysis, the site now builds a cross-line infrastru
 
 ## How it works
 
-The GPS tracking app stops recording points when you're not moving, creating time gaps in the data. Velotrack exploits this: a **stop** is any gap longer than 5 seconds where the tram moved less than 15 meters. Each stop is then classified by proximity to known tram stops (from Milan's official GTFS data) and user-provided traffic light locations.
+The GPS tracking app stops recording points when you're not moving, creating time gaps in the data. Velotrack exploits this: a **stop** is any gap longer than 5 seconds where the vehicle moved less than 15 meters. Each stop is then classified by proximity to known scheduled stops (from Milan's official GTFS data) and user-provided traffic light locations.
 
 **Stop categories:**
-- **Tram stop** — within 30m of a GTFS tram stop
+- **Transit stop** — within 30m of a GTFS scheduled stop (tram or rapid bus)
 - **Traffic light** — within 25m of a known traffic light
-- **Combined** — near both a tram stop and a traffic light
+- **Combined** — near both a transit stop and a traffic light
 - **Bottleneck** — none of the above (congestion, intersections, etc.)
 
-**GPS track snapping:** Raw GPS traces have 5–10 m of inherent inaccuracy. Before analysis, each ride's points are snapped to the corresponding tram line's track geometry from OpenStreetMap (`railway=tram` ways). Snapping uses a forward-chain continuity bonus so points stay on the same track through junctions and parallel tracks. Only lat/lon are updated for map visualization — original distances and velocities are preserved to maintain smooth acceleration curves.
+**GPS track snapping:** Raw GPS traces have 5–10 m of inherent inaccuracy. For tram lines, each ride's points are snapped to the corresponding line's track geometry from OpenStreetMap (`railway=tram` ways). Snapping uses a forward-chain continuity bonus so points stay on the same track through junctions and parallel tracks. Only lat/lon are updated for map visualization — original distances and velocities are preserved to maintain smooth acceleration curves. Rapid-bus lines (90, 91, 92, 93) are not snapped since they run on ordinary street lanes with no dedicated rail geometry.
 
 **Teleport filter:** GPS receivers can lose lock and produce "teleport" artifacts — points that bounce back and forth over hundreds of meters. These are automatically detected using a sliding window that compares cumulative distance to net displacement: if the ratio exceeds 5×, those points are removed and the polyline breaks cleanly at the gap.
 
@@ -46,16 +46,17 @@ Velotrack uses a **hybrid analytics model**:
 
 **Line statistics panel:** Each generated map includes a summary panel (bottom-left corner) with:
 - **Speed stats** — moving and trip-level averages, median, peak, P25/P75
-- **Stop breakdown** — count and total wait time per category (tram stops, traffic lights, combined, bottlenecks)
+- **Stop breakdown** — count and total wait time per category (transit stops, traffic lights, combined, bottlenecks)
 - **Scenario analysis** — green wave (estimated time saved if all traffic light stops were automatically switched to green when the tram approaches), red wave (sum of max wait at each location), and P25/P75 totals
 
 ## Quick start
 
 ```bash
 # 1. Place your GPX files in data/rides/
-#    (tram stop data is already included in data/tram_stops.csv)
+#    (scheduled-stop data is already included in data/stops.csv)
 #    Naming convention: line<N>_<destination>_<description>.gpx
 #    Example: line1_roserio_repubblica_xxsettembre.gpx
+#    (N can be a tram line or a rapid-bus corridor: 90, 91, 92, 93)
 
 # 2. Download OSM tram track geometry (one-time, for GPS snapping)
 uv run main.py download-osm
@@ -169,13 +170,13 @@ uv run main.py traffic-lights --watch
 
 With `--watch`, a local HTTP server starts at `http://localhost:8000`. The map includes a Google Satellite + Labels layer (toggle in top-right) for easy identification. Right-click anywhere on the map to open a popup form — enter a name (required) and optional notes, then click "Add". Click any existing red-dot traffic light to remove it. The page reloads automatically after add/remove. Each added entry is timestamped (`added_at`) and tagged with your local username (`added_by`) in the CSV.
 
-### Tram stop data
+### Scheduled-stop data
 
-Tram stop locations are stored in `data/tram_stops.csv` (committed to git). This file ships with the project, so you don't need to download anything to get started.
+Stop locations for every tracked line (trams + rapid bus 90/91/92/93) are stored in `data/stops.csv` (committed to git). This file ships with the project, so you don't need to download anything to get started.
 
-To refresh the data from [Milan's open data portal](https://dati.comune.milano.it/dataset/ds929-orari-del-trasporto-pubblico-locale-nel-comune-di-milano-in-formato-gtfs), run `uv run main.py download-gtfs`. This downloads the full GTFS dataset (~330MB) into `data/gtfs/` (gitignored), extracts the tram stops, and overwrites `data/tram_stops.csv`.
+To refresh the data from [Milan's open data portal](https://dati.comune.milano.it/dataset/ds929-orari-del-trasporto-pubblico-locale-nel-comune-di-milano-in-formato-gtfs), run `uv run main.py download-gtfs`. This downloads the full GTFS dataset (~330MB) into `data/gtfs/` (gitignored), extracts the stops for every line Velotrack tracks (see `velotrack/lines.py`), and overwrites `data/stops.csv`.
 
-You can also provide your own `tram_stops.csv` for a different city — just use columns: `stop_id`, `stop_name`, `lat`, `lon`.
+You can also provide your own `stops.csv` for a different city — just use columns: `stop_id`, `stop_name`, `lat`, `lon`, `mode` (`tram` or `rapid_bus`).
 
 ## Testing
 
@@ -202,9 +203,10 @@ velotrack/
   main.py                  # CLI entry point
   velotrack/
     config.py              # thresholds, paths, colors
+    lines.py               # tracked-line registry (tram vs rapid-bus mode)
     gpx_parser.py          # GPX → DataFrame with velocity, teleport filter
     stop_detector.py       # detect + classify stops
-    gtfs.py                # download/parse GTFS tram stops
+    gtfs.py                # download/parse GTFS stops for tracked lines
     osm_tracks.py          # download OSM tram tracks, snap GPS to tracks
     map_builder.py         # folium map generation
     location_analytics.py  # normalized stop events + global location stats
@@ -216,7 +218,7 @@ velotrack/
   tests/                   # unit/integration tests (unittest)
   data/
     rides/                 # your GPX files go here
-    tram_stops.csv         # cached tram stop locations (committed)
+    stops.csv              # cached scheduled-stop locations (committed)
     traffic_lights.csv     # user-provided traffic light locations
     osm_tracks.json        # cached OSM tram track geometry (committed)
     gtfs/                  # raw GTFS download, gitignored

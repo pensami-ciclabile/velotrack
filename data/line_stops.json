@@ -1,0 +1,4112 @@
+{
+  "1": [
+    {
+      "stop_id": "14909",
+      "name": "roserio (ospedale sacco)",
+      "lat": 45.51735433955295,
+      "lon": 9.119743259753845
+    },
+    {
+      "stop_id": "10471",
+      "name": "via grassi",
+      "lat": 45.513802251162446,
+      "lon": 9.125553821589817
+    },
+    {
+      "stop_id": "10473",
+      "name": "l.go boccioni",
+      "lat": 45.511592581787475,
+      "lon": 9.128058016148914
+    },
+    {
+      "stop_id": "17171",
+      "name": "via mambretti",
+      "lat": 45.50948243509889,
+      "lon": 9.131379947445758
+    },
+    {
+      "stop_id": "10481",
+      "name": "via palizzi via mambretti",
+      "lat": 45.50841398428451,
+      "lon": 9.13494234263048
+    },
+    {
+      "stop_id": "10725",
+      "name": "certosa",
+      "lat": 45.50780271006252,
+      "lon": 9.137223460560156
+    },
+    {
+      "stop_id": "10703",
+      "name": "v.le espinasse via palizzi",
+      "lat": 45.50280677283159,
+      "lon": 9.138688471407011
+    },
+    {
+      "stop_id": "10701",
+      "name": "p.le santorre di santarosa",
+      "lat": 45.50093987967356,
+      "lon": 9.13953592219592
+    },
+    {
+      "stop_id": "10708",
+      "name": "v.le espinasse via nuvolone",
+      "lat": 45.49800755812345,
+      "lon": 9.141578138742169
+    },
+    {
+      "stop_id": "10682",
+      "name": "v.le espinasse via casella",
+      "lat": 45.495431038887475,
+      "lon": 9.143379475653012
+    },
+    {
+      "stop_id": "10686",
+      "name": "v.le espinasse p.le accursio",
+      "lat": 45.49354369052311,
+      "lon": 9.144686492689354
+    },
+    {
+      "stop_id": "10689",
+      "name": "v.le certosa via grosotto",
+      "lat": 45.491702126377994,
+      "lon": 9.147570996411568
+    },
+    {
+      "stop_id": "10694",
+      "name": "v.le certosa v.le serra",
+      "lat": 45.490113896018045,
+      "lon": 9.151055048943078
+    },
+    {
+      "stop_id": "10978",
+      "name": "p.za firenze",
+      "lat": 45.48783379679555,
+      "lon": 9.156072059883783
+    },
+    {
+      "stop_id": "10945",
+      "name": "c.so sempione via e. filiberto",
+      "lat": 45.48613389304157,
+      "lon": 9.158395103692872
+    },
+    {
+      "stop_id": "10953",
+      "name": "c.so sempione via arona",
+      "lat": 45.484228992696174,
+      "lon": 9.160574393739855
+    },
+    {
+      "stop_id": "10960",
+      "name": "domodossola fn m5",
+      "lat": 45.48242743348496,
+      "lon": 9.16295125554393
+    },
+    {
+      "stop_id": "11281",
+      "name": "c.so sempione via procaccini",
+      "lat": 45.48032951430216,
+      "lon": 9.165749336333668
+    },
+    {
+      "stop_id": "11283",
+      "name": "c.so sempione via villasanta",
+      "lat": 45.47935033067698,
+      "lon": 9.166951561055807
+    },
+    {
+      "stop_id": "11287",
+      "name": "c.so sempione via canova",
+      "lat": 45.47787186499716,
+      "lon": 9.168973934673096
+    },
+    {
+      "stop_id": "11262",
+      "name": "arco della pace",
+      "lat": 45.47630907908898,
+      "lon": 9.17151874060575
+    },
+    {
+      "stop_id": "11258",
+      "name": "via pagano via canova",
+      "lat": 45.474188246890954,
+      "lon": 9.170014813561432
+    },
+    {
+      "stop_id": "11252",
+      "name": "l.go quinto alpini",
+      "lat": 45.472603165441136,
+      "lon": 9.1675761390801
+    },
+    {
+      "stop_id": "11256",
+      "name": "via venti settembre",
+      "lat": 45.470183129496085,
+      "lon": 9.170009409460985
+    },
+    {
+      "stop_id": "11263",
+      "name": "p.za virgilio",
+      "lat": 45.468297821477705,
+      "lon": 9.172530012209029
+    },
+    {
+      "stop_id": "11270",
+      "name": "cadorna m1 m2",
+      "lat": 45.46795044154165,
+      "lon": 9.17625390492007
+    },
+    {
+      "stop_id": "11522",
+      "name": "foro buonaparte via ricasoli",
+      "lat": 45.46758103888399,
+      "lon": 9.179170140678158
+    },
+    {
+      "stop_id": "11536",
+      "name": "cairoli m1",
+      "lat": 45.468313734990446,
+      "lon": 9.182578686466965
+    },
+    {
+      "stop_id": "11546",
+      "name": "via cusani",
+      "lat": 45.46884117578953,
+      "lon": 9.184833167968163
+    },
+    {
+      "stop_id": "11497",
+      "name": "cordusio m1",
+      "lat": 45.46620776326088,
+      "lon": 9.186134369498408
+    },
+    {
+      "stop_id": "11509",
+      "name": "via grossi",
+      "lat": 45.46557791415665,
+      "lon": 9.187838159399533
+    },
+    {
+      "stop_id": "11557",
+      "name": "teatro alla scala",
+      "lat": 45.46638177706048,
+      "lon": 9.188888157447282
+    },
+    {
+      "stop_id": "11560",
+      "name": "montenapoleone m3",
+      "lat": 45.46930642086593,
+      "lon": 9.192004890696548
+    },
+    {
+      "stop_id": "11830",
+      "name": "via manzoni via pisoni",
+      "lat": 45.47103511282447,
+      "lon": 9.193786878785662
+    },
+    {
+      "stop_id": "11840",
+      "name": "p.za cavour",
+      "lat": 45.472784386419434,
+      "lon": 9.195211806901224
+    },
+    {
+      "stop_id": "11838",
+      "name": "turati m3",
+      "lat": 45.47556213980143,
+      "lon": 9.194658447982988
+    },
+    {
+      "stop_id": "11876",
+      "name": "repubblica m3",
+      "lat": 45.47789070166693,
+      "lon": 9.197790551220702
+    },
+    {
+      "stop_id": "11882",
+      "name": "v.le vittorio veneto",
+      "lat": 45.476743105447994,
+      "lon": 9.200348862820288
+    },
+    {
+      "stop_id": "11886",
+      "name": "v.le tunisia",
+      "lat": 45.47831168894563,
+      "lon": 9.202584528541951
+    },
+    {
+      "stop_id": "11892",
+      "name": "p.za cincinnato",
+      "lat": 45.47992918102203,
+      "lon": 9.204096917129524
+    },
+    {
+      "stop_id": "12172",
+      "name": "via vitruvio",
+      "lat": 45.48216163236909,
+      "lon": 9.206491311093409
+    },
+    {
+      "stop_id": "12175",
+      "name": "via settembrini",
+      "lat": 45.48353076476618,
+      "lon": 9.2078829144272
+    },
+    {
+      "stop_id": "12183",
+      "name": "caiazzo m2",
+      "lat": 45.485571004515144,
+      "lon": 9.210064288238849
+    },
+    {
+      "stop_id": "12242",
+      "name": "v.le brianza",
+      "lat": 45.487641738599194,
+      "lon": 9.21222821077916
+    },
+    {
+      "stop_id": "12245",
+      "name": "via venini via battaglia",
+      "lat": 45.489348537382014,
+      "lon": 9.214046992880917
+    },
+    {
+      "stop_id": "12247",
+      "name": "via venini via sauli",
+      "lat": 45.490794862037,
+      "lon": 9.215556154786611
+    },
+    {
+      "stop_id": "12253",
+      "name": "p.za morbegno",
+      "lat": 45.49263841264195,
+      "lon": 9.216430227279831
+    },
+    {
+      "stop_id": "12254",
+      "name": "greco rovereto",
+      "lat": 45.49499902311141,
+      "lon": 9.216241700590931
+    }
+  ],
+  "2": [
+    {
+      "stop_id": "12978",
+      "name": "bausan",
+      "lat": 45.50239737402972,
+      "lon": 9.164973409751406
+    },
+    {
+      "stop_id": "11335",
+      "name": "bausan",
+      "lat": 45.501795829706296,
+      "lon": 9.165883365680168
+    },
+    {
+      "stop_id": "11334",
+      "name": "via imbriani via scalvini",
+      "lat": 45.498978083778894,
+      "lon": 9.169260505256904
+    },
+    {
+      "stop_id": "11339",
+      "name": "p.le nigra",
+      "lat": 45.49695967048561,
+      "lon": 9.170739128015192
+    },
+    {
+      "stop_id": "11325",
+      "name": "lancetti",
+      "lat": 45.49519196896583,
+      "lon": 9.176027524368694
+    },
+    {
+      "stop_id": "11608",
+      "name": "via bernina",
+      "lat": 45.495611838336465,
+      "lon": 9.180949841735748
+    },
+    {
+      "stop_id": "11617",
+      "name": "via farini v.le stelvio",
+      "lat": 45.494597379908576,
+      "lon": 9.18502205768185
+    },
+    {
+      "stop_id": "11614",
+      "name": "via farini via alserio",
+      "lat": 45.49160187419151,
+      "lon": 9.183988346859788
+    },
+    {
+      "stop_id": "11609",
+      "name": "via farini via valtellina",
+      "lat": 45.489054333796,
+      "lon": 9.182911289111962
+    },
+    {
+      "stop_id": "11587",
+      "name": "via farini via ferrari",
+      "lat": 45.4851500972392,
+      "lon": 9.181852403671645
+    },
+    {
+      "stop_id": "11577",
+      "name": "p.le baiamonti",
+      "lat": 45.4831068841092,
+      "lon": 9.181527435465505
+    },
+    {
+      "stop_id": "11574",
+      "name": "v.le montello",
+      "lat": 45.48024701416969,
+      "lon": 9.181039889499262
+    },
+    {
+      "stop_id": "11572",
+      "name": "p.za lega lombarda",
+      "lat": 45.47872181271618,
+      "lon": 9.180743935997134
+    },
+    {
+      "stop_id": "11532",
+      "name": "arena",
+      "lat": 45.47537190479378,
+      "lon": 9.181389854529076
+    },
+    {
+      "stop_id": "11541",
+      "name": "lanza m2",
+      "lat": 45.47199799207993,
+      "lon": 9.182048643414484
+    },
+    {
+      "stop_id": "11535",
+      "name": "cairoli m1",
+      "lat": 45.46815957117155,
+      "lon": 9.181930875941704
+    },
+    {
+      "stop_id": "11521",
+      "name": "foro buonaparte via ricasoli",
+      "lat": 45.467634018953824,
+      "lon": 9.179824306213852
+    },
+    {
+      "stop_id": "11269",
+      "name": "cadorna m1 m2",
+      "lat": 45.46803057963247,
+      "lon": 9.17595425323818
+    },
+    {
+      "stop_id": "11264",
+      "name": "p.za virgilio",
+      "lat": 45.4684734392965,
+      "lon": 9.172464986260689
+    },
+    {
+      "stop_id": "11255",
+      "name": "via venti settembre",
+      "lat": 45.469857816471446,
+      "lon": 9.17064944698852
+    },
+    {
+      "stop_id": "11254",
+      "name": "l.go quinto alpini",
+      "lat": 45.47209441853359,
+      "lon": 9.16770576414246
+    },
+    {
+      "stop_id": "11249",
+      "name": "via ariosto",
+      "lat": 45.46995361139653,
+      "lon": 9.165919162747391
+    },
+    {
+      "stop_id": "11245",
+      "name": "conciliazione m1",
+      "lat": 45.46787195459962,
+      "lon": 9.16529153363377
+    },
+    {
+      "stop_id": "10899",
+      "name": "p.le baracca",
+      "lat": 45.46635593740335,
+      "lon": 9.164837798270412
+    },
+    {
+      "stop_id": "10896",
+      "name": "v.le s. michele del carso p.za de meis",
+      "lat": 45.4639229837198,
+      "lon": 9.164120715680388
+    },
+    {
+      "stop_id": "10890",
+      "name": "p.le aquileia",
+      "lat": 45.46105535240566,
+      "lon": 9.163317780715609
+    },
+    {
+      "stop_id": "11204",
+      "name": "coni zugna m4",
+      "lat": 45.459613201629054,
+      "lon": 9.165508867271797
+    },
+    {
+      "stop_id": "11212",
+      "name": "v.le coni zugna via solari",
+      "lat": 45.45721215736016,
+      "lon": 9.169227469015638
+    },
+    {
+      "stop_id": "11187",
+      "name": "p.le cantore",
+      "lat": 45.45531001837954,
+      "lon": 9.172079622389516
+    },
+    {
+      "stop_id": "11177",
+      "name": "p.ta genova m2",
+      "lat": 45.452415006679125,
+      "lon": 9.169855193776186
+    },
+    {
+      "stop_id": "11174",
+      "name": "via valenza alzaia nav. grande",
+      "lat": 45.45068173039207,
+      "lon": 9.168099013984955
+    },
+    {
+      "stop_id": "10856",
+      "name": "ripa di p.ta ticinese via lombardini",
+      "lat": 45.44948800549408,
+      "lon": 9.164253374156608
+    },
+    {
+      "stop_id": "10850",
+      "name": "ripa di p.ta ticinese via d'adda",
+      "lat": 45.448670740443234,
+      "lon": 9.160379370384351
+    },
+    {
+      "stop_id": "10845",
+      "name": "ponte guido crepax",
+      "lat": 45.44815765061634,
+      "lon": 9.157849733278336
+    },
+    {
+      "stop_id": "19842",
+      "name": "via l. il moro via pestalozzi",
+      "lat": 45.44734426721803,
+      "lon": 9.15414030760781
+    },
+    {
+      "stop_id": "10537",
+      "name": "via l. il moro, 25",
+      "lat": 45.44642668693519,
+      "lon": 9.149707728710544
+    },
+    {
+      "stop_id": "10530",
+      "name": "via l. il moro cavalcavia don milani",
+      "lat": 45.445588610713,
+      "lon": 9.145870662441364
+    },
+    {
+      "stop_id": "10523",
+      "name": "via l. il moro via guintellino",
+      "lat": 45.444904712600525,
+      "lon": 9.142690695421347
+    },
+    {
+      "stop_id": "17923",
+      "name": "p.le negrelli",
+      "lat": 45.44422125913288,
+      "lon": 9.139287126102923
+    },
+    {
+      "stop_id": "10519",
+      "name": "p.le negrelli",
+      "lat": 45.444005911456685,
+      "lon": 9.139875736259691
+    }
+  ],
+  "3": [
+    {
+      "stop_id": "11091",
+      "name": "gratosoglio",
+      "lat": 45.40368470061791,
+      "lon": 9.173935845505806
+    },
+    {
+      "stop_id": "11093",
+      "name": "via dei missaglia via baroni",
+      "lat": 45.403840143156415,
+      "lon": 9.17463772960112
+    },
+    {
+      "stop_id": "11095",
+      "name": "via dei missaglia (scuola santarosa)",
+      "lat": 45.40660278876406,
+      "lon": 9.17476999685518
+    },
+    {
+      "stop_id": "11078",
+      "name": "via dei missaglia via saponaro",
+      "lat": 45.41019143867493,
+      "lon": 9.174412044563203
+    },
+    {
+      "stop_id": "11081",
+      "name": "via dei missaglia via feraboli",
+      "lat": 45.41419224138045,
+      "lon": 9.174865835809516
+    },
+    {
+      "stop_id": "11105",
+      "name": "via dei missaglia via de ruggiero",
+      "lat": 45.418250296222155,
+      "lon": 9.175477688396034
+    },
+    {
+      "stop_id": "11108",
+      "name": "via dei missaglia (isola anita)",
+      "lat": 45.42277725509295,
+      "lon": 9.176948360581193
+    },
+    {
+      "stop_id": "11110",
+      "name": "via dei missaglia via s. abbondio",
+      "lat": 45.42449624009258,
+      "lon": 9.177092256109091
+    },
+    {
+      "stop_id": "11111",
+      "name": "via dei missaglia via boifava",
+      "lat": 45.42665402224709,
+      "lon": 9.177285812025584
+    },
+    {
+      "stop_id": "11131",
+      "name": "p.za abbiategrasso m2",
+      "lat": 45.429426370378394,
+      "lon": 9.177600882229909
+    },
+    {
+      "stop_id": "11136",
+      "name": "via montegani via neera",
+      "lat": 45.4329067207521,
+      "lon": 9.177754999863987
+    },
+    {
+      "stop_id": "11137",
+      "name": "via montegani via palmieri",
+      "lat": 45.434832555468915,
+      "lon": 9.178008738450217
+    },
+    {
+      "stop_id": "11139",
+      "name": "via montegani v.le da cermenate",
+      "lat": 45.43724888237979,
+      "lon": 9.17830398996062
+    },
+    {
+      "stop_id": "11163",
+      "name": "via meda via spaventa",
+      "lat": 45.44013323290261,
+      "lon": 9.178618321448363
+    },
+    {
+      "stop_id": "11165",
+      "name": "v.le tibaldi via meda",
+      "lat": 45.44329644742155,
+      "lon": 9.179039055056634
+    },
+    {
+      "stop_id": "11419",
+      "name": "l.go mahler",
+      "lat": 45.44610864437738,
+      "lon": 9.17944274121777
+    },
+    {
+      "stop_id": "11441",
+      "name": "c.so s. gottardo via lagrange",
+      "lat": 45.44866450074452,
+      "lon": 9.179724170257462
+    },
+    {
+      "stop_id": "11443",
+      "name": "p.za ventiquattro maggio",
+      "lat": 45.451872721308206,
+      "lon": 9.18013877931562
+    },
+    {
+      "stop_id": "17559",
+      "name": "p.za ventiquattro maggio",
+      "lat": 45.45240463186968,
+      "lon": 9.179598548608698
+    },
+    {
+      "stop_id": "11199",
+      "name": "via vigevano v.le gorizia",
+      "lat": 45.452750771579645,
+      "lon": 9.176249178815285
+    },
+    {
+      "stop_id": "11190",
+      "name": "via vigevano via corsico",
+      "lat": 45.453062033046535,
+      "lon": 9.173441141264954
+    },
+    {
+      "stop_id": "11182",
+      "name": "p.ta genova m2",
+      "lat": 45.45329365286895,
+      "lon": 9.1704904287946
+    },
+    {
+      "stop_id": "11193",
+      "name": "c.so colombo p.le cantore",
+      "lat": 45.45492721873755,
+      "lon": 9.172249516826437
+    },
+    {
+      "stop_id": "11176",
+      "name": "v.le coni zugna via solari",
+      "lat": 45.45705919719919,
+      "lon": 9.168505274256171
+    },
+    {
+      "stop_id": "11171",
+      "name": "via montevideo",
+      "lat": 45.456255379487835,
+      "lon": 9.165810809670749
+    },
+    {
+      "stop_id": "10855",
+      "name": "p.za del rosario",
+      "lat": 45.45520692919273,
+      "lon": 9.16255445825692
+    },
+    {
+      "stop_id": "10848",
+      "name": "via solari via stendhal",
+      "lat": 45.454073191861696,
+      "lon": 9.159070981976171
+    },
+    {
+      "stop_id": "10824",
+      "name": "p.za napoli",
+      "lat": 45.45215953260474,
+      "lon": 9.153158861430898
+    },
+    {
+      "stop_id": "10820",
+      "name": "via giambellino via tolstoj",
+      "lat": 45.45146927529911,
+      "lon": 9.151034109238145
+    },
+    {
+      "stop_id": "10560",
+      "name": "via giambellino via vignoli",
+      "lat": 45.4504966465041,
+      "lon": 9.147983117063587
+    },
+    {
+      "stop_id": "10556",
+      "name": "via brunelleschi",
+      "lat": 45.44933743459898,
+      "lon": 9.14438340362566
+    },
+    {
+      "stop_id": "10548",
+      "name": "via giambellino via curio dentato",
+      "lat": 45.44869904326828,
+      "lon": 9.1423789446884
+    },
+    {
+      "stop_id": "10540",
+      "name": "l.go gelsomini l.go giambellino",
+      "lat": 45.44761143459404,
+      "lon": 9.139100809261263
+    },
+    {
+      "stop_id": "10341",
+      "name": "via giambellino via odazio",
+      "lat": 45.446345038257185,
+      "lon": 9.135141804929578
+    },
+    {
+      "stop_id": "10336",
+      "name": "s.cristoforo m4",
+      "lat": 45.44469925331765,
+      "lon": 9.130039087913772
+    },
+    {
+      "stop_id": "10205",
+      "name": "via gonin via giordani",
+      "lat": 45.44268989368249,
+      "lon": 9.123834630280577
+    },
+    {
+      "stop_id": "10200",
+      "name": "via gonin via m di lorenteggio",
+      "lat": 45.44106415462088,
+      "lon": 9.118842229210916
+    },
+    {
+      "stop_id": "12984",
+      "name": "lorenteggio",
+      "lat": 45.441747475420506,
+      "lon": 9.116991911575235
+    }
+  ],
+  "4": [
+    {
+      "stop_id": "17826",
+      "name": "via ricasoli",
+      "lat": 45.46812012099802,
+      "lon": 9.179438742802477
+    },
+    {
+      "stop_id": "11536",
+      "name": "cairoli m1",
+      "lat": 45.468313734990446,
+      "lon": 9.182578686466965
+    },
+    {
+      "stop_id": "11542",
+      "name": "lanza m2",
+      "lat": 45.47219197535332,
+      "lon": 9.181967838276988
+    },
+    {
+      "stop_id": "11533",
+      "name": "arena",
+      "lat": 45.47522926782076,
+      "lon": 9.18157025170724
+    },
+    {
+      "stop_id": "11570",
+      "name": "p.za lega lombarda",
+      "lat": 45.47812482392751,
+      "lon": 9.180776512107071
+    },
+    {
+      "stop_id": "11573",
+      "name": "v.le montello",
+      "lat": 45.47987787644189,
+      "lon": 9.18110108468675
+    },
+    {
+      "stop_id": "11575",
+      "name": "p.le baiamonti",
+      "lat": 45.481664021867225,
+      "lon": 9.181444132062362
+    },
+    {
+      "stop_id": "11588",
+      "name": "via farini via ferrari",
+      "lat": 45.48546482140464,
+      "lon": 9.182047673123732
+    },
+    {
+      "stop_id": "11612",
+      "name": "via farini via valtellina",
+      "lat": 45.4893054836904,
+      "lon": 9.183150496607023
+    },
+    {
+      "stop_id": "11613",
+      "name": "via farini via alserio",
+      "lat": 45.49098974364801,
+      "lon": 9.183832084479816
+    },
+    {
+      "stop_id": "11616",
+      "name": "via farini v.le stelvio",
+      "lat": 45.49433576783999,
+      "lon": 9.18528274617908
+    },
+    {
+      "stop_id": "15384",
+      "name": "maciachini m3",
+      "lat": 45.49815443689674,
+      "lon": 9.185789405475711
+    },
+    {
+      "stop_id": "15386",
+      "name": "valassina",
+      "lat": 45.50106328467576,
+      "lon": 9.188264459930874
+    },
+    {
+      "stop_id": "15388",
+      "name": "nizza",
+      "lat": 45.50316056955988,
+      "lon": 9.189139302729386
+    },
+    {
+      "stop_id": "15390",
+      "name": "niguarda (ospedale)",
+      "lat": 45.50864873291231,
+      "lon": 9.189595638022602
+    },
+    {
+      "stop_id": "15411",
+      "name": "niguarda (ospedale)",
+      "lat": 45.508654058689366,
+      "lon": 9.190507808649985
+    },
+    {
+      "stop_id": "11972",
+      "name": "ca' granda m5",
+      "lat": 45.506362153017584,
+      "lon": 9.20001390385169
+    },
+    {
+      "stop_id": "11977",
+      "name": "ca' granda m5",
+      "lat": 45.50672884402273,
+      "lon": 9.20112756787578
+    },
+    {
+      "stop_id": "11978",
+      "name": "v.le testi via pianell",
+      "lat": 45.508018111924365,
+      "lon": 9.20190034384794
+    },
+    {
+      "stop_id": "17303",
+      "name": "v.le testi via s. marcellina",
+      "lat": 45.51166509241163,
+      "lon": 9.203964605047576
+    },
+    {
+      "stop_id": "12280",
+      "name": "bicocca m5",
+      "lat": 45.5149208573665,
+      "lon": 9.20573092571042
+    },
+    {
+      "stop_id": "17160",
+      "name": "v.le testi via la farina",
+      "lat": 45.51622580093298,
+      "lon": 9.20648762720938
+    },
+    {
+      "stop_id": "12306",
+      "name": "v.le testi via s. glicerio",
+      "lat": 45.51860861143341,
+      "lon": 9.207834313226146
+    },
+    {
+      "stop_id": "12312",
+      "name": "ponale m5",
+      "lat": 45.52217514286526,
+      "lon": 9.209845564438591
+    },
+    {
+      "stop_id": "12320",
+      "name": "bignami m5",
+      "lat": 45.525952534368486,
+      "lon": 9.212013919695272
+    },
+    {
+      "stop_id": "14884",
+      "name": "bignami m5",
+      "lat": 45.525694433737726,
+      "lon": 9.211244570230615
+    }
+  ],
+  "5": [
+    {
+      "stop_id": "12678",
+      "name": "ortica",
+      "lat": 45.47140759272796,
+      "lon": 9.237825069550068
+    },
+    {
+      "stop_id": "12676",
+      "name": "via amadeo via s. benigno",
+      "lat": 45.47113957470838,
+      "lon": 9.236611634636883
+    },
+    {
+      "stop_id": "12461",
+      "name": "via amadeo via paladini",
+      "lat": 45.47101111211282,
+      "lon": 9.233669152676889
+    },
+    {
+      "stop_id": "12450",
+      "name": "via b. angelico via aselli",
+      "lat": 45.47098117433685,
+      "lon": 9.23068028910347
+    },
+    {
+      "stop_id": "12437",
+      "name": "via b. angelico via colombo",
+      "lat": 45.47095733622032,
+      "lon": 9.22684712253318
+    },
+    {
+      "stop_id": "12422",
+      "name": "p.za ferravilla",
+      "lat": 45.47094022599633,
+      "lon": 9.224281248930456
+    },
+    {
+      "stop_id": "12412",
+      "name": "p.za aspari",
+      "lat": 45.471680889423006,
+      "lon": 9.221845327399706
+    },
+    {
+      "stop_id": "12168",
+      "name": "p.za ascoli",
+      "lat": 45.47302664429523,
+      "lon": 9.218064776204171
+    },
+    {
+      "stop_id": "12154",
+      "name": "p.za adelaide di savoia",
+      "lat": 45.47303185399691,
+      "lon": 9.215314224179386
+    },
+    {
+      "stop_id": "12141",
+      "name": "p.za otto novembre",
+      "lat": 45.47463232780918,
+      "lon": 9.211402232468105
+    },
+    {
+      "stop_id": "12970",
+      "name": "p.ta venezia v.le tunisia",
+      "lat": 45.476473202372304,
+      "lon": 9.207390197643406
+    },
+    {
+      "stop_id": "11887",
+      "name": "v.le tunisia",
+      "lat": 45.478450338859254,
+      "lon": 9.203072818100743
+    },
+    {
+      "stop_id": "11892",
+      "name": "p.za cincinnato",
+      "lat": 45.47992918102203,
+      "lon": 9.204096917129524
+    },
+    {
+      "stop_id": "12172",
+      "name": "via vitruvio",
+      "lat": 45.48216163236909,
+      "lon": 9.206491311093409
+    },
+    {
+      "stop_id": "11890",
+      "name": "stazione centrale p.za duca d'aosta m2 m3",
+      "lat": 45.48463486810332,
+      "lon": 9.202595957089894
+    },
+    {
+      "stop_id": "11915",
+      "name": "stazione centrale m2 m3",
+      "lat": 45.486869355467746,
+      "lon": 9.202076277618572
+    },
+    {
+      "stop_id": "11930",
+      "name": "stazione centrale via tonale",
+      "lat": 45.48820219293961,
+      "lon": 9.203478905862209
+    },
+    {
+      "stop_id": "11938",
+      "name": "v.le lunigiana",
+      "lat": 45.491448035690105,
+      "lon": 9.205534377793295
+    },
+    {
+      "stop_id": "15612",
+      "name": "v.le lunigiana via gioia",
+      "lat": 45.49241447173912,
+      "lon": 9.203580433705463
+    },
+    {
+      "stop_id": "11910",
+      "name": "p.za carbonari",
+      "lat": 45.49481492878691,
+      "lon": 9.197476285326433
+    },
+    {
+      "stop_id": "11903",
+      "name": "marche m5",
+      "lat": 45.495920263590705,
+      "lon": 9.195016487166756
+    },
+    {
+      "stop_id": "11948",
+      "name": "v.le zara via laurana",
+      "lat": 45.49894327019319,
+      "lon": 9.196754671960903
+    },
+    {
+      "stop_id": "11956",
+      "name": "istria m5",
+      "lat": 45.50184994076185,
+      "lon": 9.198387637790482
+    },
+    {
+      "stop_id": "11961",
+      "name": "v.le testi via dolcebuono",
+      "lat": 45.50404137749107,
+      "lon": 9.19960928423722
+    },
+    {
+      "stop_id": "11974",
+      "name": "ca' granda m5",
+      "lat": 45.5066486308005,
+      "lon": 9.199908399825675
+    },
+    {
+      "stop_id": "11968",
+      "name": "v.le ca' granda v.le suzzani",
+      "lat": 45.50703745334873,
+      "lon": 9.198310473477992
+    },
+    {
+      "stop_id": "11964",
+      "name": "v.le ca' granda via val furva",
+      "lat": 45.507749324159235,
+      "lon": 9.195425922466802
+    },
+    {
+      "stop_id": "11672",
+      "name": "v.le ca' granda via cherasco",
+      "lat": 45.50848475987346,
+      "lon": 9.19226220632162
+    },
+    {
+      "stop_id": "15412",
+      "name": "niguarda (ospedale)",
+      "lat": 45.50894724935432,
+      "lon": 9.190403465292045
+    },
+    {
+      "stop_id": "17142",
+      "name": "niguarda (ospedale)",
+      "lat": 45.50854811700057,
+      "lon": 9.189760515716252
+    }
+  ],
+  "7": [
+    {
+      "stop_id": "15646",
+      "name": "precotto (interno deposito)",
+      "lat": 45.51786275244646,
+      "lon": 9.23290245254461
+    },
+    {
+      "stop_id": "15647",
+      "name": "tremelloni",
+      "lat": 45.51394650534023,
+      "lon": 9.22752194409156
+    },
+    {
+      "stop_id": "15648",
+      "name": "precotto m1",
+      "lat": 45.51360829700353,
+      "lon": 9.224656089695875
+    },
+    {
+      "stop_id": "15294",
+      "name": "l.go mattei",
+      "lat": 45.514047300597454,
+      "lon": 9.221084294482806
+    },
+    {
+      "stop_id": "15292",
+      "name": "arcimboldi ateneo nuovo",
+      "lat": 45.51571827384108,
+      "lon": 9.21372710236836
+    },
+    {
+      "stop_id": "15290",
+      "name": "stazione greco pirelli",
+      "lat": 45.513367580493146,
+      "lon": 9.213884958008247
+    },
+    {
+      "stop_id": "15288",
+      "name": "universitÃ  bicocca scienza",
+      "lat": 45.51373279831758,
+      "lon": 9.211276290665584
+    },
+    {
+      "stop_id": "12281",
+      "name": "v.le rodi (bicocca m5)",
+      "lat": 45.51501712831899,
+      "lon": 9.206696535391169
+    },
+    {
+      "stop_id": "17158",
+      "name": "bicocca m5",
+      "lat": 45.51492178087722,
+      "lon": 9.205121295914225
+    },
+    {
+      "stop_id": "11986",
+      "name": "v.le testi via s. marcellina",
+      "lat": 45.51163797824656,
+      "lon": 9.203263400142786
+    },
+    {
+      "stop_id": "11979",
+      "name": "v.le testi via pianell",
+      "lat": 45.50878030460146,
+      "lon": 9.20164968507854
+    },
+    {
+      "stop_id": "11973",
+      "name": "ca' granda m5",
+      "lat": 45.5067659320817,
+      "lon": 9.200509795573875
+    },
+    {
+      "stop_id": "11958",
+      "name": "v.le testi via dolcebuono",
+      "lat": 45.50408128384495,
+      "lon": 9.1989965807933
+    },
+    {
+      "stop_id": "11950",
+      "name": "istria m5",
+      "lat": 45.50155385388465,
+      "lon": 9.197550144460571
+    },
+    {
+      "stop_id": "11947",
+      "name": "v.le zara via laurana",
+      "lat": 45.499444650806424,
+      "lon": 9.1963775804137
+    },
+    {
+      "stop_id": "11944",
+      "name": "marche m5",
+      "lat": 45.495917171118414,
+      "lon": 9.19438471500985
+    },
+    {
+      "stop_id": "11639",
+      "name": "zara m3 m5",
+      "lat": 45.492032980217104,
+      "lon": 9.192173121797197
+    },
+    {
+      "stop_id": "11631",
+      "name": "p.le lagosta",
+      "lat": 45.48963897341251,
+      "lon": 9.190827286428684
+    },
+    {
+      "stop_id": "12941",
+      "name": "p.le lagosta",
+      "lat": 45.48956188453012,
+      "lon": 9.19147655617521
+    }
+  ],
+  "9": [
+    {
+      "stop_id": "11181",
+      "name": "p.ta genova m2",
+      "lat": 45.45355823411787,
+      "lon": 9.1697848904969
+    },
+    {
+      "stop_id": "11191",
+      "name": "via vigevano via corsico",
+      "lat": 45.45300703091922,
+      "lon": 9.17289170555046
+    },
+    {
+      "stop_id": "11198",
+      "name": "via vigevano v.le gorizia",
+      "lat": 45.45278505406227,
+      "lon": 9.175811896345914
+    },
+    {
+      "stop_id": "11444",
+      "name": "p.za ventiquattro maggio",
+      "lat": 45.45232347201405,
+      "lon": 9.179045475425603
+    },
+    {
+      "stop_id": "11451",
+      "name": "v.le col di lana",
+      "lat": 45.45199723242266,
+      "lon": 9.183913410990664
+    },
+    {
+      "stop_id": "11461",
+      "name": "p.ta lodovica",
+      "lat": 45.451590541729274,
+      "lon": 9.187488897083306
+    },
+    {
+      "stop_id": "11469",
+      "name": "via bocconi",
+      "lat": 45.45094292098397,
+      "lon": 9.190077843848924
+    },
+    {
+      "stop_id": "11752",
+      "name": "v.le bligny",
+      "lat": 45.45090604545045,
+      "lon": 9.193742376802811
+    },
+    {
+      "stop_id": "11755",
+      "name": "via ripamonti v.le sabotino",
+      "lat": 45.45090103164595,
+      "lon": 9.19629857258388
+    },
+    {
+      "stop_id": "11771",
+      "name": "v.le sabotino",
+      "lat": 45.45088502359765,
+      "lon": 9.200341234407166
+    },
+    {
+      "stop_id": "11777",
+      "name": "p.ta romana m3",
+      "lat": 45.45168363503676,
+      "lon": 9.20259900760179
+    },
+    {
+      "stop_id": "11783",
+      "name": "v.le monte nero via pier lombardo",
+      "lat": 45.45494993879496,
+      "lon": 9.204230738881323
+    },
+    {
+      "stop_id": "11824",
+      "name": "v.le monte nero via bergamo",
+      "lat": 45.45750944492381,
+      "lon": 9.205608489649782
+    },
+    {
+      "stop_id": "12086",
+      "name": "v.le monte nero via spartaco",
+      "lat": 45.459597301951945,
+      "lon": 9.207113006219911
+    },
+    {
+      "stop_id": "12089",
+      "name": "p.za 5 giornate",
+      "lat": 45.461785620455714,
+      "lon": 9.207715177176931
+    },
+    {
+      "stop_id": "12092",
+      "name": "v.le premuda",
+      "lat": 45.465328259705885,
+      "lon": 9.207314165573909
+    },
+    {
+      "stop_id": "12129",
+      "name": "tricolore m4",
+      "lat": 45.46750801145576,
+      "lon": 9.207124274516683
+    },
+    {
+      "stop_id": "12133",
+      "name": "v.le piave",
+      "lat": 45.47168805051787,
+      "lon": 9.206718937394156
+    },
+    {
+      "stop_id": "11856",
+      "name": "p.ta venezia m1",
+      "lat": 45.47444499613835,
+      "lon": 9.205625238634466
+    },
+    {
+      "stop_id": "11850",
+      "name": "v.le vittorio veneto",
+      "lat": 45.4764553896733,
+      "lon": 9.201220110561994
+    },
+    {
+      "stop_id": "11877",
+      "name": "repubblica m3",
+      "lat": 45.4782062337019,
+      "lon": 9.197398502982985
+    },
+    {
+      "stop_id": "11862",
+      "name": "v.le monte santo",
+      "lat": 45.47934661471528,
+      "lon": 9.194915376269666
+    },
+    {
+      "stop_id": "11874",
+      "name": "p.za s. gioachimo",
+      "lat": 45.48082320724001,
+      "lon": 9.197296333804054
+    },
+    {
+      "stop_id": "11880",
+      "name": "via filzi via pirelli",
+      "lat": 45.48355060420022,
+      "lon": 9.199834595405816
+    },
+    {
+      "stop_id": "15528",
+      "name": "via filzi via galvani",
+      "lat": 45.484813844515045,
+      "lon": 9.20063400723434
+    },
+    {
+      "stop_id": "11923",
+      "name": "stazione centrale m2 m3",
+      "lat": 45.486997621809294,
+      "lon": 9.202777088985387
+    }
+  ],
+  "10": [
+    {
+      "stop_id": "15401",
+      "name": "v.le lunigiana",
+      "lat": 45.49142682052756,
+      "lon": 9.20562947592763
+    },
+    {
+      "stop_id": "17611",
+      "name": "via schiaparelli via p.te seveso",
+      "lat": 45.48970747526465,
+      "lon": 9.204763902267551
+    },
+    {
+      "stop_id": "11929",
+      "name": "stazione centrale via tonale",
+      "lat": 45.48860480486675,
+      "lon": 9.203722892428264
+    },
+    {
+      "stop_id": "11916",
+      "name": "stazione centrale m2 m3",
+      "lat": 45.48681688394865,
+      "lon": 9.201869913455752
+    },
+    {
+      "stop_id": "15529",
+      "name": "via filzi via pirelli",
+      "lat": 45.48422517961918,
+      "lon": 9.20012008547802
+    },
+    {
+      "stop_id": "11879",
+      "name": "via filzi via adda",
+      "lat": 45.48311479542391,
+      "lon": 9.199410801098663
+    },
+    {
+      "stop_id": "12991",
+      "name": "p.za s. gioachimo",
+      "lat": 45.481460925635496,
+      "lon": 9.198079067048944
+    },
+    {
+      "stop_id": "11863",
+      "name": "v.le monte santo",
+      "lat": 45.479736813316414,
+      "lon": 9.194827692595076
+    },
+    {
+      "stop_id": "11859",
+      "name": "p.le principessa clotilde (osp. fatebenefratelli)",
+      "lat": 45.48034954236224,
+      "lon": 9.19256537746768
+    },
+    {
+      "stop_id": "17582",
+      "name": "v.le m.te grappa via gioia",
+      "lat": 45.480846478783576,
+      "lon": 9.18848357941463
+    },
+    {
+      "stop_id": "17326",
+      "name": "stazione garibaldi m2 m5",
+      "lat": 45.48391370590025,
+      "lon": 9.186249594071988
+    },
+    {
+      "stop_id": "17668",
+      "name": "via farini via ferrari",
+      "lat": 45.48570429328243,
+      "lon": 9.182471191971818
+    },
+    {
+      "stop_id": "17612",
+      "name": "monumentale m5",
+      "lat": 45.484585837924605,
+      "lon": 9.180422663315968
+    },
+    {
+      "stop_id": "17613",
+      "name": "p.le cim.monumentale via bramante",
+      "lat": 45.48431670659057,
+      "lon": 9.178038605563769
+    },
+    {
+      "stop_id": "19740",
+      "name": "via procaccini via nono",
+      "lat": 45.484032026843586,
+      "lon": 9.175677311700753
+    },
+    {
+      "stop_id": "11297",
+      "name": "via procaccini via lomazzo",
+      "lat": 45.48372327358008,
+      "lon": 9.17104310514032
+    },
+    {
+      "stop_id": "11290",
+      "name": "p.za gramsci",
+      "lat": 45.48203105968846,
+      "lon": 9.168023079752295
+    },
+    {
+      "stop_id": "11284",
+      "name": "c.so sempione via procaccini",
+      "lat": 45.48098485239347,
+      "lon": 9.166374199037762
+    },
+    {
+      "stop_id": "11283",
+      "name": "c.so sempione via villasanta",
+      "lat": 45.47935033067698,
+      "lon": 9.166951561055807
+    },
+    {
+      "stop_id": "11287",
+      "name": "c.so sempione via canova",
+      "lat": 45.47787186499716,
+      "lon": 9.168973934673096
+    },
+    {
+      "stop_id": "11262",
+      "name": "arco della pace",
+      "lat": 45.47630907908898,
+      "lon": 9.17151874060575
+    },
+    {
+      "stop_id": "11258",
+      "name": "via pagano via canova",
+      "lat": 45.474188246890954,
+      "lon": 9.170014813561432
+    },
+    {
+      "stop_id": "11252",
+      "name": "l.go quinto alpini",
+      "lat": 45.472603165441136,
+      "lon": 9.1675761390801
+    },
+    {
+      "stop_id": "11249",
+      "name": "via ariosto",
+      "lat": 45.46995361139653,
+      "lon": 9.165919162747391
+    },
+    {
+      "stop_id": "11245",
+      "name": "conciliazione m1",
+      "lat": 45.46787195459962,
+      "lon": 9.16529153363377
+    },
+    {
+      "stop_id": "10899",
+      "name": "p.le baracca",
+      "lat": 45.46635593740335,
+      "lon": 9.164837798270412
+    },
+    {
+      "stop_id": "10896",
+      "name": "v.le s. michele del carso p.za de meis",
+      "lat": 45.4639229837198,
+      "lon": 9.164120715680388
+    },
+    {
+      "stop_id": "10890",
+      "name": "p.le aquileia",
+      "lat": 45.46105535240566,
+      "lon": 9.163317780715609
+    },
+    {
+      "stop_id": "11204",
+      "name": "coni zugna m4",
+      "lat": 45.459613201629054,
+      "lon": 9.165508867271797
+    },
+    {
+      "stop_id": "11212",
+      "name": "v.le coni zugna via solari",
+      "lat": 45.45721215736016,
+      "lon": 9.169227469015638
+    },
+    {
+      "stop_id": "11187",
+      "name": "p.le cantore",
+      "lat": 45.45531001837954,
+      "lon": 9.172079622389516
+    },
+    {
+      "stop_id": "11179",
+      "name": "p.ta genova m2",
+      "lat": 45.45341837612089,
+      "lon": 9.170021258564606
+    },
+    {
+      "stop_id": "11191",
+      "name": "via vigevano via corsico",
+      "lat": 45.45300703091922,
+      "lon": 9.17289170555046
+    },
+    {
+      "stop_id": "11198",
+      "name": "via vigevano v.le gorizia",
+      "lat": 45.45278505406227,
+      "lon": 9.175811896345914
+    },
+    {
+      "stop_id": "17553",
+      "name": "p.za ventiquattro maggio",
+      "lat": 45.451869007087986,
+      "lon": 9.17931141081176
+    }
+  ],
+  "12": [
+    {
+      "stop_id": "10323",
+      "name": "roserio (ospedale sacco)",
+      "lat": 45.51733729872277,
+      "lon": 9.119779662170174
+    },
+    {
+      "stop_id": "10471",
+      "name": "via grassi",
+      "lat": 45.513802251162446,
+      "lon": 9.125553821589817
+    },
+    {
+      "stop_id": "10473",
+      "name": "l.go boccioni",
+      "lat": 45.511592581787475,
+      "lon": 9.128058016148914
+    },
+    {
+      "stop_id": "17171",
+      "name": "via mambretti",
+      "lat": 45.50948243509889,
+      "lon": 9.131379947445758
+    },
+    {
+      "stop_id": "10481",
+      "name": "via palizzi via mambretti",
+      "lat": 45.50841398428451,
+      "lon": 9.13494234263048
+    },
+    {
+      "stop_id": "10725",
+      "name": "certosa",
+      "lat": 45.50780271006252,
+      "lon": 9.137223460560156
+    },
+    {
+      "stop_id": "10703",
+      "name": "v.le espinasse via palizzi",
+      "lat": 45.50280677283159,
+      "lon": 9.138688471407011
+    },
+    {
+      "stop_id": "10701",
+      "name": "p.le santorre di santarosa",
+      "lat": 45.50093987967356,
+      "lon": 9.13953592219592
+    },
+    {
+      "stop_id": "14904",
+      "name": "via c. marcello via m.te altissimo",
+      "lat": 45.5019995985647,
+      "lon": 9.142691511583433
+    },
+    {
+      "stop_id": "10716",
+      "name": "via c. marcello (villapizzone)",
+      "lat": 45.50091379674572,
+      "lon": 9.14595294733107
+    },
+    {
+      "stop_id": "10721",
+      "name": "via c. marcello via ferrario",
+      "lat": 45.50007090516614,
+      "lon": 9.147676733236112
+    },
+    {
+      "stop_id": "10723",
+      "name": "p.za castelli",
+      "lat": 45.49897793033472,
+      "lon": 9.150041561357009
+    },
+    {
+      "stop_id": "11013",
+      "name": "via mac mahon via bramantino",
+      "lat": 45.497822274139935,
+      "lon": 9.152679182546256
+    },
+    {
+      "stop_id": "11015",
+      "name": "via mac mahon via artieri",
+      "lat": 45.496297389560304,
+      "lon": 9.154699621228762
+    },
+    {
+      "stop_id": "10992",
+      "name": "via mac mahon v.le m.te ceneri",
+      "lat": 45.49427457986053,
+      "lon": 9.15734345611059
+    },
+    {
+      "stop_id": "11003",
+      "name": "via mac mahon via caracciolo",
+      "lat": 45.491105362963154,
+      "lon": 9.161479846352744
+    },
+    {
+      "stop_id": "11006",
+      "name": "via mac mahon via p. eugenio",
+      "lat": 45.48941998543133,
+      "lon": 9.163727656976342
+    },
+    {
+      "stop_id": "11009",
+      "name": "p.za diocleziano",
+      "lat": 45.48803489500373,
+      "lon": 9.16552450117988
+    },
+    {
+      "stop_id": "11320",
+      "name": "via cenisio via induno",
+      "lat": 45.48752122372004,
+      "lon": 9.168322494567676
+    },
+    {
+      "stop_id": "11322",
+      "name": "cenisio m5",
+      "lat": 45.4874032914933,
+      "lon": 9.173055239299146
+    },
+    {
+      "stop_id": "17614",
+      "name": "p.le cim.monumentale via bramante",
+      "lat": 45.48420808710504,
+      "lon": 9.178099364429496
+    },
+    {
+      "stop_id": "11574",
+      "name": "v.le montello",
+      "lat": 45.48024701416969,
+      "lon": 9.181039889499262
+    },
+    {
+      "stop_id": "11572",
+      "name": "p.za lega lombarda",
+      "lat": 45.47872181271618,
+      "lon": 9.180743935997134
+    },
+    {
+      "stop_id": "11532",
+      "name": "arena",
+      "lat": 45.47537190479378,
+      "lon": 9.181389854529076
+    },
+    {
+      "stop_id": "11541",
+      "name": "lanza m2",
+      "lat": 45.47199799207993,
+      "lon": 9.182048643414484
+    },
+    {
+      "stop_id": "11547",
+      "name": "via cusani",
+      "lat": 45.46938518368561,
+      "lon": 9.18517554397744
+    },
+    {
+      "stop_id": "11497",
+      "name": "cordusio m1",
+      "lat": 45.46620776326088,
+      "lon": 9.186134369498408
+    },
+    {
+      "stop_id": "11505",
+      "name": "duomo m1 m3",
+      "lat": 45.46391231041966,
+      "lon": 9.187986542717788
+    },
+    {
+      "stop_id": "11500",
+      "name": "duomo m1 m3",
+      "lat": 45.46296868848586,
+      "lon": 9.188402243406154
+    },
+    {
+      "stop_id": "11515",
+      "name": "missori m3",
+      "lat": 45.460757289224176,
+      "lon": 9.190403498650744
+    },
+    {
+      "stop_id": "11794",
+      "name": "via larga",
+      "lat": 45.46237318133517,
+      "lon": 9.193722512687314
+    },
+    {
+      "stop_id": "11798",
+      "name": "l.go augusto",
+      "lat": 45.46253700352338,
+      "lon": 9.197855123542665
+    },
+    {
+      "stop_id": "11816",
+      "name": "palazzo di giustizia",
+      "lat": 45.46230073107984,
+      "lon": 9.200777154151076
+    },
+    {
+      "stop_id": "11823",
+      "name": "c.so p.ta vittoria (camera del lavoro)",
+      "lat": 45.46227484327708,
+      "lon": 9.203826994576833
+    },
+    {
+      "stop_id": "12094",
+      "name": "p.za 5 giornate",
+      "lat": 45.46221127485078,
+      "lon": 9.208755999215418
+    },
+    {
+      "stop_id": "12099",
+      "name": "p.za s.maria del suffragio",
+      "lat": 45.46219023166235,
+      "lon": 9.211041631028047
+    },
+    {
+      "stop_id": "12108",
+      "name": "via cadore c.so ventidue marzo",
+      "lat": 45.46218757534091,
+      "lon": 9.21427691441972
+    },
+    {
+      "stop_id": "12126",
+      "name": "p.za emilia",
+      "lat": 45.46216150426289,
+      "lon": 9.218542580875404
+    },
+    {
+      "stop_id": "12390",
+      "name": "p.za grandi",
+      "lat": 45.46216635145518,
+      "lon": 9.221065259416491
+    },
+    {
+      "stop_id": "12392",
+      "name": "v.le campania v.le corsica",
+      "lat": 45.46213464935473,
+      "lon": 9.223465308544506
+    },
+    {
+      "stop_id": "12402",
+      "name": "v.le corsica via lomellina",
+      "lat": 45.46223458349075,
+      "lon": 9.229487090590029
+    },
+    {
+      "stop_id": "12407",
+      "name": "v.le corsica via negroli",
+      "lat": 45.46218340607653,
+      "lon": 9.231962690810034
+    },
+    {
+      "stop_id": "12646",
+      "name": "stazione forlanini m4",
+      "lat": 45.462009501371945,
+      "lon": 9.236148620863736
+    },
+    {
+      "stop_id": "12651",
+      "name": "repetti m4",
+      "lat": 45.46151046560943,
+      "lon": 9.238068351094052
+    },
+    {
+      "stop_id": "19735",
+      "name": "p.za ovidio",
+      "lat": 45.45814641561096,
+      "lon": 9.24086545451448
+    },
+    {
+      "stop_id": "19621",
+      "name": "p.za ovidio",
+      "lat": 45.45705895128326,
+      "lon": 9.241831675191715
+    }
+  ],
+  "14": [
+    {
+      "stop_id": "17897",
+      "name": "via cusani",
+      "lat": 45.46888975737242,
+      "lon": 9.184630515418185
+    },
+    {
+      "stop_id": "11542",
+      "name": "lanza m2",
+      "lat": 45.47219197535332,
+      "lon": 9.181967838276988
+    },
+    {
+      "stop_id": "11533",
+      "name": "arena",
+      "lat": 45.47522926782076,
+      "lon": 9.18157025170724
+    },
+    {
+      "stop_id": "11570",
+      "name": "p.za lega lombarda",
+      "lat": 45.47812482392751,
+      "lon": 9.180776512107071
+    },
+    {
+      "stop_id": "11573",
+      "name": "v.le montello",
+      "lat": 45.47987787644189,
+      "lon": 9.18110108468675
+    },
+    {
+      "stop_id": "11575",
+      "name": "p.le baiamonti",
+      "lat": 45.481664021867225,
+      "lon": 9.181444132062362
+    },
+    {
+      "stop_id": "17613",
+      "name": "p.le cim.monumentale via bramante",
+      "lat": 45.48431670659057,
+      "lon": 9.178038605563769
+    },
+    {
+      "stop_id": "11323",
+      "name": "cenisio m5",
+      "lat": 45.48750244738888,
+      "lon": 9.172977150159154
+    },
+    {
+      "stop_id": "11321",
+      "name": "via cenisio via induno",
+      "lat": 45.48762067620993,
+      "lon": 9.168914738086537
+    },
+    {
+      "stop_id": "11008",
+      "name": "p.za diocleziano",
+      "lat": 45.48771068210894,
+      "lon": 9.164930337809388
+    },
+    {
+      "stop_id": "11001",
+      "name": "p.za caneva",
+      "lat": 45.4877921570341,
+      "lon": 9.161446673825624
+    },
+    {
+      "stop_id": "10988",
+      "name": "p.za firenze",
+      "lat": 45.48791795873158,
+      "lon": 9.157044126467486
+    },
+    {
+      "stop_id": "10965",
+      "name": "v.le certosa v.le serra",
+      "lat": 45.489901761512726,
+      "lon": 9.15178274487719
+    },
+    {
+      "stop_id": "10688",
+      "name": "v.le certosa via grosotto",
+      "lat": 45.49162709922448,
+      "lon": 9.14797855700613
+    },
+    {
+      "stop_id": "14998",
+      "name": "p.le accursio",
+      "lat": 45.492826234712865,
+      "lon": 9.145373362710924
+    },
+    {
+      "stop_id": "10678",
+      "name": "v.le certosa via casella",
+      "lat": 45.49458732203127,
+      "lon": 9.141470402197053
+    },
+    {
+      "stop_id": "10697",
+      "name": "v.le certosa via giannini",
+      "lat": 45.496175717361865,
+      "lon": 9.138009149774264
+    },
+    {
+      "stop_id": "10466",
+      "name": "v.le certosa via tibullo",
+      "lat": 45.49815215520182,
+      "lon": 9.133603095242153
+    },
+    {
+      "stop_id": "10462",
+      "name": "v.le certosa via gradisca",
+      "lat": 45.50014189166592,
+      "lon": 9.129225561781578
+    },
+    {
+      "stop_id": "10453",
+      "name": "v.le certosa via cormons",
+      "lat": 45.50126529085,
+      "lon": 9.126738573580813
+    },
+    {
+      "stop_id": "10448",
+      "name": "v.le certosa via giorgini",
+      "lat": 45.5022351938719,
+      "lon": 9.12464314886684
+    },
+    {
+      "stop_id": "10314",
+      "name": "v.le certosa (cimitero  maggiore)",
+      "lat": 45.5033675161857,
+      "lon": 9.12213519633695
+    },
+    {
+      "stop_id": "10308",
+      "name": "p.le cimitero maggiore",
+      "lat": 45.50328224643474,
+      "lon": 9.120652313236471
+    },
+    {
+      "stop_id": "10305",
+      "name": "p.le cimitero maggiore",
+      "lat": 45.502928086261775,
+      "lon": 9.121392903812598
+    }
+  ],
+  "15": [
+    {
+      "stop_id": "11512",
+      "name": "duomo m1 m3",
+      "lat": 45.463212035597245,
+      "lon": 9.189723404831264
+    },
+    {
+      "stop_id": "11498",
+      "name": "c.so italia (missori m3)",
+      "lat": 45.459311507231526,
+      "lon": 9.187849709487605
+    },
+    {
+      "stop_id": "11465",
+      "name": "s.sofia m4",
+      "lat": 45.45668843821394,
+      "lon": 9.187397789759515
+    },
+    {
+      "stop_id": "11462",
+      "name": "c.so italia via lusardi",
+      "lat": 45.45407322428999,
+      "lon": 9.186945759190134
+    },
+    {
+      "stop_id": "11458",
+      "name": "p.ta lodovica",
+      "lat": 45.4510617844616,
+      "lon": 9.18628741826278
+    },
+    {
+      "stop_id": "15380",
+      "name": "castelbarco",
+      "lat": 45.44866933593362,
+      "lon": 9.185465853286235
+    },
+    {
+      "stop_id": "15378",
+      "name": "giambologna",
+      "lat": 45.44555532333733,
+      "lon": 9.184530734613755
+    },
+    {
+      "stop_id": "15376",
+      "name": "tibaldi",
+      "lat": 45.444450946769265,
+      "lon": 9.18323200701786
+    },
+    {
+      "stop_id": "15374",
+      "name": "pezzotti",
+      "lat": 45.4407078778589,
+      "lon": 9.18310104111813
+    },
+    {
+      "stop_id": "15372",
+      "name": "g. da cermenate",
+      "lat": 45.43763573948679,
+      "lon": 9.183378857626428
+    },
+    {
+      "stop_id": "15370",
+      "name": "volvinio",
+      "lat": 45.43440514773011,
+      "lon": 9.1836150544798
+    },
+    {
+      "stop_id": "15368",
+      "name": "agrippa",
+      "lat": 45.43278906031751,
+      "lon": 9.182911930563169
+    },
+    {
+      "stop_id": "15366",
+      "name": "medeghino",
+      "lat": 45.4314547547512,
+      "lon": 9.180345684201727
+    },
+    {
+      "stop_id": "11130",
+      "name": "p.za abbiategrasso m2",
+      "lat": 45.42929108740327,
+      "lon": 9.17745374284866
+    },
+    {
+      "stop_id": "11112",
+      "name": "via dei missaglia via boifava",
+      "lat": 45.42706989960587,
+      "lon": 9.17718094880696
+    },
+    {
+      "stop_id": "11109",
+      "name": "via dei missaglia via s. abbondio",
+      "lat": 45.42475692150946,
+      "lon": 9.17698688581392
+    },
+    {
+      "stop_id": "11107",
+      "name": "via dei missaglia (isola anita)",
+      "lat": 45.42311046167841,
+      "lon": 9.176840751854789
+    },
+    {
+      "stop_id": "11106",
+      "name": "via dei missaglia via de ruggiero",
+      "lat": 45.41858468778556,
+      "lon": 9.17535966663707
+    },
+    {
+      "stop_id": "11082",
+      "name": "via dei missaglia via feraboli",
+      "lat": 45.41451757998066,
+      "lon": 9.174781517740168
+    },
+    {
+      "stop_id": "11080",
+      "name": "via dei missaglia via saponaro",
+      "lat": 45.41061633033413,
+      "lon": 9.17430348648128
+    },
+    {
+      "stop_id": "11096",
+      "name": "via dei missaglia (scuola santarosa)",
+      "lat": 45.406789258457664,
+      "lon": 9.17458546291745
+    },
+    {
+      "stop_id": "11094",
+      "name": "gratosoglio",
+      "lat": 45.4036587543418,
+      "lon": 9.174441839253287
+    },
+    {
+      "stop_id": "11088",
+      "name": "via curiel via maggi (rozzano)",
+      "lat": 45.3982866916617,
+      "lon": 9.173378065198632
+    },
+    {
+      "stop_id": "11067",
+      "name": "via curiel via lambro (rozzano)",
+      "lat": 45.39437078271812,
+      "lon": 9.172886441278273
+    },
+    {
+      "stop_id": "11065",
+      "name": "via curiel viale isonzo (rozzano)",
+      "lat": 45.389574997593385,
+      "lon": 9.172126340451626
+    },
+    {
+      "stop_id": "11062",
+      "name": "via grandi via buozzi (rozzano)",
+      "lat": 45.38430256468405,
+      "lon": 9.170631857981071
+    },
+    {
+      "stop_id": "11061",
+      "name": "v.le romagna (rozzano)",
+      "lat": 45.383515731596674,
+      "lon": 9.167060996274811
+    },
+    {
+      "stop_id": "18077",
+      "name": "rozzano (via cabrini)",
+      "lat": 45.38286265011227,
+      "lon": 9.161812845866
+    },
+    {
+      "stop_id": "18079",
+      "name": "v.le don lonni (rozzano)",
+      "lat": 45.38190885299174,
+      "lon": 9.158908165531365
+    },
+    {
+      "stop_id": "18081",
+      "name": "v.le liguria via delle mimose (rozzano)",
+      "lat": 45.380640367066015,
+      "lon": 9.154961185489295
+    },
+    {
+      "stop_id": "18083",
+      "name": "v.le liguria via g.rossa (rozzano)",
+      "lat": 45.3785887954788,
+      "lon": 9.148933384009236
+    },
+    {
+      "stop_id": "18076",
+      "name": "rozzano (via g.rossa)",
+      "lat": 45.37693840702778,
+      "lon": 9.15001487046496
+    }
+  ],
+  "16": [
+    {
+      "stop_id": "17469",
+      "name": "san siro stadio m5",
+      "lat": 45.47675202586568,
+      "lon": 9.122094962674586
+    },
+    {
+      "stop_id": "17470",
+      "name": "san siro stadio m5",
+      "lat": 45.47609820129283,
+      "lon": 9.12307963052924
+    },
+    {
+      "stop_id": "17471",
+      "name": "san siro ippodromo m5",
+      "lat": 45.476047243756526,
+      "lon": 9.12834700527964
+    },
+    {
+      "stop_id": "17472",
+      "name": "p.za esquilino",
+      "lat": 45.47598976817096,
+      "lon": 9.131688534266488
+    },
+    {
+      "stop_id": "17473",
+      "name": "segesta m5",
+      "lat": 45.47570217839544,
+      "lon": 9.138247496747164
+    },
+    {
+      "stop_id": "10612",
+      "name": "p.za m.te falterona",
+      "lat": 45.47452216413171,
+      "lon": 9.139797338073892
+    },
+    {
+      "stop_id": "10619",
+      "name": "via dolci via ricciarelli",
+      "lat": 45.47243722722715,
+      "lon": 9.142533079854358
+    },
+    {
+      "stop_id": "10629",
+      "name": "p.le brescia (osp. san luca)",
+      "lat": 45.46979287228503,
+      "lon": 9.146020249809837
+    },
+    {
+      "stop_id": "10632",
+      "name": "via faruffini via correggio",
+      "lat": 45.46832619524192,
+      "lon": 9.147967398578702
+    },
+    {
+      "stop_id": "10633",
+      "name": "de angeli m1",
+      "lat": 45.46702933726272,
+      "lon": 9.149678038918356
+    },
+    {
+      "stop_id": "10906",
+      "name": "p.za piemonte",
+      "lat": 45.46691547674653,
+      "lon": 9.15408617237739
+    },
+    {
+      "stop_id": "10881",
+      "name": "c.so vercelli via cherubini",
+      "lat": 45.46656236810577,
+      "lon": 9.158891766765198
+    },
+    {
+      "stop_id": "10888",
+      "name": "c.so vercelli l.go settimio severo",
+      "lat": 45.46632833210884,
+      "lon": 9.162108258790916
+    },
+    {
+      "stop_id": "10898",
+      "name": "p.le baracca",
+      "lat": 45.46615210715993,
+      "lon": 9.16446386388881
+    },
+    {
+      "stop_id": "11216",
+      "name": "s. maria delle grazie (cenacolo vinciano)",
+      "lat": 45.46566415396233,
+      "lon": 9.17010436405913
+    },
+    {
+      "stop_id": "11230",
+      "name": "l.go d'ancona",
+      "lat": 45.465809571367394,
+      "lon": 9.175143140955116
+    },
+    {
+      "stop_id": "11241",
+      "name": "c.so magenta via nirone",
+      "lat": 45.46580781017129,
+      "lon": 9.178011436558664
+    },
+    {
+      "stop_id": "11485",
+      "name": "via meravigli",
+      "lat": 45.46569129331792,
+      "lon": 9.181727301721423
+    },
+    {
+      "stop_id": "11492",
+      "name": "cordusio m1",
+      "lat": 45.46548198087506,
+      "lon": 9.185848317612493
+    },
+    {
+      "stop_id": "11505",
+      "name": "duomo m1 m3",
+      "lat": 45.46391231041966,
+      "lon": 9.187986542717788
+    },
+    {
+      "stop_id": "11500",
+      "name": "duomo m1 m3",
+      "lat": 45.46296868848586,
+      "lon": 9.188402243406154
+    },
+    {
+      "stop_id": "11510",
+      "name": "missori m3",
+      "lat": 45.46020281179637,
+      "lon": 9.188842210392927
+    },
+    {
+      "stop_id": "11519",
+      "name": "sforza - policlinico m4",
+      "lat": 45.45771810164928,
+      "lon": 9.19309373346517
+    },
+    {
+      "stop_id": "11762",
+      "name": "crocetta m3",
+      "lat": 45.45614365872691,
+      "lon": 9.196577317135022
+    },
+    {
+      "stop_id": "11775",
+      "name": "via lamarmora via commenda",
+      "lat": 45.45688714484742,
+      "lon": 9.201236948080451
+    },
+    {
+      "stop_id": "11827",
+      "name": "v.le monte nero via bergamo",
+      "lat": 45.45752630740749,
+      "lon": 9.206241648486923
+    },
+    {
+      "stop_id": "12052",
+      "name": "via bergamo",
+      "lat": 45.45645034469113,
+      "lon": 9.208909162025549
+    },
+    {
+      "stop_id": "12056",
+      "name": "via cadore via bergamo",
+      "lat": 45.455699785993815,
+      "lon": 9.210802429390142
+    },
+    {
+      "stop_id": "12062",
+      "name": "via comelico",
+      "lat": 45.45469608828346,
+      "lon": 9.213275006953548
+    },
+    {
+      "stop_id": "12065",
+      "name": "v.le umbria via comelico",
+      "lat": 45.453478646298066,
+      "lon": 9.214506156268348
+    },
+    {
+      "stop_id": "12069",
+      "name": "via tito livio",
+      "lat": 45.45198619959204,
+      "lon": 9.21598078781625
+    },
+    {
+      "stop_id": "12082",
+      "name": "p.za salgari",
+      "lat": 45.45032672131082,
+      "lon": 9.220066695697929
+    },
+    {
+      "stop_id": "12382",
+      "name": "p.le cuoco",
+      "lat": 45.451208281540474,
+      "lon": 9.224972880756129
+    },
+    {
+      "stop_id": "12383",
+      "name": "via del turchino via maspero",
+      "lat": 45.45180214990913,
+      "lon": 9.227350712949214
+    },
+    {
+      "stop_id": "12387",
+      "name": "via varsavia via m.te velino",
+      "lat": 45.452605181533514,
+      "lon": 9.229216218127757
+    },
+    {
+      "stop_id": "12385",
+      "name": "via monte velino",
+      "lat": 45.45306348705708,
+      "lon": 9.22892428667122
+    }
+  ],
+  "19": [
+    {
+      "stop_id": "10469",
+      "name": "p.le cacciatori delle alpi",
+      "lat": 45.504359877914304,
+      "lon": 9.136924686914126
+    },
+    {
+      "stop_id": "10699",
+      "name": "v.le espinasse via palizzi",
+      "lat": 45.50300735563,
+      "lon": 9.13808820069383
+    },
+    {
+      "stop_id": "10701",
+      "name": "p.le santorre di santarosa",
+      "lat": 45.50093987967356,
+      "lon": 9.13953592219592
+    },
+    {
+      "stop_id": "14904",
+      "name": "via c. marcello via m.te altissimo",
+      "lat": 45.5019995985647,
+      "lon": 9.142691511583433
+    },
+    {
+      "stop_id": "10716",
+      "name": "via c. marcello (villapizzone)",
+      "lat": 45.50091379674572,
+      "lon": 9.14595294733107
+    },
+    {
+      "stop_id": "10721",
+      "name": "via c. marcello via ferrario",
+      "lat": 45.50007090516614,
+      "lon": 9.147676733236112
+    },
+    {
+      "stop_id": "10723",
+      "name": "p.za castelli",
+      "lat": 45.49897793033472,
+      "lon": 9.150041561357009
+    },
+    {
+      "stop_id": "11013",
+      "name": "via mac mahon via bramantino",
+      "lat": 45.497822274139935,
+      "lon": 9.152679182546256
+    },
+    {
+      "stop_id": "11015",
+      "name": "via mac mahon via artieri",
+      "lat": 45.496297389560304,
+      "lon": 9.154699621228762
+    },
+    {
+      "stop_id": "10975",
+      "name": "p.za prealpi",
+      "lat": 45.49469342103691,
+      "lon": 9.15343864170231
+    },
+    {
+      "stop_id": "10969",
+      "name": "via da panicale",
+      "lat": 45.493280213380366,
+      "lon": 9.15122023100174
+    },
+    {
+      "stop_id": "10972",
+      "name": "via bartolini v.le m.te ceneri",
+      "lat": 45.491435708582834,
+      "lon": 9.152959505905436
+    },
+    {
+      "stop_id": "10989",
+      "name": "p.za firenze",
+      "lat": 45.48846978934965,
+      "lon": 9.156361562528614
+    },
+    {
+      "stop_id": "10945",
+      "name": "c.so sempione via e. filiberto",
+      "lat": 45.48613389304157,
+      "lon": 9.158395103692872
+    },
+    {
+      "stop_id": "10953",
+      "name": "c.so sempione via arona",
+      "lat": 45.484228992696174,
+      "lon": 9.160574393739855
+    },
+    {
+      "stop_id": "10960",
+      "name": "domodossola fn m5",
+      "lat": 45.48242743348496,
+      "lon": 9.16295125554393
+    },
+    {
+      "stop_id": "17550",
+      "name": "domodossola fn m5",
+      "lat": 45.48144588812151,
+      "lon": 9.161850828668369
+    },
+    {
+      "stop_id": "17552",
+      "name": "v.le boezio",
+      "lat": 45.47971505314088,
+      "lon": 9.160172378315668
+    },
+    {
+      "stop_id": "10947",
+      "name": "p.za sei febbraio",
+      "lat": 45.477100070201566,
+      "lon": 9.1606693355928
+    },
+    {
+      "stop_id": "10932",
+      "name": "via monti via savoia cavalleria",
+      "lat": 45.47474152189106,
+      "lon": 9.164043394314536
+    },
+    {
+      "stop_id": "11253",
+      "name": "l.go quinto alpini",
+      "lat": 45.472563614463105,
+      "lon": 9.16692356624594
+    },
+    {
+      "stop_id": "11256",
+      "name": "via venti settembre",
+      "lat": 45.470183129496085,
+      "lon": 9.170009409460985
+    },
+    {
+      "stop_id": "11263",
+      "name": "p.za virgilio",
+      "lat": 45.468297821477705,
+      "lon": 9.172530012209029
+    },
+    {
+      "stop_id": "11231",
+      "name": "l.go d'ancona",
+      "lat": 45.466146775018416,
+      "lon": 9.17536164378772
+    },
+    {
+      "stop_id": "11241",
+      "name": "c.so magenta via nirone",
+      "lat": 45.46580781017129,
+      "lon": 9.178011436558664
+    },
+    {
+      "stop_id": "11485",
+      "name": "via meravigli",
+      "lat": 45.46569129331792,
+      "lon": 9.181727301721423
+    },
+    {
+      "stop_id": "11492",
+      "name": "cordusio m1",
+      "lat": 45.46548198087506,
+      "lon": 9.185848317612493
+    },
+    {
+      "stop_id": "11500",
+      "name": "duomo m1 m3",
+      "lat": 45.46296868848586,
+      "lon": 9.188402243406154
+    },
+    {
+      "stop_id": "11515",
+      "name": "missori m3",
+      "lat": 45.460757289224176,
+      "lon": 9.190403498650744
+    },
+    {
+      "stop_id": "11794",
+      "name": "via larga",
+      "lat": 45.46237318133517,
+      "lon": 9.193722512687314
+    },
+    {
+      "stop_id": "11798",
+      "name": "l.go augusto",
+      "lat": 45.46253700352338,
+      "lon": 9.197855123542665
+    },
+    {
+      "stop_id": "11816",
+      "name": "palazzo di giustizia",
+      "lat": 45.46230073107984,
+      "lon": 9.200777154151076
+    },
+    {
+      "stop_id": "11823",
+      "name": "c.so p.ta vittoria (camera del lavoro)",
+      "lat": 45.46227484327708,
+      "lon": 9.203826994576833
+    },
+    {
+      "stop_id": "12090",
+      "name": "p.za 5 giornate",
+      "lat": 45.461763770655935,
+      "lon": 9.207360280011478
+    },
+    {
+      "stop_id": "12092",
+      "name": "v.le premuda",
+      "lat": 45.465328259705885,
+      "lon": 9.207314165573909
+    },
+    {
+      "stop_id": "12129",
+      "name": "tricolore m4",
+      "lat": 45.46750801145576,
+      "lon": 9.207124274516683
+    },
+    {
+      "stop_id": "12133",
+      "name": "v.le piave",
+      "lat": 45.47168805051787,
+      "lon": 9.206718937394156
+    },
+    {
+      "stop_id": "12139",
+      "name": "via bixio",
+      "lat": 45.47236038585983,
+      "lon": 9.21096198107905
+    },
+    {
+      "stop_id": "12145",
+      "name": "p.za adelaide di savoia",
+      "lat": 45.47278202757693,
+      "lon": 9.214141088054951
+    },
+    {
+      "stop_id": "12163",
+      "name": "p.za ascoli",
+      "lat": 45.47325876634246,
+      "lon": 9.216698374343764
+    },
+    {
+      "stop_id": "12415",
+      "name": "p.za carlo erba",
+      "lat": 45.4748934928489,
+      "lon": 9.220859409872055
+    },
+    {
+      "stop_id": "12429",
+      "name": "v.le romagna via pascoli",
+      "lat": 45.47586485674989,
+      "lon": 9.223214083227406
+    },
+    {
+      "stop_id": "12435",
+      "name": "via pascoli p.za l. da vinci",
+      "lat": 45.47677861324805,
+      "lon": 9.22551259502855
+    },
+    {
+      "stop_id": "12489",
+      "name": "p.za leonardo da vinci (politecnico)",
+      "lat": 45.47909650940822,
+      "lon": 9.225702617023908
+    },
+    {
+      "stop_id": "12494",
+      "name": "via bassini via ponzio",
+      "lat": 45.479264094675734,
+      "lon": 9.229688855658514
+    },
+    {
+      "stop_id": "12505",
+      "name": "via bassini via golgi",
+      "lat": 45.48023577306946,
+      "lon": 9.233964737691384
+    },
+    {
+      "stop_id": "12703",
+      "name": "via valvassori peroni",
+      "lat": 45.48119474760347,
+      "lon": 9.236346997248123
+    },
+    {
+      "stop_id": "12709",
+      "name": "stazione lambrate m2",
+      "lat": 45.48490155702625,
+      "lon": 9.236472175762389
+    },
+    {
+      "stop_id": "12707",
+      "name": "stazione lambrate m2",
+      "lat": 45.48456675956885,
+      "lon": 9.235868893005335
+    }
+  ],
+  "24": [
+    {
+      "stop_id": "15082",
+      "name": "vigentino",
+      "lat": 45.42188720066654,
+      "lon": 9.20339432922544
+    },
+    {
+      "stop_id": "15083",
+      "name": "via ripamonti via chopin",
+      "lat": 45.425522128098166,
+      "lon": 9.203409227012258
+    },
+    {
+      "stop_id": "15084",
+      "name": "via ripamonti via val di sole",
+      "lat": 45.429143768300854,
+      "lon": 9.202439218112843
+    },
+    {
+      "stop_id": "11720",
+      "name": "via ripamonti via noto",
+      "lat": 45.43143570210281,
+      "lon": 9.201782632256156
+    },
+    {
+      "stop_id": "11722",
+      "name": "via ripamonti via dell'assunta",
+      "lat": 45.43380206435492,
+      "lon": 9.201088325921983
+    },
+    {
+      "stop_id": "11714",
+      "name": "via ripamonti via quaranta",
+      "lat": 45.436146434470416,
+      "lon": 9.200649290548377
+    },
+    {
+      "stop_id": "19725",
+      "name": "via ripamonti via rutilia",
+      "lat": 45.44028655069268,
+      "lon": 9.199823583131224
+    },
+    {
+      "stop_id": "11740",
+      "name": "via ripamonti via lorenzini",
+      "lat": 45.44348002293067,
+      "lon": 9.198896103890084
+    },
+    {
+      "stop_id": "11736",
+      "name": "v.le isonzo via ripamonti",
+      "lat": 45.44674522769278,
+      "lon": 9.197977018981394
+    },
+    {
+      "stop_id": "11765",
+      "name": "via ripamonti via bellezza",
+      "lat": 45.44831105372781,
+      "lon": 9.19756358557396
+    },
+    {
+      "stop_id": "11756",
+      "name": "via ripamonti v.le sabotino",
+      "lat": 45.4506962029816,
+      "lon": 9.196959069927312
+    },
+    {
+      "stop_id": "11758",
+      "name": "c.so p.ta vigentina",
+      "lat": 45.45352498699214,
+      "lon": 9.196210144233184
+    },
+    {
+      "stop_id": "11761",
+      "name": "crocetta m3",
+      "lat": 45.455933809596694,
+      "lon": 9.195599791853091
+    },
+    {
+      "stop_id": "11520",
+      "name": "sforza - policlinico m4",
+      "lat": 45.458207553886794,
+      "lon": 9.192461464513851
+    },
+    {
+      "stop_id": "11511",
+      "name": "missori m3",
+      "lat": 45.460495630207866,
+      "lon": 9.188571157325168
+    },
+    {
+      "stop_id": "11515",
+      "name": "missori m3",
+      "lat": 45.460757289224176,
+      "lon": 9.190403498650744
+    },
+    {
+      "stop_id": "11794",
+      "name": "via larga",
+      "lat": 45.46237318133517,
+      "lon": 9.193722512687314
+    },
+    {
+      "stop_id": "11788",
+      "name": "p.za fontana",
+      "lat": 45.46332715809376,
+      "lon": 9.19402878413009
+    }
+  ],
+  "27": [
+    {
+      "stop_id": "15381",
+      "name": "p.za fontana",
+      "lat": 45.463371063877226,
+      "lon": 9.194050730638898
+    },
+    {
+      "stop_id": "11798",
+      "name": "l.go augusto",
+      "lat": 45.46253700352338,
+      "lon": 9.197855123542665
+    },
+    {
+      "stop_id": "11816",
+      "name": "palazzo di giustizia",
+      "lat": 45.46230073107984,
+      "lon": 9.200777154151076
+    },
+    {
+      "stop_id": "11823",
+      "name": "c.so p.ta vittoria (camera del lavoro)",
+      "lat": 45.46227484327708,
+      "lon": 9.203826994576833
+    },
+    {
+      "stop_id": "12094",
+      "name": "p.za 5 giornate",
+      "lat": 45.46221127485078,
+      "lon": 9.208755999215418
+    },
+    {
+      "stop_id": "12099",
+      "name": "p.za s.maria del suffragio",
+      "lat": 45.46219023166235,
+      "lon": 9.211041631028047
+    },
+    {
+      "stop_id": "12108",
+      "name": "via cadore c.so ventidue marzo",
+      "lat": 45.46218757534091,
+      "lon": 9.21427691441972
+    },
+    {
+      "stop_id": "12126",
+      "name": "p.za emilia",
+      "lat": 45.46216150426289,
+      "lon": 9.218542580875404
+    },
+    {
+      "stop_id": "12390",
+      "name": "p.za grandi",
+      "lat": 45.46216635145518,
+      "lon": 9.221065259416491
+    },
+    {
+      "stop_id": "12392",
+      "name": "v.le campania v.le corsica",
+      "lat": 45.46213464935473,
+      "lon": 9.223465308544506
+    },
+    {
+      "stop_id": "12402",
+      "name": "v.le corsica via lomellina",
+      "lat": 45.46223458349075,
+      "lon": 9.229487090590029
+    },
+    {
+      "stop_id": "12407",
+      "name": "v.le corsica via negroli",
+      "lat": 45.46218340607653,
+      "lon": 9.231962690810034
+    },
+    {
+      "stop_id": "12646",
+      "name": "stazione forlanini m4",
+      "lat": 45.462009501371945,
+      "lon": 9.236148620863736
+    },
+    {
+      "stop_id": "12651",
+      "name": "repetti m4",
+      "lat": 45.46151046560943,
+      "lon": 9.238068351094052
+    },
+    {
+      "stop_id": "19735",
+      "name": "p.za ovidio",
+      "lat": 45.45814641561096,
+      "lon": 9.24086545451448
+    },
+    {
+      "stop_id": "12641",
+      "name": "via mecenate via maderna",
+      "lat": 45.455646038100994,
+      "lon": 9.24427286278118
+    },
+    {
+      "stop_id": "12643",
+      "name": "via mecenate via zante",
+      "lat": 45.45419780068076,
+      "lon": 9.2462530218908
+    },
+    {
+      "stop_id": "12834",
+      "name": "via mecenate via fantoli",
+      "lat": 45.45108777289942,
+      "lon": 9.250475662360678
+    },
+    {
+      "stop_id": "12840",
+      "name": "via mecenate via quintiliano",
+      "lat": 45.44934986572017,
+      "lon": 9.252841753663052
+    },
+    {
+      "stop_id": "12823",
+      "name": "v.le ungheria via mecenate",
+      "lat": 45.44681827957813,
+      "lon": 9.25469807577781
+    },
+    {
+      "stop_id": "19710",
+      "name": "v.le ungheria l.go gonzaga ice hockey arena",
+      "lat": 45.44607143022376,
+      "lon": 9.250716064541136
+    },
+    {
+      "stop_id": "12827",
+      "name": "v.le ungheria",
+      "lat": 45.44581533862783,
+      "lon": 9.24531669778912
+    },
+    {
+      "stop_id": "12979",
+      "name": "v.le ungheria",
+      "lat": 45.44524847293079,
+      "lon": 9.245223136241789
+    }
+  ],
+  "31": [
+    {
+      "stop_id": "15877",
+      "name": "cinisello (primo maggio)",
+      "lat": 45.55990332992874,
+      "lon": 9.211074207329633
+    },
+    {
+      "stop_id": "15878",
+      "name": "monte ortigara (cinisello b.)",
+      "lat": 45.55981435467517,
+      "lon": 9.213389703322932
+    },
+    {
+      "stop_id": "15879",
+      "name": "villa ghirlanda (cinisello b.)",
+      "lat": 45.557912045883974,
+      "lon": 9.214617457111364
+    },
+    {
+      "stop_id": "15893",
+      "name": "gramsci (cinisello b.)",
+      "lat": 45.5556394795764,
+      "lon": 9.215507024087616
+    },
+    {
+      "stop_id": "15880",
+      "name": "liberta' (cinisello b.)",
+      "lat": 45.553272781487934,
+      "lon": 9.216640065322474
+    },
+    {
+      "stop_id": "15881",
+      "name": "gorky monfalcone (cinisello b.)",
+      "lat": 45.551070258031984,
+      "lon": 9.21759244535878
+    },
+    {
+      "stop_id": "15882",
+      "name": "parco nord (osp.bassini)(cinisello b.)",
+      "lat": 45.545636919425654,
+      "lon": 9.21800660024646
+    },
+    {
+      "stop_id": "15883",
+      "name": "parco nord (ist. tecnico)(cinisello b.)",
+      "lat": 45.53735952531537,
+      "lon": 9.217606638084243
+    },
+    {
+      "stop_id": "15884",
+      "name": "parco nord clerici (sesto s.g.)",
+      "lat": 45.533696875327806,
+      "lon": 9.215380272701989
+    },
+    {
+      "stop_id": "15894",
+      "name": "parco nord (torretta)",
+      "lat": 45.52980427087123,
+      "lon": 9.213350968450529
+    },
+    {
+      "stop_id": "14884",
+      "name": "bignami m5",
+      "lat": 45.525694433737726,
+      "lon": 9.211244570230615
+    },
+    {
+      "stop_id": "12311",
+      "name": "ponale m5",
+      "lat": 45.522033034632145,
+      "lon": 9.209168052395942
+    },
+    {
+      "stop_id": "12302",
+      "name": "v.le testi via s. glicerio",
+      "lat": 45.51876625044593,
+      "lon": 9.207305305229152
+    },
+    {
+      "stop_id": "17157",
+      "name": "v.le testi via la farina",
+      "lat": 45.51670546320756,
+      "lon": 9.20614699412662
+    },
+    {
+      "stop_id": "17158",
+      "name": "bicocca m5",
+      "lat": 45.51492178087722,
+      "lon": 9.205121295914225
+    },
+    {
+      "stop_id": "11986",
+      "name": "v.le testi via s. marcellina",
+      "lat": 45.51163797824656,
+      "lon": 9.203263400142786
+    },
+    {
+      "stop_id": "11979",
+      "name": "v.le testi via pianell",
+      "lat": 45.50878030460146,
+      "lon": 9.20164968507854
+    },
+    {
+      "stop_id": "11973",
+      "name": "ca' granda m5",
+      "lat": 45.5067659320817,
+      "lon": 9.200509795573875
+    },
+    {
+      "stop_id": "11958",
+      "name": "v.le testi via dolcebuono",
+      "lat": 45.50408128384495,
+      "lon": 9.1989965807933
+    },
+    {
+      "stop_id": "11950",
+      "name": "istria m5",
+      "lat": 45.50155385388465,
+      "lon": 9.197550144460571
+    },
+    {
+      "stop_id": "11947",
+      "name": "v.le zara via laurana",
+      "lat": 45.499444650806424,
+      "lon": 9.1963775804137
+    },
+    {
+      "stop_id": "11944",
+      "name": "marche m5",
+      "lat": 45.495917171118414,
+      "lon": 9.19438471500985
+    },
+    {
+      "stop_id": "11639",
+      "name": "zara m3 m5",
+      "lat": 45.492032980217104,
+      "lon": 9.192173121797197
+    },
+    {
+      "stop_id": "11631",
+      "name": "p.le lagosta",
+      "lat": 45.48963897341251,
+      "lon": 9.190827286428684
+    },
+    {
+      "stop_id": "12941",
+      "name": "p.le lagosta",
+      "lat": 45.48956188453012,
+      "lon": 9.19147655617521
+    }
+  ],
+  "33": [
+    {
+      "stop_id": "17337",
+      "name": "p.le lagosta",
+      "lat": 45.49003088833755,
+      "lon": 9.191315937947223
+    },
+    {
+      "stop_id": "11631",
+      "name": "p.le lagosta",
+      "lat": 45.48963897341251,
+      "lon": 9.190827286428684
+    },
+    {
+      "stop_id": "11619",
+      "name": "via porro lambertenghi",
+      "lat": 45.48920738713457,
+      "lon": 9.186712024911944
+    },
+    {
+      "stop_id": "11611",
+      "name": "via ugo bassi",
+      "lat": 45.48867730387098,
+      "lon": 9.18332549678961
+    },
+    {
+      "stop_id": "17328",
+      "name": "via farini via ferrari",
+      "lat": 45.48560810067087,
+      "lon": 9.182718808448858
+    },
+    {
+      "stop_id": "17329",
+      "name": "stazione garibaldi m2 m5",
+      "lat": 45.483717818289925,
+      "lon": 9.18637062479918
+    },
+    {
+      "stop_id": "17330",
+      "name": "via rosales",
+      "lat": 45.481261486204446,
+      "lon": 9.188254838689312
+    },
+    {
+      "stop_id": "17331",
+      "name": "v.le m.te grappa via gioia",
+      "lat": 45.48072143020596,
+      "lon": 9.189658904798817
+    },
+    {
+      "stop_id": "11860",
+      "name": "p.le principessa clotilde (osp. fatebenefratelli)",
+      "lat": 45.4802217377368,
+      "lon": 9.19273613976948
+    },
+    {
+      "stop_id": "11864",
+      "name": "v.le monte santo",
+      "lat": 45.47965804076672,
+      "lon": 9.194200422370384
+    },
+    {
+      "stop_id": "17436",
+      "name": "repubblica m3",
+      "lat": 45.47797288895953,
+      "lon": 9.1976816630066
+    },
+    {
+      "stop_id": "11882",
+      "name": "v.le vittorio veneto",
+      "lat": 45.476743105447994,
+      "lon": 9.200348862820288
+    },
+    {
+      "stop_id": "11886",
+      "name": "v.le tunisia",
+      "lat": 45.47831168894563,
+      "lon": 9.202584528541951
+    },
+    {
+      "stop_id": "12969",
+      "name": "p.ta venezia v.le tunisia",
+      "lat": 45.476608952532565,
+      "lon": 9.20679510069933
+    },
+    {
+      "stop_id": "12136",
+      "name": "p.za otto novembre",
+      "lat": 45.47475903014011,
+      "lon": 9.210843912863314
+    },
+    {
+      "stop_id": "12146",
+      "name": "p.za adelaide di savoia",
+      "lat": 45.47319213909165,
+      "lon": 9.214281280805803
+    },
+    {
+      "stop_id": "12163",
+      "name": "p.za ascoli",
+      "lat": 45.47325876634246,
+      "lon": 9.216698374343764
+    },
+    {
+      "stop_id": "12415",
+      "name": "p.za carlo erba",
+      "lat": 45.4748934928489,
+      "lon": 9.220859409872055
+    },
+    {
+      "stop_id": "12429",
+      "name": "v.le romagna via pascoli",
+      "lat": 45.47586485674989,
+      "lon": 9.223214083227406
+    },
+    {
+      "stop_id": "12435",
+      "name": "via pascoli p.za l. da vinci",
+      "lat": 45.47677861324805,
+      "lon": 9.22551259502855
+    },
+    {
+      "stop_id": "12489",
+      "name": "p.za leonardo da vinci (politecnico)",
+      "lat": 45.47909650940822,
+      "lon": 9.225702617023908
+    },
+    {
+      "stop_id": "12494",
+      "name": "via bassini via ponzio",
+      "lat": 45.479264094675734,
+      "lon": 9.229688855658514
+    },
+    {
+      "stop_id": "12505",
+      "name": "via bassini via golgi",
+      "lat": 45.48023577306946,
+      "lon": 9.233964737691384
+    },
+    {
+      "stop_id": "12703",
+      "name": "via valvassori peroni",
+      "lat": 45.48119474760347,
+      "lon": 9.236346997248123
+    },
+    {
+      "stop_id": "12717",
+      "name": "rimembranze di lambrate",
+      "lat": 45.48268501623365,
+      "lon": 9.241402532988134
+    }
+  ],
+  "90": [
+    {
+      "stop_id": "10653",
+      "name": "lotto m1 m5",
+      "lat": 45.4801070302055,
+      "lon": 9.143244732288355
+    },
+    {
+      "stop_id": "10654",
+      "name": "p.za stuparich",
+      "lat": 45.48215138081276,
+      "lon": 9.14327394333496
+    },
+    {
+      "stop_id": "10662",
+      "name": "v.le serra v.le scarampo",
+      "lat": 45.48479119810849,
+      "lon": 9.143921968449412
+    },
+    {
+      "stop_id": "10692",
+      "name": "v.le serra via traiano",
+      "lat": 45.4881872567112,
+      "lon": 9.148860559305064
+    },
+    {
+      "stop_id": "10964",
+      "name": "v.le certosa v.le serra",
+      "lat": 45.48962893138913,
+      "lon": 9.151137435831751
+    },
+    {
+      "stop_id": "10976",
+      "name": "via bartolini v.le m.te ceneri",
+      "lat": 45.49148833960867,
+      "lon": 9.153985050617162
+    },
+    {
+      "stop_id": "10990",
+      "name": "via mac mahon v.le m.te ceneri",
+      "lat": 45.493437490256994,
+      "lon": 9.15697547903953
+    },
+    {
+      "stop_id": "11331",
+      "name": "p.le lugano",
+      "lat": 45.49797316961939,
+      "lon": 9.16708646922262
+    },
+    {
+      "stop_id": "11341",
+      "name": "p.le nigra",
+      "lat": 45.49652594013452,
+      "lon": 9.171864103401422
+    },
+    {
+      "stop_id": "11345",
+      "name": "v.le jenner",
+      "lat": 45.4968780810908,
+      "lon": 9.177045469360024
+    },
+    {
+      "stop_id": "11608",
+      "name": "via bernina",
+      "lat": 45.495611838336465,
+      "lon": 9.180949841735748
+    },
+    {
+      "stop_id": "11620",
+      "name": "via farini v.le stelvio",
+      "lat": 45.494379765810585,
+      "lon": 9.18590360246277
+    },
+    {
+      "stop_id": "11636",
+      "name": "v.le stelvio via lario",
+      "lat": 45.49325205201046,
+      "lon": 9.190219202096747
+    },
+    {
+      "stop_id": "11896",
+      "name": "zara m3 m5",
+      "lat": 45.49229661508259,
+      "lon": 9.193691506401716
+    },
+    {
+      "stop_id": "11907",
+      "name": "v.le sauro via oldofredi",
+      "lat": 45.49142682034197,
+      "lon": 9.197035747688034
+    },
+    {
+      "stop_id": "11917",
+      "name": "sondrio m3",
+      "lat": 45.48979559851631,
+      "lon": 9.20080043089242
+    },
+    {
+      "stop_id": "11928",
+      "name": "stazione centrale via tonale",
+      "lat": 45.488070414247744,
+      "lon": 9.204188652483747
+    },
+    {
+      "stop_id": "12177",
+      "name": "p.za luigi di savoia",
+      "lat": 45.48651658489637,
+      "lon": 9.207335763501352
+    },
+    {
+      "stop_id": "12185",
+      "name": "caiazzo m2",
+      "lat": 45.48547321699045,
+      "lon": 9.209396924786065
+    },
+    {
+      "stop_id": "12193",
+      "name": "v.le andrea doria",
+      "lat": 45.48540258731741,
+      "lon": 9.213246144647009
+    },
+    {
+      "stop_id": "12210",
+      "name": "loreto m1 m2",
+      "lat": 45.48423726558689,
+      "lon": 9.215756711269178
+    },
+    {
+      "stop_id": "12226",
+      "name": "v.le gran sasso via garofalo",
+      "lat": 45.48268775604576,
+      "lon": 9.219000451734214
+    },
+    {
+      "stop_id": "12476",
+      "name": "v.le gran sasso (piola m2)",
+      "lat": 45.48078988937613,
+      "lon": 9.22279847957448
+    },
+    {
+      "stop_id": "12478",
+      "name": "v.le romagna (piola m2)",
+      "lat": 45.47923574679472,
+      "lon": 9.223547612868083
+    },
+    {
+      "stop_id": "12430",
+      "name": "v.le romagna via pascoli",
+      "lat": 45.47631201185627,
+      "lon": 9.223590393275602
+    },
+    {
+      "stop_id": "12464",
+      "name": "l.go rio de janeiro",
+      "lat": 45.47370166397697,
+      "lon": 9.223619119225464
+    },
+    {
+      "stop_id": "12424",
+      "name": "p.za ferravilla",
+      "lat": 45.471242661020696,
+      "lon": 9.223650858537198
+    },
+    {
+      "stop_id": "12420",
+      "name": "susa m4",
+      "lat": 45.469457578518416,
+      "lon": 9.223674664897413
+    },
+    {
+      "stop_id": "12395",
+      "name": "v.le campania via archimede",
+      "lat": 45.46583290376613,
+      "lon": 9.223725793653518
+    },
+    {
+      "stop_id": "12393",
+      "name": "v.le campania v.le corsica",
+      "lat": 45.46247542751841,
+      "lon": 9.223774173321758
+    },
+    {
+      "stop_id": "15524",
+      "name": "porta vittoria",
+      "lat": 45.45949599808484,
+      "lon": 9.223819731191016
+    },
+    {
+      "stop_id": "12379",
+      "name": "v.le molise",
+      "lat": 45.4568343620452,
+      "lon": 9.22389981924712
+    },
+    {
+      "stop_id": "12378",
+      "name": "v.le molise via cadibona",
+      "lat": 45.45392543330899,
+      "lon": 9.223863335480877
+    },
+    {
+      "stop_id": "12375",
+      "name": "p.le cuoco",
+      "lat": 45.45178236679158,
+      "lon": 9.22368831158318
+    },
+    {
+      "stop_id": "12363",
+      "name": "p.za salgari",
+      "lat": 45.450360208580946,
+      "lon": 9.221371225391898
+    },
+    {
+      "stop_id": "12079",
+      "name": "via caroncini via tertulliano",
+      "lat": 45.44949824022841,
+      "lon": 9.21791668707914
+    },
+    {
+      "stop_id": "12068",
+      "name": "via tertulliano via lattanzio",
+      "lat": 45.450051923505214,
+      "lon": 9.215477875454605
+    },
+    {
+      "stop_id": "13156",
+      "name": "v.le umbria via muratori",
+      "lat": 45.45018393183115,
+      "lon": 9.212271738160256
+    },
+    {
+      "stop_id": "13157",
+      "name": "v.le umbria (lodi m3)",
+      "lat": 45.447896471176286,
+      "lon": 9.21048248796937
+    },
+    {
+      "stop_id": "13158",
+      "name": "lodi m3",
+      "lat": 45.44701851461403,
+      "lon": 9.208488396857051
+    }
+  ],
+  "91": [
+    {
+      "stop_id": "13164",
+      "name": "lodi m3",
+      "lat": 45.446733302523754,
+      "lon": 9.209137089087688
+    },
+    {
+      "stop_id": "13165",
+      "name": "v.le umbria (lodi m3)",
+      "lat": 45.44817489549952,
+      "lon": 9.210812806093806
+    },
+    {
+      "stop_id": "13166",
+      "name": "v.le umbria via muratori",
+      "lat": 45.450353686854825,
+      "lon": 9.212589355793302
+    },
+    {
+      "stop_id": "12064",
+      "name": "via tertulliano via lattanzio",
+      "lat": 45.4503698289087,
+      "lon": 9.213949291576444
+    },
+    {
+      "stop_id": "12073",
+      "name": "via tertulliano via decembrio",
+      "lat": 45.449562546301394,
+      "lon": 9.216702235658191
+    },
+    {
+      "stop_id": "12081",
+      "name": "p.za salgari",
+      "lat": 45.44992192322383,
+      "lon": 9.219937242577394
+    },
+    {
+      "stop_id": "12376",
+      "name": "p.le cuoco",
+      "lat": 45.45196565345047,
+      "lon": 9.22431887334287
+    },
+    {
+      "stop_id": "12377",
+      "name": "v.le molise via cadibona",
+      "lat": 45.45319468647463,
+      "lon": 9.224119448945617
+    },
+    {
+      "stop_id": "12381",
+      "name": "v.le molise",
+      "lat": 45.45673047410654,
+      "lon": 9.224091867709234
+    },
+    {
+      "stop_id": "15523",
+      "name": "porta vittoria",
+      "lat": 45.459526582374494,
+      "lon": 9.224031876885372
+    },
+    {
+      "stop_id": "12394",
+      "name": "v.le campania v.le corsica",
+      "lat": 45.46302526328531,
+      "lon": 9.223972394397483
+    },
+    {
+      "stop_id": "12396",
+      "name": "v.le campania via archimede",
+      "lat": 45.46600633671836,
+      "lon": 9.223936749777938
+    },
+    {
+      "stop_id": "12421",
+      "name": "susa m4",
+      "lat": 45.46959332437386,
+      "lon": 9.22389473448437
+    },
+    {
+      "stop_id": "12425",
+      "name": "p.za ferravilla",
+      "lat": 45.471751943421616,
+      "lon": 9.223873703767053
+    },
+    {
+      "stop_id": "12427",
+      "name": "l.go rio de janeiro",
+      "lat": 45.473929076941346,
+      "lon": 9.223847960161653
+    },
+    {
+      "stop_id": "12428",
+      "name": "v.le romagna via pascoli",
+      "lat": 45.47578619317094,
+      "lon": 9.22380572508179
+    },
+    {
+      "stop_id": "12479",
+      "name": "v.le romagna (piola m2)",
+      "lat": 45.47928483894787,
+      "lon": 9.223763641743076
+    },
+    {
+      "stop_id": "12475",
+      "name": "v.le gran sasso (piola m2)",
+      "lat": 45.48091403848966,
+      "lon": 9.222813183557832
+    },
+    {
+      "stop_id": "12227",
+      "name": "v.le gran sasso via garofalo",
+      "lat": 45.48288570870815,
+      "lon": 9.218867286088829
+    },
+    {
+      "stop_id": "12211",
+      "name": "loreto m1 m2",
+      "lat": 45.48423233354766,
+      "lon": 9.21598541906749
+    },
+    {
+      "stop_id": "12189",
+      "name": "v.le andrea doria",
+      "lat": 45.48567077037339,
+      "lon": 9.212094458698568
+    },
+    {
+      "stop_id": "12184",
+      "name": "caiazzo m2",
+      "lat": 45.48561289820611,
+      "lon": 9.209306268493778
+    },
+    {
+      "stop_id": "12176",
+      "name": "p.za luigi di savoia",
+      "lat": 45.48665171763817,
+      "lon": 9.207270676680976
+    },
+    {
+      "stop_id": "11931",
+      "name": "stazione centrale via tonale",
+      "lat": 45.488327456991506,
+      "lon": 9.20390005161023
+    },
+    {
+      "stop_id": "11918",
+      "name": "sondrio m3",
+      "lat": 45.48995781725422,
+      "lon": 9.2006858316397
+    },
+    {
+      "stop_id": "11906",
+      "name": "v.le sauro via oldofredi",
+      "lat": 45.49132205679567,
+      "lon": 9.19776164105689
+    },
+    {
+      "stop_id": "11895",
+      "name": "zara m3 m5",
+      "lat": 45.49250871557768,
+      "lon": 9.193355356559945
+    },
+    {
+      "stop_id": "11641",
+      "name": "v.le stelvio via lario",
+      "lat": 45.493111114427755,
+      "lon": 9.191072988545054
+    },
+    {
+      "stop_id": "11622",
+      "name": "via farini v.le stelvio",
+      "lat": 45.494537785788864,
+      "lon": 9.185593764449168
+    },
+    {
+      "stop_id": "11610",
+      "name": "via bernina",
+      "lat": 45.495621351880054,
+      "lon": 9.181569586971792
+    },
+    {
+      "stop_id": "11346",
+      "name": "v.le jenner",
+      "lat": 45.49695045207877,
+      "lon": 9.176810518263244
+    },
+    {
+      "stop_id": "11342",
+      "name": "p.le nigra",
+      "lat": 45.4966369883743,
+      "lon": 9.171507907102663
+    },
+    {
+      "stop_id": "11332",
+      "name": "p.le lugano",
+      "lat": 45.49814601165733,
+      "lon": 9.16697789313856
+    },
+    {
+      "stop_id": "10991",
+      "name": "via mac mahon v.le m.te ceneri",
+      "lat": 45.49373929584788,
+      "lon": 9.156776346252714
+    },
+    {
+      "stop_id": "10973",
+      "name": "via bartolini v.le m.te ceneri",
+      "lat": 45.49171832369997,
+      "lon": 9.153643340495176
+    },
+    {
+      "stop_id": "10967",
+      "name": "v.le certosa v.le serra",
+      "lat": 45.4905729851363,
+      "lon": 9.151930190171813
+    },
+    {
+      "stop_id": "10693",
+      "name": "v.le serra via traiano",
+      "lat": 45.48895156663791,
+      "lon": 9.14945442749872
+    },
+    {
+      "stop_id": "10657",
+      "name": "v.le serra v.le scarampo",
+      "lat": 45.48493555295474,
+      "lon": 9.14365201857584
+    },
+    {
+      "stop_id": "10655",
+      "name": "p.za stuparich",
+      "lat": 45.48255574887915,
+      "lon": 9.142886250985732
+    },
+    {
+      "stop_id": "10644",
+      "name": "lotto m1 m5",
+      "lat": 45.47968472345449,
+      "lon": 9.142651902269217
+    }
+  ],
+  "92": [
+    {
+      "stop_id": "11033",
+      "name": "via durando via cosenz",
+      "lat": 45.50622357863133,
+      "lon": 9.163256163372148
+    },
+    {
+      "stop_id": "11019",
+      "name": "via bovisasca via morghen",
+      "lat": 45.50465712827567,
+      "lon": 9.160272323994828
+    },
+    {
+      "stop_id": "11018",
+      "name": "bovisa (politecnico)",
+      "lat": 45.50311671224239,
+      "lon": 9.1611639741289
+    },
+    {
+      "stop_id": "11023",
+      "name": "via vare'",
+      "lat": 45.50177876444582,
+      "lon": 9.162088155073777
+    },
+    {
+      "stop_id": "11335",
+      "name": "bausan",
+      "lat": 45.501795829706296,
+      "lon": 9.165883365680168
+    },
+    {
+      "stop_id": "17701",
+      "name": "via imbriani via scalvini",
+      "lat": 45.49893440063469,
+      "lon": 9.169157980853656
+    },
+    {
+      "stop_id": "17702",
+      "name": "p.le nigra",
+      "lat": 45.49691612463999,
+      "lon": 9.170605761525223
+    },
+    {
+      "stop_id": "16939",
+      "name": "lancetti",
+      "lat": 45.49506479053659,
+      "lon": 9.175690161242684
+    },
+    {
+      "stop_id": "11608",
+      "name": "via bernina",
+      "lat": 45.495611838336465,
+      "lon": 9.180949841735748
+    },
+    {
+      "stop_id": "11620",
+      "name": "via farini v.le stelvio",
+      "lat": 45.494379765810585,
+      "lon": 9.18590360246277
+    },
+    {
+      "stop_id": "11636",
+      "name": "v.le stelvio via lario",
+      "lat": 45.49325205201046,
+      "lon": 9.190219202096747
+    },
+    {
+      "stop_id": "11896",
+      "name": "zara m3 m5",
+      "lat": 45.49229661508259,
+      "lon": 9.193691506401716
+    },
+    {
+      "stop_id": "11907",
+      "name": "v.le sauro via oldofredi",
+      "lat": 45.49142682034197,
+      "lon": 9.197035747688034
+    },
+    {
+      "stop_id": "11917",
+      "name": "sondrio m3",
+      "lat": 45.48979559851631,
+      "lon": 9.20080043089242
+    },
+    {
+      "stop_id": "11928",
+      "name": "stazione centrale via tonale",
+      "lat": 45.488070414247744,
+      "lon": 9.204188652483747
+    },
+    {
+      "stop_id": "12177",
+      "name": "p.za luigi di savoia",
+      "lat": 45.48651658489637,
+      "lon": 9.207335763501352
+    },
+    {
+      "stop_id": "12185",
+      "name": "caiazzo m2",
+      "lat": 45.48547321699045,
+      "lon": 9.209396924786065
+    },
+    {
+      "stop_id": "12197",
+      "name": "p.le loreto via pergolesi",
+      "lat": 45.4829525597776,
+      "lon": 9.214461058500468
+    },
+    {
+      "stop_id": "17386",
+      "name": "p.le bacone",
+      "lat": 45.48057636349579,
+      "lon": 9.216984456965882
+    },
+    {
+      "stop_id": "17387",
+      "name": "v.le abruzzi via plinio",
+      "lat": 45.476455936087405,
+      "lon": 9.21705745827989
+    },
+    {
+      "stop_id": "17388",
+      "name": "p.za ascoli",
+      "lat": 45.47303499247764,
+      "lon": 9.21709232114596
+    },
+    {
+      "stop_id": "17389",
+      "name": "v.le dei mille p.za novelli",
+      "lat": 45.4709671313086,
+      "lon": 9.217161343817084
+    },
+    {
+      "stop_id": "17390",
+      "name": "dateo m4",
+      "lat": 45.46843779488481,
+      "lon": 9.217188423960613
+    },
+    {
+      "stop_id": "17391",
+      "name": "v.le piceno",
+      "lat": 45.46584537171103,
+      "lon": 9.21725683332441
+    },
+    {
+      "stop_id": "14872",
+      "name": "p.za emilia",
+      "lat": 45.46171218063933,
+      "lon": 9.21728159350326
+    },
+    {
+      "stop_id": "12114",
+      "name": "via arconati",
+      "lat": 45.45794279188659,
+      "lon": 9.217087439629736
+    },
+    {
+      "stop_id": "12078",
+      "name": "via maestri campionesi",
+      "lat": 45.45550066047122,
+      "lon": 9.216216398244658
+    },
+    {
+      "stop_id": "12066",
+      "name": "v.le umbria via comelico",
+      "lat": 45.453594914955715,
+      "lon": 9.214903054211057
+    },
+    {
+      "stop_id": "13156",
+      "name": "v.le umbria via muratori",
+      "lat": 45.45018393183115,
+      "lon": 9.212271738160256
+    },
+    {
+      "stop_id": "13157",
+      "name": "v.le umbria (lodi m3)",
+      "lat": 45.447896471176286,
+      "lon": 9.21048248796937
+    },
+    {
+      "stop_id": "13803",
+      "name": "lodi m3",
+      "lat": 45.446956244225454,
+      "lon": 9.207811212345645
+    },
+    {
+      "stop_id": "13804",
+      "name": "p.za trento",
+      "lat": 45.447166854596745,
+      "lon": 9.203406444193384
+    },
+    {
+      "stop_id": "13171",
+      "name": "p.za trento",
+      "lat": 45.44673021889897,
+      "lon": 9.20410604964261
+    },
+    {
+      "stop_id": "13805",
+      "name": "lodi m3",
+      "lat": 45.4467747088838,
+      "lon": 9.208277696939966
+    }
+  ],
+  "93": [
+    {
+      "stop_id": "16723",
+      "name": "stazione lambrate m2",
+      "lat": 45.484929644974734,
+      "lon": 9.2363478771017
+    },
+    {
+      "stop_id": "12706",
+      "name": "stazione lambrate m2",
+      "lat": 45.48423440469212,
+      "lon": 9.236192805253982
+    },
+    {
+      "stop_id": "12705",
+      "name": "via valvassori peroni",
+      "lat": 45.48169846845335,
+      "lon": 9.236509041890509
+    },
+    {
+      "stop_id": "12699",
+      "name": "via bassini via golgi",
+      "lat": 45.48065317723351,
+      "lon": 9.234570825762342
+    },
+    {
+      "stop_id": "12498",
+      "name": "via bassini via ponzio",
+      "lat": 45.4794418566089,
+      "lon": 9.230810722020747
+    },
+    {
+      "stop_id": "12493",
+      "name": "via celoria (istituto besta)",
+      "lat": 45.47715733784407,
+      "lon": 9.229948988959936
+    },
+    {
+      "stop_id": "12446",
+      "name": "p.le gorini (istituto dei tumori)",
+      "lat": 45.47375542576581,
+      "lon": 9.22971608461729
+    },
+    {
+      "stop_id": "12444",
+      "name": "via b. angelico via aselli",
+      "lat": 45.47122998178787,
+      "lon": 9.230044853300484
+    },
+    {
+      "stop_id": "20070",
+      "name": "argonne m4",
+      "lat": 45.46807158231631,
+      "lon": 9.230012272956248
+    },
+    {
+      "stop_id": "12404",
+      "name": "via lomellina via sismondi",
+      "lat": 45.465869730668466,
+      "lon": 9.230117420784088
+    },
+    {
+      "stop_id": "12401",
+      "name": "via sismondi p.za adigrat",
+      "lat": 45.46560896404483,
+      "lon": 9.227737108965414
+    },
+    {
+      "stop_id": "12397",
+      "name": "via sismondi v.le campania",
+      "lat": 45.46558828588186,
+      "lon": 9.22453750816288
+    },
+    {
+      "stop_id": "12393",
+      "name": "v.le campania v.le corsica",
+      "lat": 45.46247542751841,
+      "lon": 9.223774173321758
+    },
+    {
+      "stop_id": "15524",
+      "name": "porta vittoria",
+      "lat": 45.45949599808484,
+      "lon": 9.223819731191016
+    },
+    {
+      "stop_id": "12379",
+      "name": "v.le molise",
+      "lat": 45.4568343620452,
+      "lon": 9.22389981924712
+    },
+    {
+      "stop_id": "12378",
+      "name": "v.le molise via cadibona",
+      "lat": 45.45392543330899,
+      "lon": 9.223863335480877
+    },
+    {
+      "stop_id": "12375",
+      "name": "p.le cuoco",
+      "lat": 45.45178236679158,
+      "lon": 9.22368831158318
+    },
+    {
+      "stop_id": "12373",
+      "name": "v.le puglie",
+      "lat": 45.44833429862892,
+      "lon": 9.224029563535058
+    },
+    {
+      "stop_id": "12355",
+      "name": "p.le bologna",
+      "lat": 45.44340713037386,
+      "lon": 9.223988902965592
+    },
+    {
+      "stop_id": "12352",
+      "name": "corvetto m3",
+      "lat": 45.44079757374351,
+      "lon": 9.224033291358914
+    },
+    {
+      "stop_id": "12349",
+      "name": "v.le martini",
+      "lat": 45.43864894645253,
+      "lon": 9.224139922488208
+    },
+    {
+      "stop_id": "12333",
+      "name": "p.le gabriele rosa",
+      "lat": 45.437313802262544,
+      "lon": 9.223365929198351
+    },
+    {
+      "stop_id": "12336",
+      "name": "v.le omero via barabino",
+      "lat": 45.43458085575423,
+      "lon": 9.22394006221474
+    },
+    {
+      "stop_id": "12335",
+      "name": "v.le omero",
+      "lat": 45.432477645979425,
+      "lon": 9.224684426001742
+    }
+  ]
+}

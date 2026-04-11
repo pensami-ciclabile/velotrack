@@ -3,91 +3,308 @@
 {% block title %}Velotrack — Milan Tram Ride Analysis{% endblock %}
 
 {% block content %}
+{% set coverage_incomplete = city_coverage and city_coverage.pct < 100 %}
+{% set veil_class = "coverage-veiled" if coverage_incomplete else "" %}
+
+{% if coverage_incomplete %}
+<!-- Coverage veil modal — only shown while mapping is incomplete -->
+<div id="coverage-modal" class="coverage-modal" role="dialog" aria-modal="true" aria-labelledby="coverage-modal-title">
+    <div class="coverage-modal-backdrop"></div>
+    <div class="coverage-modal-card ambient-shadow">
+        <span class="text-[0.6875rem] font-bold tracking-[0.15em] text-primary uppercase block mb-3">
+            <span class="i18n-it">Dati preliminari</span>
+            <span class="i18n-en">Preliminary data</span>
+        </span>
+        <h2 id="coverage-modal-title" class="text-2xl md:text-[1.75rem] font-light leading-tight tracking-tight text-on-surface mb-4">
+            <span class="i18n-it">Solo il <span class="font-bold italic tabular-nums">{{ city_coverage.pct }}%</span> della rete di superficie è stato mappato</span>
+            <span class="i18n-en">Only <span class="font-bold italic tabular-nums">{{ city_coverage.pct }}%</span> of the surface network has been mapped</span>
+        </h2>
+        <p class="text-sm text-secondary leading-relaxed mb-6">
+            <span class="i18n-it">Stiamo ancora raccogliendo tracce GPS su tram e linee di forza: <span class="tabular-nums">{{ city_coverage.covered }}</span> fermate su <span class="tabular-nums">{{ city_coverage.total }}</span> hanno dati registrati. Le statistiche mostrate sono <strong>provvisorie</strong> e potrebbero non rappresentare l'intera rete di Milano.</span>
+            <span class="i18n-en">We're still gathering GPS tracks on trams and rapid bus corridors: <span class="tabular-nums">{{ city_coverage.covered }}</span> out of <span class="tabular-nums">{{ city_coverage.total }}</span> stops have recorded data. The statistics shown are <strong>provisional</strong> and may not represent Milan's entire network.</span>
+        </p>
+
+        <div class="line-trace-track" role="progressbar" aria-valuenow="{{ city_coverage.pct }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="line-trace-fill {% if city_coverage.pct == 0 %}zero{% elif city_coverage.pct >= 100 %}full{% endif %}"
+                 style="width: {{ city_coverage.pct }}%;"></div>
+        </div>
+        <div class="flex justify-between items-baseline mt-3 mb-8">
+            <span class="text-[0.6875rem] font-bold uppercase tracking-[0.05em] text-secondary">
+                <span class="i18n-it">{{ city_coverage.missing }} fermate da mappare</span>
+                <span class="i18n-en">{{ city_coverage.missing }} stops to map</span>
+            </span>
+            <span class="text-[0.6875rem] font-bold uppercase tracking-[0.05em] text-secondary tabular-nums">
+                {{ city_coverage.covered }} / {{ city_coverage.total }}
+            </span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <a href="{{ root_path }}/status.html" class="inline-flex items-center justify-center gap-2 bg-primary text-white font-bold text-sm px-6 py-3 rounded-xl hover:bg-on-primary-fixed-variant transition-colors no-underline">
+                <span class="material-symbols-outlined text-lg">map</span>
+                <span class="i18n-it">Vedi lo stato della mappatura</span>
+                <span class="i18n-en">View mapping status</span>
+            </a>
+            <button id="coverage-dismiss" type="button" class="inline-flex items-center justify-center gap-2 text-primary font-bold text-sm px-4 py-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer bg-transparent border-0">
+                <span class="i18n-it">Mostra comunque i dati provvisori</span>
+                <span class="i18n-en">Show provisional data anyway</span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Hero Section -->
 <section class="px-6 md:px-8 py-16 md:py-24 max-w-[1440px] mx-auto">
     <div class="max-w-3xl">
         <span class="text-[0.6875rem] font-bold tracking-[0.15em] text-primary uppercase block mb-4">
-            <span class="i18n-it">Analisi GPS della rete tramviaria di Milano</span>
-            <span class="i18n-en">GPS analysis of Milan's tram network</span>
+            <span class="i18n-it">Analisi GPS della rete di superficie di Milano</span>
+            <span class="i18n-en">GPS analysis of Milan's surface network</span>
         </span>
         <h1 class="text-4xl md:text-[3.5rem] font-light leading-tight tracking-tight text-on-surface mb-6">
             <span class="i18n-it">Come i tram di Milano <span class="font-bold italic">perdono tempo</span></span>
             <span class="i18n-en">How Milan's trams <span class="font-bold italic">lose time</span></span>
         </h1>
         <p class="text-lg text-secondary leading-relaxed max-w-xl">
-            <span class="i18n-it">Analisi GPS delle corse tramviarie a Milano. Mappe di velocità, rilevamento fermate e monitoraggio ritardi ai semafori.</span>
-            <span class="i18n-en">GPS-based tram ride analysis for Milan. Velocity heatmaps, stop detection, and traffic light delay tracking.</span>
+            <span class="i18n-it">Analisi GPS delle corse di tram e linee di forza a Milano. Mappe di velocità, rilevamento fermate e monitoraggio ritardi ai semafori.</span>
+            <span class="i18n-en">GPS-based ride analysis for Milan trams and rapid bus corridors. Velocity heatmaps, stop detection, and traffic light delay tracking.</span>
         </p>
     </div>
 </section>
 
 {% if tl_hours %}
-<!-- Hero Metrics -->
-<section class="px-6 md:px-8 max-w-[1440px] mx-auto">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-        <!-- Hours Lost -->
-        <div class="tl-highlight bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container"
+<!-- Metric Cards -->
+<section class="px-6 md:px-8 max-w-[1440px] mx-auto {{ veil_class }}">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 metric-card-grid">
+        <!-- Hours lost today -->
+        <div class="tl-highlight metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl"
              data-weekday="{{ tl_hours.weekday }}"
              data-saturday="{{ tl_hours.saturday }}"
              data-sunday="{{ tl_hours.sunday }}">
-            <div class="flex items-center gap-2 text-primary mb-3">
-                <span class="material-symbols-outlined text-xl">timer</span>
-                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
                     <span class="i18n-it">Ore perse oggi</span>
                     <span class="i18n-en">Hours lost today</span>
                 </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Σ (attesa media ai semafori per corsa &times; corse giornaliere GTFS) ÷ 3600. Aggregato su tutte le linee misurate.</span>
+                        <span class="i18n-en">Σ (avg traffic-light wait per trip &times; daily GTFS trips) ÷ 3600. Aggregated across all measured lines.</span>
+                    </span>
+                </span>
             </div>
             <div class="flex items-baseline gap-2 mb-4">
-                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tl-hours-value">{{ tl_hours.weekday }}</span>
-                <span class="text-lg font-medium text-secondary">
+                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums tl-hours-value">{{ tl_hours.weekday }}</span>
+                <span class="text-lg font-medium text-secondary/60">
                     <span class="i18n-it">ore</span><span class="i18n-en">hours</span>
                 </span>
             </div>
-            <p class="text-sm text-secondary leading-relaxed mb-2">
-                <span class="i18n-it">Solo oggi, ATM ha perso questo tempo aspettando i semafori milanesi</span>
-                <span class="i18n-en">Today alone, ATM lost this much time waiting at Milan's traffic lights</span>
+            {% if extra_stats.hours_shifts %}
+            <p class="text-sm text-secondary">
+                <span class="i18n-it">Equivalente a {{ extra_stats.hours_shifts }} turni di guida completi</span>
+                <span class="i18n-en">Equivalent to {{ extra_stats.hours_shifts }} full driver shifts</span>
             </p>
-            <p class="text-xs text-secondary/60">
-                <span class="i18n-it">Basato su {{ tl_lines_count }} di {{ tl_total_lines }} linee tramviarie · oggi come <span class="tl-day-label">giorno feriale</span> ({{ tl_hours.weekday }} feriale, {{ tl_hours.saturday }} sabato, {{ tl_hours.sunday }} domenica)</span>
-                <span class="i18n-en">Based on {{ tl_lines_count }} of {{ tl_total_lines }} tram lines · today as a <span class="tl-day-label">weekday</span> ({{ tl_hours.weekday }} weekday, {{ tl_hours.saturday }} Saturday, {{ tl_hours.sunday }} Sunday)</span>
-            </p>
+            {% endif %}
         </div>
 
         {% if tl_extra_rides %}
-        <!-- Extra Rides -->
-        <div class="tl-highlight bg-surface-container-low p-8 md:p-10 rounded-2xl border-l-4 border-primary-container"
+        <!-- Extra rides possible -->
+        <div class="tl-highlight metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl"
              data-rides-weekday="{{ tl_extra_rides.weekday }}"
              data-rides-saturday="{{ tl_extra_rides.saturday }}"
              data-rides-sunday="{{ tl_extra_rides.sunday }}">
-            <div class="flex items-center gap-2 text-primary mb-3">
-                <span class="material-symbols-outlined text-xl">directions_transit</span>
-                <span class="text-[0.6875rem] font-bold tracking-[0.1em] uppercase">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
                     <span class="i18n-it">Corse extra possibili</span>
                     <span class="i18n-en">Extra rides possible</span>
                 </span>
-            </div>
-            <div class="flex items-baseline gap-2 mb-4">
-                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tl-hours-value tl-rides-value">{{ tl_extra_rides.weekday }}</span>
-                <span class="text-lg font-medium text-secondary">
-                    <span class="i18n-it">corse in più</span><span class="i18n-en">extra rides</span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Tempo recuperabile dai semafori diviso per la durata media di una corsa, sommato su tutte le linee. Stima teorica.</span>
+                        <span class="i18n-en">Recoverable traffic-light time divided by the average trip duration, summed across all lines. Theoretical estimate.</span>
+                    </span>
                 </span>
             </div>
-            <p class="text-sm text-secondary leading-relaxed mb-2">
-                <span class="i18n-it">Con la priorità semaforica, ATM potrebbe effettuare ogni giorno questo numero di corse in più — senza un solo tram o conducente aggiuntivo</span>
-                <span class="i18n-en">With tram priority at traffic lights, ATM could run this many extra rides every day — without a single extra tram or driver</span>
-            </p>
-            <p class="text-xs text-secondary/60">
-                <span class="i18n-it">Calcolato su {{ tl_lines_count }} linee misurate · tempo risparmiato ÷ durata media corsa</span>
-                <span class="i18n-en">Calculated from {{ tl_lines_count }} measured lines · time saved ÷ avg trip duration</span>
+            <div class="flex items-baseline gap-2 mb-4">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tabular-nums tl-rides-value">{{ tl_extra_rides.weekday }}</span>
+                <span class="text-lg font-medium text-secondary/60">
+                    <span class="i18n-it">corse</span><span class="i18n-en">rides</span>
+                </span>
+            </div>
+            <p class="text-sm text-secondary">
+                <span class="i18n-it">Senza un solo tram o conducente aggiuntivo</span>
+                <span class="i18n-en">Without a single extra tram or driver</span>
             </p>
         </div>
         {% endif %}
     </div>
+
+    {% if extra_stats %}
+    <!-- Expandable cards -->
+    <div id="more-stats-wrapper" class="relative mt-6 overflow-hidden" style="max-height: 100px;">
+        <div id="more-stats-fade" class="absolute bottom-0 left-0 right-0 h-24 z-10 pointer-events-none" style="background: linear-gradient(to bottom, transparent, var(--surface, #FBF9F8));"></div>
+    <div id="more-stats" class="grid grid-cols-1 md:grid-cols-2 gap-6 metric-card-grid">
+
+        {% if extra_stats.avg_network_speed %}
+        <!-- Network speed — chart support -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
+                    <span class="i18n-it">Velocit&agrave; media della rete</span>
+                    <span class="i18n-en">Average network speed</span>
+                </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Media ponderata della velocit&agrave; di crociera GPS su tutte le linee misurate.</span>
+                        <span class="i18n-en">Weighted average of GPS cruising speed across all measured lines.</span>
+                    </span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums">{{ extra_stats.avg_network_speed }}</span>
+                <span class="text-lg font-medium text-secondary/60">km/h</span>
+            </div>
+            <p class="text-sm text-secondary mb-5">
+                <span class="i18n-it">Pi&ugrave; lento di una bicicletta urbana (~15 km/h)</span>
+                <span class="i18n-en">Slower than an urban bicycle (~15 km/h)</span>
+            </p>
+            {% if extra_stats.speed_chart %}
+            <div class="mt-auto w-full">{{ extra_stats.speed_chart }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if extra_stats.tl_time_pct %}
+        <!-- Time at red lights — chart support -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
+                    <span class="i18n-it">Tempo ai semafori</span>
+                    <span class="i18n-en">Time at red lights</span>
+                </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Quota della durata media di una corsa trascorsa fermi ai semafori.</span>
+                        <span class="i18n-en">Share of the average trip duration spent waiting at traffic lights.</span>
+                    </span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-5">
+                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums">{{ extra_stats.tl_time_pct }}</span>
+                <span class="text-lg font-medium text-secondary/60">%</span>
+            </div>
+            {% if extra_stats.tl_pct_chart %}
+            <div class="mt-auto w-full">{{ extra_stats.tl_pct_chart }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if extra_stats.tl_stops_per_trip %}
+        <!-- TL stops per trip — insight support -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
+                    <span class="i18n-it">Soste ai semafori per corsa</span>
+                    <span class="i18n-en">Traffic light stops per trip</span>
+                </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Numero medio di soste a semafori e incroci per corsa, su {{ tl_lines_count }} linee misurate.</span>
+                        <span class="i18n-en">Average number of stops at traffic lights and intersections per trip, across {{ tl_lines_count }} measured lines.</span>
+                    </span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums">{{ extra_stats.tl_stops_per_trip }}</span>
+                <span class="text-lg font-medium text-secondary/60">
+                    <span class="i18n-it">soste</span><span class="i18n-en">stops</span>
+                </span>
+            </div>
+            {% if extra_stats.tl_seconds_per_stop %}
+            <p class="text-sm text-secondary mt-auto">
+                <span class="i18n-it">Circa una sosta ogni {{ extra_stats.tl_seconds_per_stop }} secondi di viaggio</span>
+                <span class="i18n-en">Roughly one stop every {{ extra_stats.tl_seconds_per_stop }} seconds of travel</span>
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if extra_stats.potential_speed %}
+        <!-- Potential speed — chart support -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
+                    <span class="i18n-it">Velocit&agrave; possibile con priorit&agrave;</span>
+                    <span class="i18n-en">Possible speed with priority</span>
+                </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Velocit&agrave; ricalcolata rimuovendo le attese ai semafori e i rallentamenti nei colli di bottiglia.</span>
+                        <span class="i18n-en">Speed recalculated after removing traffic-light waits and bottleneck slowdowns.</span>
+                    </span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-1">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tabular-nums">{{ extra_stats.potential_speed }}</span>
+                <span class="text-lg font-medium text-secondary/60">km/h</span>
+            </div>
+            {% if extra_stats.speed_gain_pct %}
+            <p class="text-sm font-medium text-primary mb-4">+{{ extra_stats.speed_gain_pct }}%
+                <span class="font-normal text-secondary">
+                    <span class="i18n-it">rispetto agli attuali {{ extra_stats.current_speed }}</span>
+                    <span class="i18n-en">vs current {{ extra_stats.current_speed }}</span>
+                </span>
+            </p>
+            {% endif %}
+            {% if extra_stats.comparison_chart %}
+            <div class="mt-auto w-full">
+                {{ extra_stats.comparison_chart }}
+                <div class="flex gap-4 mt-1.5">
+                    <span class="text-[10px] text-secondary/50 flex items-center gap-1">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-secondary/50"></span>
+                        <span class="i18n-it">attuale</span><span class="i18n-en">current</span>
+                    </span>
+                    <span class="text-[10px] text-primary flex items-center gap-1">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        <span class="i18n-it">con priorit&agrave;</span><span class="i18n-en">with priority</span>
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+    </div>
+
+    <!-- Toggle Button -->
+    <div class="text-center mt-6 mb-12">
+        <button id="toggle-stats" type="button"
+                class="inline-flex items-center gap-2 text-primary font-bold text-sm bg-surface-container-low px-6 py-3 rounded-xl hover:bg-surface-container transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-lg toggle-icon transition-transform duration-300">expand_more</span>
+            <span class="toggle-label-show">
+                <span class="i18n-it">Mostra altre statistiche</span>
+                <span class="i18n-en">Show more stats</span>
+            </span>
+            <span class="toggle-label-hide" hidden>
+                <span class="i18n-it">Mostra meno</span>
+                <span class="i18n-en">Show less</span>
+            </span>
+        </button>
+    </div>
+    {% else %}
+    <div class="mb-12"></div>
+    {% endif %}
 </section>
 {% endif %}
 
 <!-- Commute Calculator -->
-<section class="bg-surface-container-low py-16 md:py-20">
+<section class="bg-surface-container-low py-16 md:py-20 {{ veil_class }}">
     <script id="commute-data" type="application/json">{{ commute_lines_json }}</script>
     <div class="max-w-[1440px] mx-auto px-6 md:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -138,7 +355,7 @@
 
 <!-- Hotspots Preview -->
 <script id="hotspot-slices" type="application/json">{{ hotspot_slices_json }}</script>
-<section class="py-16 md:py-20 max-w-[1440px] mx-auto px-6 md:px-8">
+<section class="py-16 md:py-20 max-w-[1440px] mx-auto px-6 md:px-8 {{ veil_class }}">
     <div class="bg-surface-container-low rounded-2xl p-8 md:p-10">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
             <!-- Left: description -->
@@ -185,40 +402,56 @@
     <div class="max-w-[1440px] mx-auto px-6 md:px-8">
         <div class="mb-12">
             <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-on-surface">
-                <span class="i18n-it">Linee tramviarie</span><span class="i18n-en">Tram lines</span>
+                <span class="i18n-it">Rete di superficie</span><span class="i18n-en">Surface network</span>
             </h2>
+            <p class="text-secondary mt-2">
+                <span class="i18n-it">Tram e linee di forza di ATM</span>
+                <span class="i18n-en">ATM trams and rapid bus corridors</span>
+            </p>
         </div>
-        <div class="max-w-4xl">
-        {% for group in grouped_lines %}
-        <div class="mb-8">
-            <h3 class="text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-primary mb-3">
-                <span class="i18n-it">Linea</span><span class="i18n-en">Line</span> {{ group.line_number }}
+        <div class="max-w-4xl space-y-12">
+        {% for section in grouped_lines %}
+        <div>
+            <h3 class="text-xl md:text-2xl font-bold tracking-tight text-on-surface mb-6">
+                <span class="i18n-it">{{ section.label_it }}</span><span class="i18n-en">{{ section.label_en }}</span>
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {% for line in group.directions %}
-                <a href="{{ root_path }}/lines/{{ line.line_key }}.html" class="bg-surface-container-lowest rounded-xl px-5 py-4 flex flex-col group hover:bg-primary transition-all cursor-pointer no-underline ambient-shadow">
-                    <div class="flex items-center gap-2.5 mb-2">
-                        <span class="text-xl font-black tracking-tighter text-on-surface group-hover:text-white">{{ group.line_number }}</span>
-                        <div class="w-0.5 h-4 bg-primary-container group-hover:bg-white/60"></div>
-                        <p class="font-bold leading-tight text-on-surface group-hover:text-white text-sm truncate">
-                            <span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span>
-                        </p>
-                    </div>
-                    <div class="flex justify-between items-baseline">
-                        <span class="text-xs text-secondary group-hover:text-white/60">
-                            {{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km · {{ line.stats.total_stops }} <span class="i18n-it">fermate</span><span class="i18n-en">stops</span>
-                        </span>
-                        <span class="font-black text-on-surface group-hover:text-white text-sm shrink-0 ml-3">{{ "%.1f"|format(line.stats.speed.avg_trip) }} km/h</span>
-                    </div>
-                    {% if line.stats.avg_trip_duration > 0 and line.stats.priority_savings_incl_bottlenecks > 0 %}
-                    {% set pct = (line.stats.priority_savings_incl_bottlenecks / line.stats.avg_trip_duration * 100)|round(0)|int %}
-                    <p class="text-xs font-bold text-primary-container group-hover:text-white mt-1">
-                        <span class="i18n-it">Potrebbe essere {{ pct }}% più veloce</span><span class="i18n-en">Could be {{ pct }}% faster</span>
-                    </p>
+            {% for group in section.groups %}
+            <div class="mb-8">
+                <h4 class="text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-primary mb-3 flex items-center gap-2">
+                    <span><span class="i18n-it">Linea</span><span class="i18n-en">Line</span> {{ group.line_number }}</span>
+                    {% if section.mode == "rapid_bus" %}
+                    <span class="text-[0.625rem] font-bold uppercase tracking-wider bg-primary-container text-on-primary-container px-2 py-0.5 rounded">
+                        <span class="i18n-it">{{ section.chip_it }}</span><span class="i18n-en">{{ section.chip_en }}</span>
+                    </span>
                     {% endif %}
-                </a>
-                {% endfor %}
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {% for line in group.directions %}
+                    <a href="{{ root_path }}/lines/{{ line.line_key }}.html" class="bg-surface-container-lowest rounded-xl px-5 py-4 flex flex-col group hover:bg-primary transition-all cursor-pointer no-underline ambient-shadow">
+                        <div class="flex items-center gap-2.5 mb-2">
+                            <span class="text-xl font-black tracking-tighter text-on-surface group-hover:text-white">{{ group.line_number }}</span>
+                            <div class="w-0.5 h-4 bg-primary-container group-hover:bg-white/60"></div>
+                            <p class="font-bold leading-tight text-on-surface group-hover:text-white text-sm truncate">
+                                <span class="i18n-it">{{ display_name_it(line.line_key) }}</span><span class="i18n-en">{{ display_name(line.line_key) }}</span>
+                            </p>
+                        </div>
+                        <div class="flex justify-between items-baseline">
+                            <span class="text-xs text-secondary group-hover:text-white/60">
+                                {{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km · {{ line.stats.total_stops }} <span class="i18n-it">fermate</span><span class="i18n-en">stops</span>
+                            </span>
+                            <span class="font-black text-on-surface group-hover:text-white text-sm shrink-0 ml-3">{{ "%.1f"|format(line.stats.speed.avg_trip) }} km/h</span>
+                        </div>
+                        {% if line.stats.avg_trip_duration > 0 and line.stats.priority_savings_incl_bottlenecks > 0 %}
+                        {% set pct = (line.stats.priority_savings_incl_bottlenecks / line.stats.avg_trip_duration * 100)|round(0)|int %}
+                        <p class="text-xs font-bold text-primary-container group-hover:text-white mt-1">
+                            <span class="i18n-it">Potrebbe essere {{ pct }}% più veloce</span><span class="i18n-en">Could be {{ pct }}% faster</span>
+                        </p>
+                        {% endif %}
+                    </a>
+                    {% endfor %}
+                </div>
             </div>
+            {% endfor %}
         </div>
         {% endfor %}
         </div>

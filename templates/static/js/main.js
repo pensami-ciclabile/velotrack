@@ -1,3 +1,21 @@
+/* Coverage veil — gate homepage stats until the user acknowledges provisional data.
+   Runs synchronously on script load so the acknowledged state applies immediately
+   when the user has already dismissed the modal in this session. */
+(function () {
+    var modal = document.getElementById("coverage-modal");
+    if (!modal) return;
+    if (sessionStorage.getItem("coverage-acknowledged") === "1") {
+        document.body.classList.add("coverage-acknowledged");
+        return;
+    }
+    var dismiss = document.getElementById("coverage-dismiss");
+    if (!dismiss) return;
+    dismiss.addEventListener("click", function () {
+        sessionStorage.setItem("coverage-acknowledged", "1");
+        document.body.classList.add("coverage-acknowledged");
+    });
+})();
+
 /* Traffic light hours highlight — pick value based on day of week */
 document.addEventListener("DOMContentLoaded", function () {
     var el = document.querySelector(".tl-highlight");
@@ -27,6 +45,42 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!rides) return;
     var span = el.querySelector(".tl-rides-value");
     if (span) span.textContent = rides;
+});
+
+/* Expand / collapse extra stats */
+document.addEventListener("DOMContentLoaded", function () {
+    var btn = document.getElementById("toggle-stats");
+    var wrapper = document.getElementById("more-stats-wrapper");
+    var panel = document.getElementById("more-stats");
+    var fade = document.getElementById("more-stats-fade");
+    if (!btn || !wrapper || !panel) return;
+    var expanded = false;
+
+    // Allow tooltips to escape the wrapper when expanded, but keep
+    // overflow hidden during the collapse animation so max-height
+    // still clips the panel cleanly.
+    wrapper.addEventListener("transitionend", function (e) {
+        if (e.propertyName !== "max-height") return;
+        if (expanded) wrapper.style.overflow = "visible";
+    });
+
+    btn.addEventListener("click", function () {
+        expanded = !expanded;
+        if (expanded) {
+            wrapper.style.maxHeight = panel.scrollHeight + "px";
+            if (fade) fade.style.opacity = "0";
+        } else {
+            wrapper.style.overflow = "hidden";
+            wrapper.style.maxHeight = "100px";
+            if (fade) fade.style.opacity = "1";
+        }
+        var icon = btn.querySelector(".toggle-icon");
+        if (icon) icon.style.transform = expanded ? "rotate(180deg)" : "";
+        var showLabel = btn.querySelector(".toggle-label-show");
+        var hideLabel = btn.querySelector(".toggle-label-hide");
+        if (showLabel) showLabel.hidden = expanded;
+        if (hideLabel) hideLabel.hidden = !expanded;
+    });
 });
 
 /* Commute calculator */
@@ -234,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function categoryColor(cat) {
         if (cat === "traffic_light") return "#d64545";
         if (cat === "combined") return "#e2722c";
-        if (cat === "tram_stop") return "#3f9f67";
+        if (cat === "transit_stop") return "#3f9f67";
         if (cat === "bottleneck") return "#2d6fae";
         return "#6f6f6f";
     }
@@ -242,7 +296,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function categoryLabel(cat) {
         if (cat === "traffic_light") return "Traffic light";
         if (cat === "combined") return "Combined";
-        if (cat === "tram_stop") return "Tram stop";
+        if (cat === "transit_stop") return "Transit stop";
         if (cat === "bottleneck") return "Bottleneck";
         return "Unknown";
     }
@@ -269,7 +323,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var catIcons = {
         traffic_light: "traffic",
         combined: "layers",
-        tram_stop: "tram",
+        transit_stop: "tram",
         bottleneck: "alt_route"
     };
 

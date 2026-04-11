@@ -67,9 +67,74 @@ If accessibility requires a container boundary, use a **Ghost Border**: `outline
 * **Primary Button:** `primary-container` background with `on-primary-container` text. Large corner radius (`xl`: 1.5rem) to mimic Apple’s rounded-rect aesthetic.
 * **Secondary/Tertiary:** No background. Use `body-lg` weight typography with a `primary` color text. Use `spacing-2` for horizontal padding.
 
-### Cards & Data Modules
-* **Rule:** Forbid divider lines.
-* **Execution:** Separate header and body within a card using `spacing-4` (1.4rem) of vertical whitespace. If sub-sections are needed, use a subtle shift to `surface-container-high` for the header background.
+### Metric Cards
+
+Every card answers **one question instantly**. If a reader needs more than three seconds to extract the meaning, the card is overloaded. Strip until it hurts, then check if it still communicates.
+
+#### Card Anatomy — Three Layers
+
+Cards have three layers, always in this order:
+
+1. **Label** — What is this number measuring?
+   * Short noun phrase, sentence case (not ALL CAPS)
+   * No icons unless they genuinely disambiguate (test: cover the icon — does the label still work? If yes, remove the icon)
+   * Muted color (`secondary`), small size, medium weight
+   * Always present, always top
+
+2. **Hero Metric** — The number itself. The reason the card exists.
+   * Largest, boldest element on the card — nothing else competes
+   * Unit displayed as an inline suffix, noticeably smaller and lighter
+   * Use tabular/monospaced figures so numbers align across cards
+   * No sentences wrapping the number — just the number
+   * Color-code by sentiment when applicable: warm/red tone for inefficiency metrics, cool tone for opportunity metrics. Keep it subtle — tinted, not saturated
+
+3. **Support** — One piece of context that reframes or deepens the number. **Choose exactly one**:
+
+   | Support type       | When to use                                | Example                              |
+   |--------------------|--------------------------------------------|--------------------------------------|
+   | Insight line       | When the number needs a "so what"          | "Equivalent to 26 full driver shifts"|
+   | Comparative delta  | When a baseline exists                     | "+18% vs weekday average"            |
+   | Mini chart         | When per-line or per-period shape matters  | Lollipop chart by line               |
+   | Methodology note   | When the number’s basis is non-obvious     | "Avg. across 16 lines · Sat schedule"|
+
+   **Never combine** a chart with a text insight in the same card. If the chart is there, it *is* the supporting context.
+
+#### Chart Guidelines
+
+When a card includes a chart:
+* **Prefer lollipop charts** over filled bar charts — same ranking, far less visual weight
+* **No Y-axis labels.** The chart shows shape and relative comparison, not precise readings
+* **X-axis labels** (line numbers): show all, keep small and muted
+* **Max chart height:** roughly one-third of card height — enough to read, not enough to dominate
+* **Single muted color** for all data points; highlight at most one point (worst performer, etc.) using the card’s accent color
+
+#### Card Container Rules
+
+* No heavy borders or accent-colored borders on the card itself — color belongs on the metric, not the container
+* Separation through whitespace and background color stepping (`surface` → `surface-container-low`)
+* Interior padding: generous — at least `2rem` on all sides
+* Vertical gaps: `0.5–1rem` between label and metric, `1–1.5rem` between metric and support layer
+
+#### Content Rules
+
+1. **Labels are noun phrases**, not sentences. "Hours lost today" not "How many hours were lost today"
+2. **Insight lines reframe, not restate.** If the insight just paraphrases the label + number, delete it
+3. **One card, one number.** Don’t smuggle a second metric into the support layer
+4. **Methodology belongs in tooltips or footnotes**, not in the card body
+
+#### Grid & Layout
+* Default: 2-column grid for desktop, single column for mobile
+* All cards in a row should be **equal height** (enforced at layout level)
+* Support layers (charts, text) should bottom-align for a consistent visual baseline
+
+#### Extensibility
+
+Any future metric reduces to three questions:
+1. What is the number? → metric + label
+2. What contextualizes it? → support layer (pick one type)
+3. Does shape/distribution matter? → If yes, chart. If no, text.
+
+Any metric that can’t fit this structure is either two cards or a different UI element.
 
 ### Tram Status Chips
 * **Design:** Pill-shaped (`full` roundedness).

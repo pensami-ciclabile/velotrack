@@ -10,7 +10,7 @@ from velotrack.gpx_parser import haversine
 from velotrack.stop_detector import StopEvent
 
 # Priority for category merging: higher = more specific
-_CAT_PRIORITY = {"unknown": 0, "bottleneck": 0, "tram_stop": 1, "traffic_light": 1, "combined": 2}
+_CAT_PRIORITY = {"unknown": 0, "bottleneck": 0, "transit_stop": 1, "traffic_light": 1, "combined": 2}
 
 
 def build_traffic_lights_map(
@@ -387,7 +387,7 @@ def _compute_stats(
         "scenario_red_wave": scenario_red_wave,
         "scenario_best_case": scenario_best_case,
         "tl_wait_total": tl_wait_from_tl + tl_wait_from_combined,
-        "boarding_total": cat_total_avg.get("tram_stop", 0) + cat_total_avg.get("combined", 0) - tl_wait_from_combined,
+        "boarding_total": cat_total_avg.get("transit_stop", 0) + cat_total_avg.get("combined", 0) - tl_wait_from_combined,
     }
 
 
@@ -410,12 +410,12 @@ def _merge_stops(
     """Merge stops: first within each ride (sum durations at same location),
     then across rides (one entry per ride per location).
 
-    Stops with ref_lat/ref_lon (tram_stop, traffic_light, combined) merge by
-    exact reference coordinates. Bottlenecks (no ref) merge by spatial
+    Stops with ref_lat/ref_lon (transit_stop, traffic_light, combined) merge
+    by exact reference coordinates. Bottlenecks (no ref) merge by spatial
     clustering within cluster_radius_m.
 
     When merging within a ride, the most specific category wins
-    (combined > tram_stop/traffic_light > bottleneck).
+    (combined > transit_stop/traffic_light > bottleneck).
     """
     merged: dict[tuple[float, float], list[StopEvent]] = {}
 
@@ -552,9 +552,9 @@ def _scenario_row(color: str, label: str, value: float, baseline: float) -> str:
 def _stats_html(stats: dict) -> str:
     """Build the HTML/CSS for the statistics panel."""
     s = stats["speed"]
-    cat_order = ["tram_stop", "traffic_light", "combined", "bottleneck"]
+    cat_order = ["transit_stop", "traffic_light", "combined", "bottleneck"]
     cat_labels = {
-        "tram_stop": "Tram stops",
+        "transit_stop": "Transit stops",
         "traffic_light": "Traffic lights",
         "combined": "Combined",
         "bottleneck": "Bottlenecks",
@@ -656,7 +656,7 @@ def _layer_control_html(layer_js_names: dict[str, str]) -> str:
 
     Args:
         layer_js_names: mapping of logical name → Folium JS variable name,
-            e.g. {"route_velocity": "feature_group_abc123", "stops_tram_stop": "feature_group_def456"}
+            e.g. {"route_velocity": "feature_group_abc123", "stops_transit_stop": "feature_group_def456"}
     """
     import json
 
@@ -686,10 +686,10 @@ def _layer_control_html(layer_js_names: dict[str, str]) -> str:
                      text-transform:uppercase;letter-spacing:0.5px">Stops</div>
 
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
-            <input type="checkbox" checked data-layer="stops_tram_stop" style="margin:0">
+            <input type="checkbox" checked data-layer="stops_transit_stop" style="margin:0">
             <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
                          background:green;opacity:0.8"></span>
-            Tram stops
+            Transit stops
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
             <input type="checkbox" checked data-layer="stops_traffic_light" style="margin:0">
@@ -1004,7 +1004,7 @@ def build_map(
     ride_dfs: list[pd.DataFrame],
     all_stops: list[list[StopEvent]],
     title: str = "Velotrack",
-    tram_stops: pd.DataFrame | None = None,
+    scheduled_stops: pd.DataFrame | None = None,
     traffic_lights: pd.DataFrame | None = None,
 ) -> folium.Map:
     """Build a Folium map from one or more rides with velocity-colored segments and stop markers.
@@ -1013,7 +1013,8 @@ def build_map(
         ride_dfs: List of parsed GPX DataFrames (one per ride).
         all_stops: List of stop event lists (one per ride, aligned with ride_dfs).
         title: Map title.
-        tram_stops: GTFS tram stop locations (for fixed stop marker positions).
+        scheduled_stops: GTFS scheduled stop locations — the union of tram and
+            rapid-bus stops (for fixed stop marker positions).
         traffic_lights: Traffic light locations (for fixed stop marker positions).
     """
     num_rides = len(ride_dfs)
@@ -1089,7 +1090,7 @@ def build_map(
         popup_parts = [
             f"<b>{category.replace('_', ' ').title()}</b>",
         ]
-        if category in ("tram_stop", "combined"):
+        if category in ("transit_stop", "combined"):
             popup_parts.append(f"Stop: {nearest_name}")
         elif category == "bottleneck":
             nearest_dist = min((e.nearest_stop_dist for e in events if e.nearest_stop_dist is not None), default=None)
