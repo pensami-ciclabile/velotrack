@@ -27,7 +27,7 @@ def load_or_build_line_stops() -> dict[str, list[dict]]:
 
     Prefers the cached line_stops.json. If missing but raw GTFS is available,
     extracts from raw. Otherwise falls back to joining gtfs_stops.json with
-    tram_stops.csv by name.
+    stops.csv by name.
     """
     if LINE_STOPS_JSON.exists():
         return json.loads(LINE_STOPS_JSON.read_text())

@@ -20,8 +20,9 @@ from velotrack.config import (
     TRAFFIC_LIGHTS_CSV,
 )
 from velotrack.gpx_parser import filter_teleports, parse_gpx, recalculate_distances
+from velotrack.lines import TRAM, mode_for_line_number
 from velotrack.osm_tracks import download_osm_tracks, load_line_tracks, snap_to_tracks
-from velotrack.gtfs import download_gtfs, load_tram_stops
+from velotrack.gtfs import download_gtfs, load_stops
 from velotrack.location_analytics import (
     aggregate_location_events,
     build_hotspot_slices,
@@ -243,9 +244,14 @@ def cmd_inspect(gpx_paths: list[str]):
             print(f"  ⚠ {teleport_count} teleport points removed")
             df, _ = recalculate_distances(df)
 
-        # Snap to OSM tram tracks if data is available
+        # Snap to OSM tram tracks if data is available (tram lines only —
+        # rapid-bus lines have no rail geometry to snap to).
         line_match = re.search(r"line(\d+)", path.name)
-        if line_match and OSM_TRACKS_JSON.exists():
+        if (
+            line_match
+            and mode_for_line_number(line_match.group(1)) == TRAM
+            and OSM_TRACKS_JSON.exists()
+        ):
             tracks = load_line_tracks(line_match.group(1))
             if tracks:
                 df = snap_to_tracks(df, tracks)
@@ -259,9 +265,12 @@ def cmd_inspect(gpx_paths: list[str]):
 
 
 def _process_rides(gpx_paths: list[str] | None = None):
-    """Parse GPX files, detect stops, group by line. Returns (rides_by_line, tram_stops, traffic_lights).
+    """Parse GPX files, detect stops, group by line.
 
-    Each value in rides_by_line is a dict with keys: ride_dfs, all_stops, ride_files.
+    Returns ``(rides_by_line, scheduled_stops, traffic_lights)``.
+    ``scheduled_stops`` is the union of tram and rapid-bus GTFS stops.
+    Each value in ``rides_by_line`` is a dict with keys: ride_dfs, all_stops,
+    ride_files.
     """
     if not gpx_paths:
         gpx_paths = sorted(str(p) for p in RIDES_DIR.glob("*.gpx") if not p.name.startswith("._"))
@@ -269,8 +278,8 @@ def _process_rides(gpx_paths: list[str] | None = None):
             print(f"No GPX files found. Place .gpx files in {RIDES_DIR}")
             sys.exit(1)
 
-    print("Loading tram stops from GTFS...")
-    tram_stops = load_tram_stops()
+    print("Loading scheduled transit stops from GTFS...")
+    scheduled_stops = load_stops()
     traffic_lights = load_traffic_lights()
 
     # Group files by tram line
@@ -301,9 +310,14 @@ def _process_rides(gpx_paths: list[str] | None = None):
                 print(f"  ⚠ {teleport_count} teleport points removed")
                 df, _ = recalculate_distances(df)
 
-            # Snap to OSM tram tracks if data is available
+            # Snap to OSM tram tracks if data is available (tram lines
+            # only — rapid-bus corridors have no rail to snap to).
             line_num = re.search(r"line(\d+)", line_key)
-            if line_num and OSM_TRACKS_JSON.exists():
+            if (
+                line_num
+                and mode_for_line_number(line_num.group(1)) == TRAM
+                and OSM_TRACKS_JSON.exists()
+            ):
                 tracks = load_line_tracks(line_num.group(1))
                 if tracks:
                     df = snap_to_tracks(df, tracks)
@@ -311,7 +325,7 @@ def _process_rides(gpx_paths: list[str] | None = None):
             ride_dfs.append(df)
             valid_ride_files.append((ride_path, name))
             stops = detect_stops(df)
-            stops = classify_stops(stops, tram_stops, traffic_lights)
+            stops = classify_stops(stops, scheduled_stops, traffic_lights)
             all_stops.append(stops)
             if outlier_count > 0:
                 print(f"  ⚠ {outlier_count} velocity outliers clamped to {MAX_REALISTIC_SPEED} km/h")
@@ -326,18 +340,18 @@ def _process_rides(gpx_paths: list[str] | None = None):
         else:
             print(f"  No valid rides for {line_key}, skipping.")
 
-    return rides_by_line, tram_stops, traffic_lights
+    return rides_by_line, scheduled_stops, traffic_lights
 
 
 def cmd_analyze(gpx_paths: list[str]):
-    rides_by_line, tram_stops, traffic_lights = _process_rides(gpx_paths or None)
+    rides_by_line, scheduled_stops, traffic_lights = _process_rides(gpx_paths or None)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     for line_key, data in rides_by_line.items():
         m = build_map(
             data["ride_dfs"], data["all_stops"], title=f"Velotrack — {line_key}",
-            tram_stops=tram_stops, traffic_lights=traffic_lights,
+            scheduled_stops=scheduled_stops, traffic_lights=traffic_lights,
         )
         out_path = OUTPUT_DIR / f"{line_key}.html"
         m.save(str(out_path))
@@ -354,7 +368,7 @@ def cmd_extract_trips():
 def cmd_build_site():
     from velotrack.site_builder import LineInfo, build_site
 
-    rides_by_line, tram_stops, traffic_lights = _process_rides()
+    rides_by_line, scheduled_stops, traffic_lights = _process_rides()
 
     MAPS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -367,7 +381,7 @@ def cmd_build_site():
         # Save map to site/maps/
         m = build_map(
             ride_dfs, all_stops, title=f"Velotrack — {line_key}",
-            tram_stops=tram_stops, traffic_lights=traffic_lights,
+            scheduled_stops=scheduled_stops, traffic_lights=traffic_lights,
         )
         m.save(str(MAPS_DIR / f"{line_key}.html"))
         print(f"  Map saved: {MAPS_DIR / f'{line_key}.html'}")

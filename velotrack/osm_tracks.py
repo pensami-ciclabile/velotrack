@@ -80,8 +80,11 @@ def load_line_tracks(line_number: str) -> list[list[tuple[float, float]]]:
                     matching_way_ids.add(member["ref"])
 
     if not matching_way_ids:
-        print(f"  Warning: no OSM relation found for line {line_number}, using all tram tracks.")
-        matching_way_ids = {w["id"] for w in ways}
+        # Strict opt-in: if we have no relation for this line, return empty
+        # rather than falling back to *all* tram tracks. The old fallback
+        # was a silent footgun that mis-snapped non-tram lines onto rails.
+        print(f"  Warning: no OSM relation found for line {line_number}, skipping snap.")
+        return []
 
     # Build polylines from matching ways
     polylines: list[list[tuple[float, float]]] = []

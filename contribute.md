@@ -41,7 +41,13 @@ This guide explains architecture, analytics contracts, and test expectations for
   - `snap_to_tracks(df, tracks)`: forward-chain snapping with spatial grid index and continuity bonus for junctions. Updates lat/lon only — dist/velocity are preserved.
 
 - `/Volumes/T7/velotrack/velotrack/stop_detector.py`
-  - Categories: `tram_stop`, `traffic_light`, `combined`, `bottleneck`.
+  - Categories: `transit_stop`, `traffic_light`, `combined`, `bottleneck`.
+
+- `/Volumes/T7/velotrack/velotrack/lines.py`
+  - Single source of truth for which lines Velotrack tracks and how they're classified.
+  - Two modes: `tram` (GTFS `route_type == 0`) and `rapid_bus` (ATM's "linee di forza" 90/91/92/93, `route_type` 3 or 11).
+  - Helpers: `mode_for_route(route_short_name, route_type)`, `mode_for_line_number(line_number)`, `MODE_LABELS`.
+  - All pipeline stages (GTFS extraction, OSM snap guard, site builder) branch on the `mode` value rather than checking line numbers directly.
 
 ### Line analytics
 - `/Volumes/T7/velotrack/velotrack/map_builder.py`
@@ -97,7 +103,7 @@ One row per physical hotspot with stable top-level keys:
   - `time_bands` (per-line per-band `obs_count` + `mean_wait_s`)
 
 Category resolution when mixed categories hit one location:
-- dominant count wins; ties use deterministic priority: `traffic_light > combined > tram_stop > bottleneck > unknown`.
+- dominant count wins; ties use deterministic priority: `traffic_light > combined > transit_stop > bottleneck > unknown`.
 
 ## 4) Hotspots UX behavior (expected)
 

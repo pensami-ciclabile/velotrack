@@ -241,7 +241,7 @@ body.coverage-acknowledged .coverage-modal {
 }
 .hotspot-item--traffic_light { border-left-color: #d64545; }
 .hotspot-item--combined { border-left-color: #e2722c; }
-.hotspot-item--tram_stop { border-left-color: #3f9f67; }
+.hotspot-item--transit_stop { border-left-color: #3f9f67; }
 .hotspot-item--bottleneck { border-left-color: #2d6fae; }
 .hotspot-item-top {
     display: flex;

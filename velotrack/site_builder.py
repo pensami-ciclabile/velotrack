@@ -3,7 +3,7 @@
 import json
 import re
 import shutil
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
@@ -18,6 +18,7 @@ from velotrack.config import (
     SITE_DIR,
     TEMPLATES_DIR,
 )
+from velotrack.lines import MODE_LABELS, RAPID_BUS, TRAM, mode_for_line_number
 
 
 @dataclass
@@ -27,6 +28,12 @@ class LineInfo:
     num_rides: int
     stats: dict
     total_distance_km: float
+    mode: str = field(default=TRAM)
+
+    def __post_init__(self) -> None:
+        match = re.search(r"line(\d+)", self.line_key)
+        if match:
+            self.mode = mode_for_line_number(match.group(1))
 
 
 def _destination_name(line_key: str) -> str:
@@ -55,24 +62,40 @@ def _display_name_it(line_key: str) -> str:
 
 
 def _group_lines(lines: list[LineInfo]) -> list[dict]:
-    """Group lines by line number for the home page.
+    """Group lines by mode, then by line number, for the home page.
 
-    Returns list of {"line_number": int, "directions": [LineInfo, ...]}
-    sorted by line number.
+    Returns a list of one entry per mode, each shaped as::
+
+        {"mode": "tram", "label_it": "Linee tramviarie",
+         "label_en": "Tram lines",
+         "groups": [{"line_number": 1, "directions": [LineInfo, ...]}, ...]}
+
+    Tram block is always rendered first, rapid-bus second. Within each mode,
+    groups are sorted numerically by line number.
     """
-    groups: dict[int, list[LineInfo]] = {}
+    by_mode: dict[str, dict[int, list[LineInfo]]] = {TRAM: {}, RAPID_BUS: {}}
     for li in lines:
         match = re.search(r"line(\d+)", li.line_key)
-        if match:
-            num = int(match.group(1))
-            groups.setdefault(num, []).append(li)
-        else:
-            groups.setdefault(0, []).append(li)
+        num = int(match.group(1)) if match else 0
+        by_mode.setdefault(li.mode, {}).setdefault(num, []).append(li)
 
-    return [
-        {"line_number": num, "directions": dirs}
-        for num, dirs in sorted(groups.items())
-    ]
+    out: list[dict] = []
+    for mode in (TRAM, RAPID_BUS):
+        groups_for_mode = by_mode.get(mode, {})
+        if not groups_for_mode:
+            continue
+        out.append({
+            "mode": mode,
+            "label_it": MODE_LABELS[mode]["it_plural"],
+            "label_en": MODE_LABELS[mode]["en_plural"],
+            "chip_it": MODE_LABELS[mode]["it_singular"],
+            "chip_en": MODE_LABELS[mode]["en_singular"],
+            "groups": [
+                {"line_number": num, "directions": dirs}
+                for num, dirs in sorted(groups_for_mode.items())
+            ],
+        })
+    return out
 
 
 def _svg_lollipop_chart(
@@ -264,10 +287,17 @@ def build_site(
     # Group lines by number for home page
     grouped_lines = _group_lines(lines)
 
-    # Compute traffic light hours lost (if trip counts available)
+    # Compute traffic light hours lost (if trip counts available).
+    # tl_total_lines is derived from the GTFS-stop cache so the denominator
+    # in the "X of Y lines" footnote naturally tracks tram + rapid-bus scope.
     tl_hours = None
     tl_lines_count = 0
-    tl_total_lines = 17
+    tl_total_lines = 0
+    if GTFS_STOPS_JSON.exists():
+        try:
+            tl_total_lines = len(json.loads(GTFS_STOPS_JSON.read_text()))
+        except (OSError, ValueError):
+            tl_total_lines = 0
     tl_breakdown = []
     # Group directions by line number, averaging tl_wait across directions
     line_tl_wait: dict[str, list[float]] = {}
@@ -412,11 +442,12 @@ def build_site(
         gtfs_stops_by_line = {int(k): v for k, v in raw.items()}
 
     commute_lines = []
-    for route_num in [1,2,3,4,5,7,9,10,12,14,15,16,19,24,27,31,33]:
+    for route_num in [1,2,3,4,5,7,9,10,12,14,15,16,19,24,27,31,33,90,91,92,93]:
         num_str = str(route_num)
         waits = line_tl_wait.get(num_str, [])
         commute_lines.append({
             "line": route_num,
+            "mode": mode_for_line_number(num_str),
             "tl_wait": round(sum(waits)/len(waits), 1) if waits else None,
             "stops": gtfs_stops_by_line.get(route_num, []),
         })
@@ -496,6 +527,7 @@ def build_site(
             cards.append({
                 "line_num": line_num,
                 "sort_num": sort_num,
+                "mode": mode_for_line_number(str(line_num)),
                 "total": cov["total"],
                 "covered": cov["covered"],
                 "missing_count": cov["missing_count"],
@@ -503,6 +535,21 @@ def build_site(
                 "missing_names": cov["missing_names"],
             })
         cards.sort(key=lambda c: (c["pct"], c["sort_num"]))
+
+        # Split into tram vs rapid-bus sections for the two-section layout
+        card_sections: list[dict[str, Any]] = []
+        for mode in (TRAM, RAPID_BUS):
+            mode_cards = [c for c in cards if c["mode"] == mode]
+            if not mode_cards:
+                continue
+            card_sections.append({
+                "mode": mode,
+                "label_it": MODE_LABELS[mode]["it_plural"],
+                "label_en": MODE_LABELS[mode]["en_plural"],
+                "chip_it": MODE_LABELS[mode]["it_singular"],
+                "chip_en": MODE_LABELS[mode]["en_singular"],
+                "cards": mode_cards,
+            })
 
         # Compact JSON for client-side map rendering — only the data the
         # browser needs (stop coords + covered flag), keyed by line number.
@@ -525,6 +572,7 @@ def build_site(
                 root_path=".",
                 city_coverage=city_coverage,
                 cards=cards,
+                card_sections=card_sections,
                 coverage_json=Markup(json.dumps(map_data, ensure_ascii=False)),
             )
         )

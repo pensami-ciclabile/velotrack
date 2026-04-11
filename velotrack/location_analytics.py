@@ -20,7 +20,7 @@ MILAN_TZ = ZoneInfo("Europe/Rome")
 CATEGORY_PRIORITY = {
     "traffic_light": 4,
     "combined": 3,
-    "tram_stop": 2,
+    "transit_stop": 2,
     "bottleneck": 1,
     "unknown": 0,
 }
@@ -373,7 +373,7 @@ def build_hotspot_slices(
         "all": rank_hotspots(aggregates, category="all", time_band="all", limit=limit),
     }
 
-    for category in ["traffic_light", "combined", "bottleneck", "tram_stop"]:
+    for category in ["traffic_light", "combined", "bottleneck", "transit_stop"]:
         slices[category] = rank_hotspots(
             aggregates, category=category, time_band="all", limit=limit,
         )

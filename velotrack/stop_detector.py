@@ -5,11 +5,11 @@ from dataclasses import dataclass
 import pandas as pd
 
 from velotrack.config import (
-    COMBINED_TRAM_DEDUCT,
+    COMBINED_STOP_DEDUCT,
     STOP_DISTANCE,
     STOP_TIME_GAP,
     TRAFFIC_LIGHT_RADIUS,
-    TRAM_STOP_RADIUS,
+    TRANSIT_STOP_RADIUS,
     TRAFFIC_LIGHTS_CSV,
 )
 from velotrack.gpx_parser import haversine
@@ -20,7 +20,7 @@ class StopEvent:
     lat: float
     lon: float
     duration: float  # seconds
-    category: str  # tram_stop, traffic_light, combined, bottleneck
+    category: str  # transit_stop, traffic_light, combined, bottleneck
     nearest_stop_name: str | None = None
     nearest_stop_dist: float | None = None
     traffic_light_wait: float | None = None
@@ -66,26 +66,30 @@ def load_traffic_lights() -> pd.DataFrame:
 
 def classify_stops(
     stops: list[StopEvent],
-    tram_stops: pd.DataFrame,
+    scheduled_stops: pd.DataFrame,
     traffic_lights: pd.DataFrame | None = None,
 ) -> list[StopEvent]:
-    """Classify each stop event based on proximity to tram stops and traffic lights."""
+    """Classify each stop event by proximity to transit stops and traffic lights.
+
+    ``scheduled_stops`` is the union of tram and rapid-bus stops (from
+    ``load_stops``); the category is ``transit_stop`` for both modes.
+    """
     if traffic_lights is None:
         traffic_lights = load_traffic_lights()
 
     for stop in stops:
-        # Find nearest tram stop
-        nearest_tram_dist = float("inf")
-        nearest_tram_name = None
-        nearest_tram_lat = None
-        nearest_tram_lon = None
-        for _, ts in tram_stops.iterrows():
-            d = haversine(stop.lat, stop.lon, ts["lat"], ts["lon"])
-            if d < nearest_tram_dist:
-                nearest_tram_dist = d
-                nearest_tram_name = ts["stop_name"]
-                nearest_tram_lat = ts["lat"]
-                nearest_tram_lon = ts["lon"]
+        # Find nearest scheduled transit stop
+        nearest_transit_dist = float("inf")
+        nearest_transit_name = None
+        nearest_transit_lat = None
+        nearest_transit_lon = None
+        for _, ts in scheduled_stops.iterrows():
+            d = haversine(stop.lat, stop.lon, float(ts["lat"]), float(ts["lon"]))
+            if d < nearest_transit_dist:
+                nearest_transit_dist = d
+                nearest_transit_name = str(ts["stop_name"])
+                nearest_transit_lat = float(ts["lat"])
+                nearest_transit_lon = float(ts["lon"])
 
         # Find nearest traffic light
         nearest_tl_dist = float("inf")
@@ -93,24 +97,24 @@ def classify_stops(
         nearest_tl_lon = None
         if not traffic_lights.empty:
             for _, tl in traffic_lights.iterrows():
-                d = haversine(stop.lat, stop.lon, tl["lat"], tl["lon"])
+                d = haversine(stop.lat, stop.lon, float(tl["lat"]), float(tl["lon"]))
                 if d < nearest_tl_dist:
                     nearest_tl_dist = d
-                    nearest_tl_lat = tl["lat"]
-                    nearest_tl_lon = tl["lon"]
+                    nearest_tl_lat = float(tl["lat"])
+                    nearest_tl_lon = float(tl["lon"])
 
-        near_tram = nearest_tram_dist <= TRAM_STOP_RADIUS
+        near_transit = nearest_transit_dist <= TRANSIT_STOP_RADIUS
         near_tl = nearest_tl_dist <= TRAFFIC_LIGHT_RADIUS
 
-        if near_tram and near_tl:
+        if near_transit and near_tl:
             stop.category = "combined"
-            stop.traffic_light_wait = max(0, stop.duration - COMBINED_TRAM_DEDUCT)
-            stop.ref_lat = nearest_tram_lat
-            stop.ref_lon = nearest_tram_lon
-        elif near_tram:
-            stop.category = "tram_stop"
-            stop.ref_lat = nearest_tram_lat
-            stop.ref_lon = nearest_tram_lon
+            stop.traffic_light_wait = max(0, stop.duration - COMBINED_STOP_DEDUCT)
+            stop.ref_lat = nearest_transit_lat
+            stop.ref_lon = nearest_transit_lon
+        elif near_transit:
+            stop.category = "transit_stop"
+            stop.ref_lat = nearest_transit_lat
+            stop.ref_lon = nearest_transit_lon
         elif near_tl:
             stop.category = "traffic_light"
             stop.ref_lat = nearest_tl_lat
@@ -118,7 +122,7 @@ def classify_stops(
         else:
             stop.category = "bottleneck"
 
-        stop.nearest_stop_name = nearest_tram_name
-        stop.nearest_stop_dist = nearest_tram_dist
+        stop.nearest_stop_name = nearest_transit_name
+        stop.nearest_stop_dist = nearest_transit_dist
 
     return stops

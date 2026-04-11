@@ -7,7 +7,7 @@ RIDES_DIR = DATA_DIR / "rides"
 GTFS_DIR = DATA_DIR / "gtfs"
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 TRAFFIC_LIGHTS_CSV = DATA_DIR / "traffic_lights.csv"
-TRAM_STOPS_CSV = DATA_DIR / "tram_stops.csv"
+STOPS_CSV = DATA_DIR / "stops.csv"
 DAILY_TRIPS_JSON = DATA_DIR / "daily_trips.json"
 GTFS_STOPS_JSON = DATA_DIR / "gtfs_stops.json"
 LINE_STOPS_JSON = DATA_DIR / "line_stops.json"
@@ -30,9 +30,9 @@ GTFS_URL = "https://dati.comune.milano.it/dataset/ae3f3db9-de61-45b7-94e7-9395c0
 # Stop detection
 STOP_TIME_GAP = 5.0  # seconds — gap threshold for a stop
 STOP_DISTANCE = 15.0  # meters — max movement during a stop
-TRAM_STOP_RADIUS = 30.0  # meters — match radius to GTFS tram stop
+TRANSIT_STOP_RADIUS = 30.0  # meters — match radius to GTFS scheduled stop
 TRAFFIC_LIGHT_RADIUS = 25.0  # meters — match radius to traffic light
-COMBINED_TRAM_DEDUCT = 12.0  # seconds — estimated boarding time deducted for combined stops
+COMBINED_STOP_DEDUCT = 12.0  # seconds — estimated boarding time deducted for combined stops
 
 # Velocity outlier removal
 MAX_REALISTIC_SPEED = 50.0  # km/h — cap for outlier removal
@@ -51,7 +51,7 @@ VELOCITY_COLORS = [
 
 # Stop marker colors by category
 STOP_COLORS = {
-    "tram_stop": "green",
+    "transit_stop": "green",
     "traffic_light": "red",
     "combined": "orange",
     "bottleneck": "gray",

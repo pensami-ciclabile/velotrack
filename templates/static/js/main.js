@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function categoryColor(cat) {
         if (cat === "traffic_light") return "#d64545";
         if (cat === "combined") return "#e2722c";
-        if (cat === "tram_stop") return "#3f9f67";
+        if (cat === "transit_stop") return "#3f9f67";
         if (cat === "bottleneck") return "#2d6fae";
         return "#6f6f6f";
     }
@@ -296,7 +296,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function categoryLabel(cat) {
         if (cat === "traffic_light") return "Traffic light";
         if (cat === "combined") return "Combined";
-        if (cat === "tram_stop") return "Tram stop";
+        if (cat === "transit_stop") return "Transit stop";
         if (cat === "bottleneck") return "Bottleneck";
         return "Unknown";
     }
@@ -323,7 +323,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var catIcons = {
         traffic_light: "traffic",
         combined: "layers",
-        tram_stop: "tram",
+        transit_stop: "tram",
         bottleneck: "alt_route"
     };
 
