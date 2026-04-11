@@ -422,6 +422,21 @@ def build_site(
         })
     commute_lines_json = Markup(json.dumps(commute_lines, ensure_ascii=False))
 
+    # Compute coverage once — reused by home (for the veil) and status pages.
+    line_coverage: dict[str, dict] | None = None
+    city_coverage: dict | None = None
+    if rides_by_line is not None:
+        from velotrack.coverage import (
+            compute_city_coverage,
+            compute_line_coverage,
+            load_or_build_line_stops,
+        )
+
+        line_stops = load_or_build_line_stops()
+        if line_stops:
+            line_coverage = compute_line_coverage(rides_by_line, line_stops)
+            city_coverage = compute_city_coverage(line_coverage)
+
     # Setup Jinja2
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
     env.globals["destination_name"] = _destination_name
@@ -443,6 +458,7 @@ def build_site(
             commute_lines_json=commute_lines_json,
             hotspot_slices_json=Markup(json.dumps(hotspot_slices, ensure_ascii=False)),
             extra_stats=extra_stats,
+            city_coverage=city_coverage,
         )
     )
 
@@ -469,63 +485,52 @@ def build_site(
     )
 
     # Render mapping status page
-    if rides_by_line is not None:
-        from velotrack.coverage import (
-            compute_city_coverage,
-            compute_line_coverage,
-            load_or_build_line_stops,
+    if line_coverage is not None and city_coverage is not None:
+        # Build per-line cards: sort ascending by pct, then by line number
+        cards: list[dict[str, Any]] = []
+        for line_num, cov in line_coverage.items():
+            try:
+                sort_num = int(line_num)
+            except (TypeError, ValueError):
+                sort_num = 9999
+            cards.append({
+                "line_num": line_num,
+                "sort_num": sort_num,
+                "total": cov["total"],
+                "covered": cov["covered"],
+                "missing_count": cov["missing_count"],
+                "pct": cov["pct"],
+                "missing_names": cov["missing_names"],
+            })
+        cards.sort(key=lambda c: (c["pct"], c["sort_num"]))
+
+        # Compact JSON for client-side map rendering — only the data the
+        # browser needs (stop coords + covered flag), keyed by line number.
+        map_data = {
+            ln: [
+                {
+                    "n": s["name"],
+                    "y": round(s["lat"], 6),
+                    "x": round(s["lon"], 6),
+                    "c": 1 if s["covered"] else 0,
+                }
+                for s in cov["stops"]
+            ]
+            for ln, cov in line_coverage.items()
+        }
+
+        tmpl = env.get_template("status.html")
+        (SITE_DIR / "status.html").write_text(
+            tmpl.render(
+                root_path=".",
+                city_coverage=city_coverage,
+                cards=cards,
+                coverage_json=Markup(json.dumps(map_data, ensure_ascii=False)),
+            )
         )
-
-        line_stops = load_or_build_line_stops()
-        if line_stops:
-            line_coverage = compute_line_coverage(rides_by_line, line_stops)
-            city_coverage = compute_city_coverage(line_coverage)
-
-            # Build per-line cards: sort ascending by pct, then by line number
-            cards: list[dict[str, Any]] = []
-            for line_num, cov in line_coverage.items():
-                try:
-                    sort_num = int(line_num)
-                except (TypeError, ValueError):
-                    sort_num = 9999
-                cards.append({
-                    "line_num": line_num,
-                    "sort_num": sort_num,
-                    "total": cov["total"],
-                    "covered": cov["covered"],
-                    "missing_count": cov["missing_count"],
-                    "pct": cov["pct"],
-                    "missing_names": cov["missing_names"],
-                })
-            cards.sort(key=lambda c: (c["pct"], c["sort_num"]))
-
-            # Compact JSON for client-side map rendering — only the data the
-            # browser needs (stop coords + covered flag), keyed by line number.
-            map_data = {
-                ln: [
-                    {
-                        "n": s["name"],
-                        "y": round(s["lat"], 6),
-                        "x": round(s["lon"], 6),
-                        "c": 1 if s["covered"] else 0,
-                    }
-                    for s in cov["stops"]
-                ]
-                for ln, cov in line_coverage.items()
-            }
-
-            tmpl = env.get_template("status.html")
-            (SITE_DIR / "status.html").write_text(
-                tmpl.render(
-                    root_path=".",
-                    city_coverage=city_coverage,
-                    cards=cards,
-                    coverage_json=Markup(json.dumps(map_data, ensure_ascii=False)),
-                )
-            )
-            print(
-                f"Coverage: {city_coverage['pct']}% of city stops mapped "
-                f"({city_coverage['covered']}/{city_coverage['total']})"
-            )
+        print(
+            f"Coverage: {city_coverage['pct']}% of city stops mapped "
+            f"({city_coverage['covered']}/{city_coverage['total']})"
+        )
 
     print(f"Site built: {SITE_DIR}")

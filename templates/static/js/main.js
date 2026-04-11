@@ -1,3 +1,21 @@
+/* Coverage veil — gate homepage stats until the user acknowledges provisional data.
+   Runs synchronously on script load so the acknowledged state applies immediately
+   when the user has already dismissed the modal in this session. */
+(function () {
+    var modal = document.getElementById("coverage-modal");
+    if (!modal) return;
+    if (sessionStorage.getItem("coverage-acknowledged") === "1") {
+        document.body.classList.add("coverage-acknowledged");
+        return;
+    }
+    var dismiss = document.getElementById("coverage-dismiss");
+    if (!dismiss) return;
+    dismiss.addEventListener("click", function () {
+        sessionStorage.setItem("coverage-acknowledged", "1");
+        document.body.classList.add("coverage-acknowledged");
+    });
+})();
+
 /* Traffic light hours highlight — pick value based on day of week */
 document.addEventListener("DOMContentLoaded", function () {
     var el = document.querySelector(".tl-highlight");
