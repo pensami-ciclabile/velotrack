@@ -38,12 +38,21 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!btn || !wrapper || !panel) return;
     var expanded = false;
 
+    // Allow tooltips to escape the wrapper when expanded, but keep
+    // overflow hidden during the collapse animation so max-height
+    // still clips the panel cleanly.
+    wrapper.addEventListener("transitionend", function (e) {
+        if (e.propertyName !== "max-height") return;
+        if (expanded) wrapper.style.overflow = "visible";
+    });
+
     btn.addEventListener("click", function () {
         expanded = !expanded;
         if (expanded) {
             wrapper.style.maxHeight = panel.scrollHeight + "px";
             if (fade) fade.style.opacity = "0";
         } else {
+            wrapper.style.overflow = "hidden";
             wrapper.style.maxHeight = "100px";
             if (fade) fade.style.opacity = "1";
         }
