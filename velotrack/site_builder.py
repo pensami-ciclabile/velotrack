@@ -259,6 +259,8 @@ def build_site(
     location_stats: list[dict[str, Any]] | None = None,
     hotspot_slices: dict[str, list[dict[str, Any]]] | None = None,
     rides_by_line: dict[str, dict] | None = None,
+    debug_rides: list[dict[str, Any]] | None = None,
+    debug_lines: list[dict[str, Any]] | None = None,
 ) -> None:
     """Render the full static site into SITE_DIR."""
     # Prepare output dirs
@@ -580,5 +582,42 @@ def build_site(
             f"Coverage: {city_coverage['pct']}% of city stops mapped "
             f"({city_coverage['covered']}/{city_coverage['total']})"
         )
+
+    # Render hidden /debug/ section (not linked from any navbar)
+    debug_dir = SITE_DIR / "debug"
+    debug_dir.mkdir(parents=True, exist_ok=True)
+
+    tmpl = env.get_template("debug/index.html")
+    (debug_dir / "index.html").write_text(tmpl.render(root_path=".."))
+
+    tmpl = env.get_template("debug/inspect.html")
+    (debug_dir / "inspect.html").write_text(
+        tmpl.render(
+            root_path="..",
+            debug_rides_json=Markup(
+                json.dumps(debug_rides or [], ensure_ascii=False)
+            ),
+            num_rides=len(debug_rides or []),
+        )
+    )
+
+    tmpl = env.get_template("debug/lines.html")
+
+    def _line_sort_key(d: dict[str, Any]) -> tuple[int, str]:
+        match = re.search(r"line(\d+)", d["line_key"])
+        num = int(match.group(1)) if match is not None else 9999
+        return (num, d["line_key"])
+
+    # Sort line entries by line number (so line1, line2, … line90 order).
+    sorted_debug_lines = sorted(debug_lines or [], key=_line_sort_key)
+    (debug_dir / "lines.html").write_text(
+        tmpl.render(
+            root_path="..",
+            debug_lines_json=Markup(
+                json.dumps(sorted_debug_lines, ensure_ascii=False)
+            ),
+            num_lines=len(sorted_debug_lines),
+        )
+    )
 
     print(f"Site built: {SITE_DIR}")

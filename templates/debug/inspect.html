@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Ride inspector — Debug — Velotrack{% endblock %}
+
+{% block content %}
+<div class="debug-inspect-shell">
+    <aside class="debug-inspect-sidebar">
+        <div class="debug-inspect-sidebar-head">
+            <p class="text-[0.6875rem] font-bold uppercase tracking-[0.15em] text-primary mb-2">
+                <span class="i18n-it">Debug</span><span class="i18n-en">Debug</span>
+            </p>
+            <h1 class="text-lg font-semibold text-on-surface mb-1">
+                <span class="i18n-it">Ispettore tracce</span><span class="i18n-en">Ride inspector</span>
+            </h1>
+            <p class="text-xs text-secondary mb-4">
+                <span class="i18n-it">{{ num_rides }} tracce disponibili.</span>
+                <span class="i18n-en">{{ num_rides }} rides available.</span>
+            </p>
+
+            <label class="block mb-3">
+                <span class="sr-only">Filter</span>
+                <input type="search" id="debug-filter"
+                       class="w-full px-3 py-2 text-sm bg-surface-container-lowest border border-outline-variant rounded focus:outline-none focus:border-primary"
+                       placeholder="Filter…">
+            </label>
+
+            <div class="flex gap-2 mb-3">
+                <button type="button" id="debug-sort-date"
+                        class="debug-sort-btn flex-1 px-2 py-1.5 text-xs font-medium rounded border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container">
+                    <span class="i18n-it">Data</span><span class="i18n-en">Date</span>
+                    <span class="debug-sort-arrow">↓</span>
+                </button>
+                <button type="button" id="debug-sort-name"
+                        class="debug-sort-btn flex-1 px-2 py-1.5 text-xs font-medium rounded border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container">
+                    <span class="i18n-it">Nome</span><span class="i18n-en">Name</span>
+                    <span class="debug-sort-arrow"></span>
+                </button>
+            </div>
+        </div>
+        <ul id="debug-ride-list" class="debug-ride-list"></ul>
+    </aside>
+
+    <section class="debug-inspect-main">
+        <div id="debug-placeholder" class="debug-placeholder">
+            <span class="material-symbols-outlined text-5xl text-outline-variant mb-3 block">map</span>
+            <p class="text-sm text-secondary">
+                <span class="i18n-it">Seleziona una traccia per visualizzarla.</span>
+                <span class="i18n-en">Pick a ride to see it on the map.</span>
+            </p>
+        </div>
+        <iframe id="debug-iframe" class="debug-iframe" title="Ride inspector map"
+                style="display:none"></iframe>
+    </section>
+</div>
+
+<script id="debug-rides" type="application/json">{{ debug_rides_json }}</script>
+<script>
+(function(){
+    var dataEl = document.getElementById("debug-rides");
+    var rides = JSON.parse(dataEl.textContent || "[]");
+
+    var listEl = document.getElementById("debug-ride-list");
+    var filterEl = document.getElementById("debug-filter");
+    var sortDateBtn = document.getElementById("debug-sort-date");
+    var sortNameBtn = document.getElementById("debug-sort-name");
+    var iframe = document.getElementById("debug-iframe");
+    var placeholder = document.getElementById("debug-placeholder");
+
+    // State — default: sort by date, descending (newest first)
+    var sortKey = "date";
+    var sortDesc = true;
+    var filterTerm = "";
+
+    function formatDate(mtime){
+        var d = new Date(mtime * 1000);
+        var y = d.getFullYear();
+        var m = String(d.getMonth() + 1).padStart(2, "0");
+        var day = String(d.getDate()).padStart(2, "0");
+        return y + "-" + m + "-" + day;
+    }
+
+    function rideId(r){
+        return r.line_key + "__" + r.slug;
+    }
+
+    function compareRides(a, b){
+        var cmp;
+        if (sortKey === "date") {
+            cmp = a.mtime - b.mtime;
+        } else {
+            cmp = a.filename.localeCompare(b.filename, undefined, {sensitivity:"base"});
+        }
+        return sortDesc ? -cmp : cmp;
+    }
+
+    function render(){
+        var term = filterTerm.toLowerCase();
+        var filtered = rides.filter(function(r){
+            return !term || r.filename.toLowerCase().indexOf(term) !== -1;
+        });
+        filtered.sort(compareRides);
+
+        listEl.innerHTML = "";
+        var currentId = (location.hash || "").replace(/^#/, "");
+        filtered.forEach(function(r){
+            var id = rideId(r);
+            var li = document.createElement("li");
+            li.className = "debug-ride-row" + (id === currentId ? " is-selected" : "");
+
+            var label = document.createElement("label");
+            label.className = "debug-ride-label";
+
+            var input = document.createElement("input");
+            input.type = "radio";
+            input.name = "debug-ride";
+            input.value = id;
+            input.checked = (id === currentId);
+            input.addEventListener("change", function(){ selectRide(r); });
+
+            var text = document.createElement("div");
+            text.className = "debug-ride-text";
+
+            var name = document.createElement("div");
+            name.className = "debug-ride-name";
+            name.textContent = r.filename;
+
+            var meta = document.createElement("div");
+            meta.className = "debug-ride-meta";
+            meta.textContent = formatDate(r.mtime) + " · " + r.num_points + " pts · " + r.line_key;
+
+            text.appendChild(name);
+            text.appendChild(meta);
+            label.appendChild(input);
+            label.appendChild(text);
+            li.appendChild(label);
+            listEl.appendChild(li);
+        });
+
+        // Reflect sort state on buttons
+        updateSortButton(sortDateBtn, sortKey === "date");
+        updateSortButton(sortNameBtn, sortKey === "name");
+    }
+
+    function updateSortButton(btn, active){
+        var arrow = btn.querySelector(".debug-sort-arrow");
+        if (active) {
+            btn.classList.add("is-active");
+            arrow.textContent = sortDesc ? "↓" : "↑";
+        } else {
+            btn.classList.remove("is-active");
+            arrow.textContent = "";
+        }
+    }
+
+    function selectRide(r){
+        var id = rideId(r);
+        if (location.hash !== "#" + id) {
+            history.replaceState(null, "", "#" + id);
+        }
+        iframe.src = "../" + r.map_path;
+        iframe.style.display = "";
+        placeholder.style.display = "none";
+        // Update selected highlight without re-sorting/filtering
+        Array.prototype.forEach.call(
+            listEl.querySelectorAll(".debug-ride-row"),
+            function(row){ row.classList.remove("is-selected"); }
+        );
+        var input = listEl.querySelector('input[value="' + id.replace(/"/g, '\\"') + '"]');
+        if (input) {
+            input.checked = true;
+            var row = input.closest(".debug-ride-row");
+            if (row) row.classList.add("is-selected");
+        }
+    }
+
+    function selectFromHash(){
+        var id = (location.hash || "").replace(/^#/, "");
+        if (!id) return;
+        for (var i = 0; i < rides.length; i++) {
+            if (rideId(rides[i]) === id) {
+                selectRide(rides[i]);
+                return;
+            }
+        }
+    }
+
+    filterEl.addEventListener("input", function(e){
+        filterTerm = e.target.value;
+        render();
+    });
+
+    sortDateBtn.addEventListener("click", function(){
+        if (sortKey === "date") {
+            sortDesc = !sortDesc;
+        } else {
+            sortKey = "date";
+            sortDesc = true;
+        }
+        render();
+    });
+
+    sortNameBtn.addEventListener("click", function(){
+        if (sortKey === "name") {
+            sortDesc = !sortDesc;
+        } else {
+            sortKey = "name";
+            sortDesc = false;
+        }
+        render();
+    });
+
+    window.addEventListener("hashchange", selectFromHash);
+
+    render();
+    selectFromHash();
+})();
+</script>
+{% endblock %}

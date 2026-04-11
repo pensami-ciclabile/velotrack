@@ -29,7 +29,13 @@ from velotrack.location_analytics import (
     build_normalized_events,
     serialize_location_aggregates,
 )
-from velotrack.map_builder import build_inspect_map, build_map, build_traffic_lights_map, compute_line_stats
+from velotrack.map_builder import (
+    build_inspect_map,
+    build_line_debug_map,
+    build_map,
+    build_traffic_lights_map,
+    compute_line_stats,
+)
 from velotrack.stop_detector import classify_stops, detect_stops, load_traffic_lights
 
 
@@ -218,52 +224,6 @@ def cmd_traffic_lights(watch: bool = False):
         print("\nServer stopped.")
 
 
-def cmd_inspect(gpx_paths: list[str]):
-    """Generate an interactive inspection map for individual GPX rides."""
-    if not gpx_paths:
-        gpx_paths = sorted(str(p) for p in RIDES_DIR.glob("*.gpx") if not p.name.startswith("._"))
-        if not gpx_paths:
-            print(f"No GPX files found. Place .gpx files in {RIDES_DIR}")
-            sys.exit(1)
-
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-    for p in gpx_paths:
-        path = Path(p)
-        print(f"Parsing {path.name}...")
-        df, outlier_count = parse_gpx(path)
-        if df.empty:
-            print(f"  WARNING: No points in {path.name}, skipping.")
-            continue
-        if outlier_count > 0:
-            print(f"  ⚠ {outlier_count} velocity outliers clamped to {MAX_REALISTIC_SPEED} km/h")
-
-        # Filter GPS teleport artifacts
-        df, teleport_count = filter_teleports(df)
-        if teleport_count > 0:
-            print(f"  ⚠ {teleport_count} teleport points removed")
-            df, _ = recalculate_distances(df)
-
-        # Snap to OSM tram tracks if data is available (tram lines only —
-        # rapid-bus lines have no rail geometry to snap to).
-        line_match = re.search(r"line(\d+)", path.name)
-        if (
-            line_match
-            and mode_for_line_number(line_match.group(1)) == TRAM
-            and OSM_TRACKS_JSON.exists()
-        ):
-            tracks = load_line_tracks(line_match.group(1))
-            if tracks:
-                df = snap_to_tracks(df, tracks)
-
-        m = build_inspect_map(df, title=path.stem, gpx_path=str(path.resolve()))
-        out_path = OUTPUT_DIR / f"inspect_{path.stem}.html"
-        m.save(str(out_path))
-        print(f"  {len(df)} points → file://{out_path.resolve()}")
-
-    print("\nDone! Open the HTML file(s) in a browser to inspect rides.")
-
-
 def _process_rides(gpx_paths: list[str] | None = None):
     """Parse GPX files, detect stops, group by line.
 
@@ -295,6 +255,7 @@ def _process_rides(gpx_paths: list[str] | None = None):
     for line_key, ride_files in files_by_line.items():
         print(f"\nProcessing {line_key} ({len(ride_files)} ride(s))...")
         ride_dfs = []
+        raw_ride_dfs = []
         all_stops = []
         valid_ride_files: list[tuple[Path, str]] = []
         for ride_path, name in ride_files:
@@ -303,6 +264,11 @@ def _process_rides(gpx_paths: list[str] | None = None):
             if df.empty:
                 print(f"  WARNING: No points in {name}, skipping.")
                 continue
+
+            # Keep the raw, fully un-processed trace around for the /debug/
+            # inspector so we can overlay it on top of the filtered+snapped
+            # version and see exactly what processing did.
+            raw_df = df.copy()
 
             # Filter GPS teleport artifacts
             df, teleport_count = filter_teleports(df)
@@ -323,6 +289,7 @@ def _process_rides(gpx_paths: list[str] | None = None):
                     df = snap_to_tracks(df, tracks)
 
             ride_dfs.append(df)
+            raw_ride_dfs.append(raw_df)
             valid_ride_files.append((ride_path, name))
             stops = detect_stops(df)
             stops = classify_stops(stops, scheduled_stops, traffic_lights)
@@ -334,6 +301,7 @@ def _process_rides(gpx_paths: list[str] | None = None):
         if ride_dfs:
             rides_by_line[line_key] = {
                 "ride_dfs": ride_dfs,
+                "raw_ride_dfs": raw_ride_dfs,
                 "all_stops": all_stops,
                 "ride_files": valid_ride_files,
             }
@@ -365,18 +333,36 @@ def cmd_extract_trips():
     extract_daily_trips()
 
 
+_SLUG_RE = re.compile(r"[^A-Za-z0-9_-]+")
+
+
+def _slugify(stem: str) -> str:
+    """Collapse anything outside [A-Za-z0-9_-] to single underscores."""
+    s = _SLUG_RE.sub("_", stem).strip("_")
+    return s or "ride"
+
+
 def cmd_build_site():
     from velotrack.site_builder import LineInfo, build_site
 
     rides_by_line, scheduled_stops, traffic_lights = _process_rides()
 
     MAPS_DIR.mkdir(parents=True, exist_ok=True)
+    inspect_dir = MAPS_DIR / "inspect"
+    inspect_dir.mkdir(parents=True, exist_ok=True)
+    line_debug_dir = MAPS_DIR / "debug_line"
+    line_debug_dir.mkdir(parents=True, exist_ok=True)
 
     # Build per-line maps and collect stats
     line_infos: list[LineInfo] = []
+    debug_rides: list[dict] = []
+    debug_lines: list[dict] = []
+    used_inspect_slugs: set[str] = set()
     for line_key, data in rides_by_line.items():
         ride_dfs = data["ride_dfs"]
+        raw_ride_dfs = data["raw_ride_dfs"]
         all_stops = data["all_stops"]
+        ride_files = data["ride_files"]
 
         # Save map to site/maps/
         m = build_map(
@@ -385,6 +371,45 @@ def cmd_build_site():
         )
         m.save(str(MAPS_DIR / f"{line_key}.html"))
         print(f"  Map saved: {MAPS_DIR / f'{line_key}.html'}")
+
+        # Build per-ride inspect maps (hidden /debug/ section)
+        for df, raw_df, (ride_path, _name) in zip(ride_dfs, raw_ride_dfs, ride_files):
+            slug = _slugify(ride_path.stem)
+            # Disambiguate slug collisions (e.g. stems differing only by
+            # trailing whitespace would map to the same file).
+            base_slug = slug
+            suffix = 2
+            while f"{line_key}__{slug}" in used_inspect_slugs:
+                slug = f"{base_slug}-{suffix}"
+                suffix += 1
+            used_inspect_slugs.add(f"{line_key}__{slug}")
+            inspect_name = f"{line_key}__{slug}.html"
+            inspect_path = inspect_dir / inspect_name
+            im = build_inspect_map(
+                df, title=ride_path.stem, gpx_path="", raw_df=raw_df,
+            )
+            im.save(str(inspect_path))
+            debug_rides.append({
+                "line_key": line_key,
+                "filename": ride_path.name,
+                "stem": ride_path.stem,
+                "slug": slug,
+                "map_path": f"maps/inspect/{inspect_name}",
+                "mtime": ride_path.stat().st_mtime,
+                "num_points": int(len(df)),
+                "raw_points": int(len(raw_df)),
+            })
+
+        # Build the line-overlay debug map: every ride for this line on one
+        # map, each in a distinct color and its own toggleable layer.
+        line_debug_map = build_line_debug_map(
+            ride_dfs,
+            [rp.name for rp, _ in ride_files],
+            line_key=line_key,
+            title=f"{line_key} — {len(ride_dfs)} rides",
+        )
+        line_debug_name = f"{line_key}.html"
+        line_debug_map.save(str(line_debug_dir / line_debug_name))
 
         # Compute stats
         stats = compute_line_stats(ride_dfs, all_stops)
@@ -411,6 +436,13 @@ def cmd_build_site():
             total_distance_km=round(total_dist_km, 1),
         ))
 
+        debug_lines.append({
+            "line_key": line_key,
+            "display_name": display_name,
+            "num_rides": len(ride_dfs),
+            "map_path": f"maps/debug_line/{line_debug_name}",
+        })
+
     # Build global location analytics (one row per physical hotspot + nested breakdowns)
     normalized_events = build_normalized_events(rides_by_line)
     location_aggregates = aggregate_location_events(normalized_events)
@@ -428,7 +460,11 @@ def cmd_build_site():
         location_stats=serialize_location_aggregates(location_aggregates),
         hotspot_slices=hotspot_slices,
         rides_by_line=rides_by_line,
+        debug_rides=debug_rides,
+        debug_lines=debug_lines,
     )
+    print(f"  Inspect maps saved: {len(debug_rides)} rides → {inspect_dir}")
+    print(f"  Line-debug maps saved: {len(debug_lines)} lines → {line_debug_dir}")
     print("\nSite build complete!")
 
 
@@ -439,7 +475,6 @@ def main():
         print("  uv run main.py download-osm           Download OSM tram track geometry")
         print("  uv run main.py template                Create traffic_lights.csv template")
         print("  uv run main.py traffic-lights [--watch]     View traffic lights on a map")
-        print("  uv run main.py inspect [files]         Inspect individual GPX rides on a map")
         print("  uv run main.py analyze [files]         Analyze GPX rides and generate maps")
         print("  uv run main.py extract-trips           Extract daily trip counts from GTFS")
         print("  uv run main.py build-site              Build static website for GitHub Pages")
@@ -458,8 +493,6 @@ def main():
             cmd_traffic_lights(watch=True)
         else:
             cmd_traffic_lights()
-    elif cmd == "inspect":
-        cmd_inspect(sys.argv[2:])
     elif cmd == "analyze":
         cmd_analyze(sys.argv[2:])
     elif cmd == "extract-trips":

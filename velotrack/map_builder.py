@@ -1149,17 +1149,26 @@ def build_map(
 
 
 def build_inspect_map(df: pd.DataFrame, title: str = "Ride Inspector",
-                      gpx_path: str = "") -> folium.Map:
+                      gpx_path: str = "",
+                      raw_df: pd.DataFrame | None = None) -> folium.Map:
     """Build an interactive map for inspecting a single GPX ride point-by-point.
 
     Each GPS point is shown as a small circle. Hovering reveals the point index,
     timestamp, lat/lon, speed and cumulative distance — useful for finding
     corrupted sections that should be deleted from the source file.
+
+    If ``raw_df`` is provided (the fully unprocessed trace — pre-teleport-filter
+    and pre-snap), a second toggleable layer is drawn in gray showing every
+    original point. This lets you see exactly what teleport filtering and
+    OSM-track snapping did to the original data.
     """
     center_lat = df["lat"].mean()
     center_lon = df["lon"].mean()
     m = folium.Map(location=[center_lat, center_lon], zoom_start=13,
                    tiles="cartodbpositron")
+
+    # ---- Processed trace (filtered + snapped) ----
+    processed_fg = folium.FeatureGroup(name="Processed (filtered + snapped)", show=True)
 
     # Draw the route polyline, splitting at gaps (where dist was zeroed after teleport removal)
     segments = []
@@ -1174,10 +1183,11 @@ def build_inspect_map(df: pd.DataFrame, title: str = "Ride Inspector",
     if len(current_seg) >= 2:
         segments.append(current_seg)
     for seg in segments:
-        folium.PolyLine(seg, color="#3388ff", weight=3, opacity=0.5).add_to(m)
+        folium.PolyLine(seg, color="#3388ff", weight=3, opacity=0.5).add_to(processed_fg)
 
     # Cumulative distance
     cum_dist = df["dist"].cumsum()
+    snapped_col = df["snapped"] if "snapped" in df.columns else None
 
     # Add a circle for each point with tooltip
     for i, row in df.iterrows():
@@ -1192,13 +1202,19 @@ def build_inspect_map(df: pd.DataFrame, title: str = "Ride Inspector",
                 color = c
                 break
 
+        snapped_str = ""
+        if snapped_col is not None:
+            snapped_str = "yes" if bool(snapped_col.iloc[i]) else "no"
+            snapped_str = f"<br>Snapped: {snapped_str}"
+
         tooltip = (
-            f"<b>#{i}</b><br>"
+            f"<b>#{i} (processed)</b><br>"
             f"Time: {time_str}<br>"
             f"Lat: {row['lat']:.6f}<br>"
             f"Lon: {row['lon']:.6f}<br>"
             f"Speed: {speed:.1f} km/h<br>"
             f"Dist: {dist_km:.2f} km"
+            f"{snapped_str}"
         )
 
         folium.CircleMarker(
@@ -1210,7 +1226,59 @@ def build_inspect_map(df: pd.DataFrame, title: str = "Ride Inspector",
             fill_opacity=0.8,
             weight=1,
             tooltip=tooltip,
-        ).add_to(m)
+        ).add_to(processed_fg)
+
+    processed_fg.add_to(m)
+
+    # ---- Raw trace (pre-filter, pre-snap) ----
+    raw_info = ""
+    if raw_df is not None and not raw_df.empty:
+        raw_fg = folium.FeatureGroup(name="Raw GPX (pre-filter, pre-snap)", show=False)
+
+        # Single continuous polyline through every raw point — no gap splitting,
+        # because the whole point is to see the original data warts and all.
+        raw_coords = [
+            (float(lat), float(lon))
+            for lat, lon in zip(raw_df["lat"], raw_df["lon"])
+        ]
+        if len(raw_coords) >= 2:
+            folium.PolyLine(
+                raw_coords, color="#666666", weight=2, opacity=0.7, dash_array="4 4",
+            ).add_to(raw_fg)
+
+        for i, row in raw_df.iterrows():
+            time_str = row["time"].strftime("%H:%M:%S") if pd.notna(row["time"]) else "—"
+            speed = row.get("velocity_kmh", float("nan"))
+            speed_str = f"{speed:.1f} km/h" if pd.notna(speed) else "—"
+            tooltip = (
+                f"<b>#{i} (raw)</b><br>"
+                f"Time: {time_str}<br>"
+                f"Lat: {row['lat']:.6f}<br>"
+                f"Lon: {row['lon']:.6f}<br>"
+                f"Speed: {speed_str}"
+            )
+            folium.CircleMarker(
+                location=[row["lat"], row["lon"]],
+                radius=2.5,
+                color="#444444",
+                fill=True,
+                fill_color="#888888",
+                fill_opacity=0.9,
+                weight=1,
+                tooltip=tooltip,
+            ).add_to(raw_fg)
+
+        raw_fg.add_to(m)
+        n_raw = len(raw_df)
+        n_processed = len(df)
+        dropped = n_raw - n_processed
+        raw_info = (
+            f"Raw points: {n_raw}<br>"
+            f"Dropped by filter: {dropped}<br>"
+        )
+
+    # Layer control in the top-right so the two layers can be toggled.
+    folium.LayerControl(collapsed=False).add_to(m)
 
     # Info panel
     n_points = len(df)
@@ -1235,12 +1303,125 @@ def build_inspect_map(df: pd.DataFrame, title: str = "Ride Inspector",
                 box-shadow:0 2px 8px rgba(0,0,0,0.2); font:13px/1.5 sans-serif;
                 max-width:400px;">
         <b>{title}</b><br>
-        Points: {n_points}<br>
+        Processed points: {n_points}<br>
+        {raw_info}
         {duration}
         Distance: {total_km:.2f} km<br>
         {source_line}
         <span style="color:#888; font-size:11px;">
-            Hover over points to inspect. Colors = speed.
+            Toggle layers in the top-right. Processed: colored by speed.
+            Raw (gray, dashed): pre-filter, pre-snap.
+        </span>
+    </div>
+    """
+    m.get_root().html.add_child(Element(info_html))
+
+    return m
+
+
+# A distinct-looking palette for the line-debug overlay. Picked to stay legible
+# on the CartoDB positron basemap — avoid very pale colors.
+_LINE_DEBUG_PALETTE = [
+    "#e6194b", "#3cb44b", "#4363d8", "#f58231", "#911eb4",
+    "#42d4f4", "#f032e6", "#9a6324", "#800000", "#808000",
+    "#000075", "#469990", "#bfef45", "#fabed4", "#dcbeff",
+    "#aaffc3", "#ffd8b1", "#a9a9a9", "#000000", "#ff7f00",
+]
+
+
+def build_line_debug_map(
+    ride_dfs: list[pd.DataFrame],
+    ride_names: list[str],
+    line_key: str,
+    title: str = "",
+) -> folium.Map:
+    """Overlay every ride for a single line on one map, each in a distinct color.
+
+    Each ride lives in its own toggleable FeatureGroup so you can isolate
+    individual traces and spot the one that's dragging the line average off.
+    """
+    if not ride_dfs:
+        return folium.Map(location=[45.46, 9.19], zoom_start=12, tiles="cartodbpositron")
+
+    # Center on the overall centroid of all rides (weighted by point count is
+    # overkill; plain mean of means is fine for a debug view).
+    lat_mean = float(np.mean([df["lat"].mean() for df in ride_dfs if not df.empty]))
+    lon_mean = float(np.mean([df["lon"].mean() for df in ride_dfs if not df.empty]))
+    m = folium.Map(location=[lat_mean, lon_mean], zoom_start=13, tiles="cartodbpositron")
+
+    for idx, (df, name) in enumerate(zip(ride_dfs, ride_names)):
+        if df.empty:
+            continue
+        color = _LINE_DEBUG_PALETTE[idx % len(_LINE_DEBUG_PALETTE)]
+        # Truncate long filenames for the layer-control label so the control
+        # doesn't blow out across the map.
+        short = name if len(name) <= 48 else name[:45] + "…"
+        fg = folium.FeatureGroup(name=f'<span style="color:{color}">●</span> {short}', show=True)
+
+        # Polyline, split at teleport gaps (same logic as the inspect map).
+        segments: list[list[tuple[float, float]]] = []
+        current: list[tuple[float, float]] = []
+        for i in range(len(df)):
+            if i > 0 and df.iloc[i]["dist"] == 0.0 and df.iloc[i]["dt"] > 10:
+                if len(current) >= 2:
+                    segments.append(current)
+                current = []
+            current.append((float(df.iloc[i]["lat"]), float(df.iloc[i]["lon"])))
+        if len(current) >= 2:
+            segments.append(current)
+        for seg in segments:
+            folium.PolyLine(seg, color=color, weight=3, opacity=0.75).add_to(fg)
+
+        # A small marker at the start of the ride so you can see where it began.
+        folium.CircleMarker(
+            location=[float(df.iloc[0]["lat"]), float(df.iloc[0]["lon"])],
+            radius=5,
+            color=color,
+            fill=True,
+            fill_color=color,
+            fill_opacity=1.0,
+            weight=2,
+            tooltip=f"<b>{name}</b><br>start",
+        ).add_to(fg)
+
+        # Point-level circles with speed in tooltip so you can still hover-debug
+        # individual points while seeing the whole overlay.
+        for i in range(len(df)):
+            row = df.iloc[i]
+            speed = row.get("velocity_kmh", float("nan"))
+            time_val = row.get("time")
+            time_str = time_val.strftime("%H:%M:%S") if pd.notna(time_val) else "—"
+            folium.CircleMarker(
+                location=[float(row["lat"]), float(row["lon"])],
+                radius=2,
+                color=color,
+                fill=True,
+                fill_color=color,
+                fill_opacity=0.8,
+                weight=0,
+                tooltip=(
+                    f"<b>{name}</b><br>"
+                    f"#{i} · {time_str}<br>"
+                    f"{speed:.1f} km/h" if pd.notna(speed) else f"<b>{name}</b><br>#{i} · {time_str}"
+                ),
+            ).add_to(fg)
+
+        fg.add_to(m)
+
+    folium.LayerControl(collapsed=False).add_to(m)
+
+    display_title = title or line_key
+    info_html = f"""
+    <div style="position:fixed; bottom:20px; left:20px; z-index:9999;
+                background:white; padding:12px 16px; border-radius:8px;
+                box-shadow:0 2px 8px rgba(0,0,0,0.2); font:13px/1.5 sans-serif;
+                max-width:420px;">
+        <b>{display_title}</b><br>
+        Rides: {len(ride_dfs)}<br>
+        <span style="color:#888; font-size:11px;">
+            Each ride is a distinct color. Toggle individual rides in the
+            top-right layer control to isolate which one is pulling the
+            average off.
         </span>
     </div>
     """

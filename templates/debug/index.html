@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Debug — Velotrack{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 md:px-8 py-16 md:py-24">
+    <header class="mb-12 max-w-3xl">
+        <p class="text-[0.6875rem] font-bold uppercase tracking-[0.15em] text-primary mb-4">
+            <span class="i18n-it">Strumenti interni</span><span class="i18n-en">Internal tools</span>
+        </p>
+        <h1 class="text-[2.5rem] md:text-[3.5rem] font-light leading-tight tracking-tight text-on-surface mb-6">
+            <span class="i18n-it">Debug</span><span class="i18n-en">Debug</span>
+        </h1>
+        <p class="text-base md:text-lg text-secondary leading-relaxed">
+            <span class="i18n-it">
+                Pagina nascosta con gli strumenti di diagnostica. Non è collegata da nessuna voce di menu:
+                per raggiungerla bisogna conoscere l'URL.
+            </span>
+            <span class="i18n-en">
+                Hidden utility hub. Not linked from any menu — you have to know the URL to get here.
+            </span>
+        </p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <a href="./inspect.html"
+           class="group block bg-surface-container-low rounded-xl p-8 hover:bg-surface-bright transition-colors duration-500 no-underline">
+            <span class="material-symbols-outlined text-3xl text-primary mb-4 block">route</span>
+            <h2 class="text-xl font-semibold text-on-surface mb-2 group-hover:text-primary transition-colors">
+                <span class="i18n-it">Ispettore tracce</span><span class="i18n-en">Ride inspector</span>
+            </h2>
+            <p class="text-sm text-secondary leading-relaxed">
+                <span class="i18n-it">
+                    Visualizza ogni traccia GPX punto per punto. Cerchi colorati per velocità,
+                    tooltip con timestamp, lat/lon, distanza cumulata. Utile per trovare punti corrotti
+                    nei file sorgente.
+                </span>
+                <span class="i18n-en">
+                    Browse every GPX ride point by point. Circles colored by speed, tooltips with
+                    timestamp, lat/lon and cumulative distance. Handy for spotting corrupted points
+                    in source files.
+                </span>
+            </p>
+        </a>
+
+        <a href="./lines.html"
+           class="group block bg-surface-container-low rounded-xl p-8 hover:bg-surface-bright transition-colors duration-500 no-underline">
+            <span class="material-symbols-outlined text-3xl text-primary mb-4 block">layers</span>
+            <h2 class="text-xl font-semibold text-on-surface mb-2 group-hover:text-primary transition-colors">
+                <span class="i18n-it">Sovrapposizione linee</span><span class="i18n-en">Line overlay</span>
+            </h2>
+            <p class="text-sm text-secondary leading-relaxed">
+                <span class="i18n-it">
+                    Seleziona una linea e vedi tutte le tracce che la compongono sulla stessa mappa,
+                    ciascuna in un colore diverso. Utile per capire quale singola traccia sta sballando
+                    la media aggregata.
+                </span>
+                <span class="i18n-en">
+                    Pick a line to see every contributing ride on the same map, each in a distinct
+                    color. Handy for spotting the one ride that's dragging the aggregate average off.
+                </span>
+            </p>
+        </a>
+
+        <a href="../maps/traffic_lights.html"
+           class="group block bg-surface-container-low rounded-xl p-8 hover:bg-surface-bright transition-colors duration-500 no-underline">
+            <span class="material-symbols-outlined text-3xl text-primary mb-4 block">traffic</span>
+            <h2 class="text-xl font-semibold text-on-surface mb-2 group-hover:text-primary transition-colors">
+                <span class="i18n-it">Mappa semafori</span><span class="i18n-en">Traffic lights map</span>
+            </h2>
+            <p class="text-sm text-secondary leading-relaxed">
+                <span class="i18n-it">
+                    Tutti i semafori registrati su una mappa interattiva. Consultazione sola lettura;
+                    per aggiungere o rimuovere semafori usa <code class="text-xs bg-surface-container px-1 rounded">uv run main.py traffic-lights --watch</code>.
+                </span>
+                <span class="i18n-en">
+                    All recorded traffic lights on an interactive map. Read-only view; to add or remove
+                    lights run <code class="text-xs bg-surface-container px-1 rounded">uv run main.py traffic-lights --watch</code>.
+                </span>
+            </p>
+        </a>
+
+    </div>
+</div>
+{% endblock %}

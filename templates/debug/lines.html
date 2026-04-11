@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Line overlay — Debug — Velotrack{% endblock %}
+
+{% block content %}
+<div class="debug-inspect-shell">
+    <aside class="debug-inspect-sidebar">
+        <div class="debug-inspect-sidebar-head">
+            <p class="text-[0.6875rem] font-bold uppercase tracking-[0.15em] text-primary mb-2">
+                <span class="i18n-it">Debug</span><span class="i18n-en">Debug</span>
+            </p>
+            <h1 class="text-lg font-semibold text-on-surface mb-1">
+                <span class="i18n-it">Sovrapposizione linee</span><span class="i18n-en">Line overlay</span>
+            </h1>
+            <p class="text-xs text-secondary mb-4">
+                <span class="i18n-it">{{ num_lines }} linee. Tutte le tracce di una linea su una mappa — colori diversi per ride, toggle individuali.</span>
+                <span class="i18n-en">{{ num_lines }} lines. All rides of a line on one map — distinct colors, individual toggles.</span>
+            </p>
+
+            <label class="block mb-3">
+                <span class="sr-only">Filter</span>
+                <input type="search" id="debug-line-filter"
+                       class="w-full px-3 py-2 text-sm bg-surface-container-lowest border border-outline-variant rounded focus:outline-none focus:border-primary"
+                       placeholder="Filter…">
+            </label>
+        </div>
+        <ul id="debug-line-list" class="debug-ride-list"></ul>
+    </aside>
+
+    <section class="debug-inspect-main">
+        <div id="debug-placeholder" class="debug-placeholder">
+            <span class="material-symbols-outlined text-5xl text-outline-variant mb-3 block">layers</span>
+            <p class="text-sm text-secondary">
+                <span class="i18n-it">Seleziona una linea per vedere tutte le tracce sovrapposte.</span>
+                <span class="i18n-en">Pick a line to see every ride overlaid.</span>
+            </p>
+        </div>
+        <iframe id="debug-iframe" class="debug-iframe" title="Line overlay map"
+                style="display:none"></iframe>
+    </section>
+</div>
+
+<script id="debug-lines-data" type="application/json">{{ debug_lines_json }}</script>
+<script>
+(function(){
+    var dataEl = document.getElementById("debug-lines-data");
+    var entries = JSON.parse(dataEl.textContent || "[]");
+
+    var listEl = document.getElementById("debug-line-list");
+    var filterEl = document.getElementById("debug-line-filter");
+    var iframe = document.getElementById("debug-iframe");
+    var placeholder = document.getElementById("debug-placeholder");
+
+    var filterTerm = "";
+
+    function render(){
+        var term = filterTerm.toLowerCase();
+        var filtered = entries.filter(function(e){
+            if (!term) return true;
+            return e.line_key.toLowerCase().indexOf(term) !== -1
+                || e.display_name.toLowerCase().indexOf(term) !== -1;
+        });
+
+        listEl.innerHTML = "";
+        var currentId = (location.hash || "").replace(/^#/, "");
+        filtered.forEach(function(e){
+            var li = document.createElement("li");
+            li.className = "debug-ride-row" + (e.line_key === currentId ? " is-selected" : "");
+
+            var label = document.createElement("label");
+            label.className = "debug-ride-label";
+
+            var input = document.createElement("input");
+            input.type = "radio";
+            input.name = "debug-line";
+            input.value = e.line_key;
+            input.checked = (e.line_key === currentId);
+            input.addEventListener("change", function(){ selectLine(e); });
+
+            var text = document.createElement("div");
+            text.className = "debug-ride-text";
+
+            var name = document.createElement("div");
+            name.className = "debug-ride-name";
+            name.textContent = e.display_name;
+
+            var meta = document.createElement("div");
+            meta.className = "debug-ride-meta";
+            meta.textContent = e.num_rides + " rides · " + e.line_key;
+
+            text.appendChild(name);
+            text.appendChild(meta);
+            label.appendChild(input);
+            label.appendChild(text);
+            li.appendChild(label);
+            listEl.appendChild(li);
+        });
+    }
+
+    function selectLine(e){
+        if (location.hash !== "#" + e.line_key) {
+            history.replaceState(null, "", "#" + e.line_key);
+        }
+        iframe.src = "../" + e.map_path;
+        iframe.style.display = "";
+        placeholder.style.display = "none";
+        Array.prototype.forEach.call(
+            listEl.querySelectorAll(".debug-ride-row"),
+            function(row){ row.classList.remove("is-selected"); }
+        );
+        var input = listEl.querySelector('input[value="' + e.line_key.replace(/"/g, '\\"') + '"]');
+        if (input) {
+            input.checked = true;
+            var row = input.closest(".debug-ride-row");
+            if (row) row.classList.add("is-selected");
+        }
+    }
+
+    function selectFromHash(){
+        var id = (location.hash || "").replace(/^#/, "");
+        if (!id) return;
+        for (var i = 0; i < entries.length; i++) {
+            if (entries[i].line_key === id) {
+                selectLine(entries[i]);
+                return;
+            }
+        }
+    }
+
+    filterEl.addEventListener("input", function(ev){
+        filterTerm = ev.target.value;
+        render();
+    });
+
+    window.addEventListener("hashchange", selectFromHash);
+
+    render();
+    selectFromHash();
+})();
+</script>
+{% endblock %}

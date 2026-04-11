@@ -394,3 +394,117 @@ body.coverage-acknowledged .coverage-modal {
     box-shadow: 0 0 0 3px rgba(246, 122, 50, 0.15);
     border-color: #f67a32;
 }
+
+/* ==== Debug / ride inspector layout ==== */
+.debug-inspect-shell {
+    display: flex;
+    height: calc(100vh - 4rem); /* viewport minus fixed navbar */
+    min-height: 480px;
+}
+.debug-inspect-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e4e2e1;
+    background: #f6f3f2;
+}
+.debug-inspect-sidebar-head {
+    padding: 1rem 1.25rem 0.5rem;
+    border-bottom: 1px solid #e4e2e1;
+}
+.debug-ride-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem 0;
+    overflow-y: auto;
+    flex: 1;
+}
+.debug-ride-row {
+    margin: 0;
+    padding: 0;
+}
+.debug-ride-row + .debug-ride-row {
+    border-top: 1px solid #eae8e7;
+}
+.debug-ride-row:hover {
+    background: #eae8e7;
+}
+.debug-ride-row.is-selected {
+    background: #ffdbcb;
+}
+.debug-ride-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 0.625rem 1.25rem;
+    cursor: pointer;
+}
+.debug-ride-label input[type="radio"] {
+    margin-top: 0.25rem;
+    accent-color: #9f4200;
+    flex-shrink: 0;
+}
+.debug-ride-text {
+    min-width: 0;
+    flex: 1;
+}
+.debug-ride-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: #1b1c1c;
+    word-break: break-word;
+    line-height: 1.35;
+}
+.debug-ride-meta {
+    font-size: 10.5px;
+    color: #8b7266;
+    margin-top: 2px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.debug-sort-btn.is-active {
+    background: #ffdbcb;
+    border-color: #f67a32;
+    color: #5c2300;
+}
+.debug-sort-arrow {
+    margin-left: 0.25rem;
+    font-size: 11px;
+}
+.debug-inspect-main {
+    flex: 1;
+    position: relative;
+    background: #fbf9f8;
+    min-width: 0;
+}
+.debug-iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+.debug-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+}
+@media (max-width: 768px) {
+    .debug-inspect-shell {
+        flex-direction: column;
+        height: auto;
+    }
+    .debug-inspect-sidebar {
+        width: 100%;
+        max-height: 50vh;
+        border-right: 0;
+        border-bottom: 1px solid #e4e2e1;
+    }
+    .debug-inspect-main {
+        min-height: 60vh;
+    }
+}
