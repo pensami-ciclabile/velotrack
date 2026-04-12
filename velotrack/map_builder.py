@@ -1410,6 +1410,34 @@ def build_line_debug_map(
 
     folium.LayerControl(collapsed=False).add_to(m)
 
+    # Make the layer-control legend easier to click: bigger labels, checkboxes,
+    # and more generous padding between items.
+    legend_css = """
+    <style>
+    .leaflet-control-layers-overlays label {
+        font-size: 14px !important;
+        padding: 4px 2px !important;
+        cursor: pointer;
+    }
+    .leaflet-control-layers-overlays label span {
+        font-size: 14px !important;
+    }
+    .leaflet-control-layers-overlays input[type="checkbox"] {
+        width: 16px !important;
+        height: 16px !important;
+        margin-right: 6px !important;
+        vertical-align: middle;
+        cursor: pointer;
+    }
+    .leaflet-control-layers {
+        padding: 8px 12px !important;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    </style>
+    """
+    m.get_root().html.add_child(Element(legend_css))
+
     display_title = title or line_key
     info_html = f"""
     <div style="position:fixed; bottom:20px; left:20px; z-index:9999;
