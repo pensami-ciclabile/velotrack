@@ -133,8 +133,8 @@
                 </span>
             </div>
             <p class="text-sm text-secondary">
-                <span class="i18n-it">Senza un solo tram o conducente aggiuntivo</span>
-                <span class="i18n-en">Without a single extra tram or driver</span>
+                <span class="i18n-it">Con lo stesso numero di tram e conducenti attualmente in servizio</span>
+                <span class="i18n-en">With the same number of trams and drivers currently in service</span>
             </p>
         </div>
         {% endif %}
@@ -167,12 +167,54 @@
                 <span class="text-lg font-medium text-secondary/60">km/h</span>
             </div>
             <p class="text-sm text-secondary mb-5">
-                <span class="i18n-it">Pi&ugrave; lento di una bicicletta urbana (~15 km/h)</span>
-                <span class="i18n-en">Slower than an urban bicycle (~15 km/h)</span>
+                <span class="i18n-it">Ultima in Europa tra le citt&agrave; con rete tramviaria</span>
+                <span class="i18n-en">Last in Europe among cities with a tram network</span>
             </p>
-            {% if extra_stats.speed_chart %}
-            <div class="mt-auto w-full">{{ extra_stats.speed_chart }}</div>
-            {% endif %}
+
+            <div class="mt-auto w-full">
+                <div class="flex flex-col gap-1.5" style="font-family:Inter,system-ui,sans-serif">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-medium text-secondary w-[68px] text-right shrink-0"><span class="i18n-it">Stoccolma</span><span class="i18n-en">Stockholm</span></span>
+                        <div class="flex-1 h-4 bg-surface-container rounded-sm overflow-hidden"><div class="h-full rounded-sm bg-secondary/30" style="width:100%"></div></div>
+                        <span class="text-[10px] font-bold text-secondary tabular-nums w-[36px]">22.8</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-medium text-secondary w-[68px] text-right shrink-0">Amsterdam</span>
+                        <div class="flex-1 h-4 bg-surface-container rounded-sm overflow-hidden"><div class="h-full rounded-sm bg-secondary/30" style="width:96.9%"></div></div>
+                        <span class="text-[10px] font-bold text-secondary tabular-nums w-[36px]">22.1</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-medium text-secondary w-[68px] text-right shrink-0"><span class="i18n-it">Monaco</span><span class="i18n-en">M&uuml;nchen</span></span>
+                        <div class="flex-1 h-4 bg-surface-container rounded-sm overflow-hidden"><div class="h-full rounded-sm bg-secondary/30" style="width:86.8%"></div></div>
+                        <span class="text-[10px] font-bold text-secondary tabular-nums w-[36px]">19.8</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-medium text-secondary w-[68px] text-right shrink-0"><span class="i18n-it">Berlino</span><span class="i18n-en">Berlin</span></span>
+                        <div class="flex-1 h-4 bg-surface-container rounded-sm overflow-hidden"><div class="h-full rounded-sm bg-secondary/30" style="width:85.5%"></div></div>
+                        <span class="text-[10px] font-bold text-secondary tabular-nums w-[36px]">19.5</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-medium text-secondary w-[68px] text-right shrink-0"><span class="i18n-it">Praga</span><span class="i18n-en">Praha</span></span>
+                        <div class="flex-1 h-4 bg-surface-container rounded-sm overflow-hidden"><div class="h-full rounded-sm bg-secondary/30" style="width:84.6%"></div></div>
+                        <span class="text-[10px] font-bold text-secondary tabular-nums w-[36px]">19.3</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-medium text-secondary w-[68px] text-right shrink-0"><span class="i18n-it">Vienna</span><span class="i18n-en">Wien</span></span>
+                        <div class="flex-1 h-4 bg-surface-container rounded-sm overflow-hidden"><div class="h-full rounded-sm bg-secondary/30" style="width:74.6%"></div></div>
+                        <span class="text-[10px] font-bold text-secondary tabular-nums w-[36px]">17.0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-medium text-secondary w-[68px] text-right shrink-0"><span class="i18n-it">Zurigo</span><span class="i18n-en">Z&uuml;rich</span></span>
+                        <div class="flex-1 h-4 bg-surface-container rounded-sm overflow-hidden"><div class="h-full rounded-sm bg-secondary/30" style="width:70.2%"></div></div>
+                        <span class="text-[10px] font-bold text-secondary tabular-nums w-[36px]">16.0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-bold text-[#c44030] w-[68px] text-right shrink-0">Milano</span>
+                        <div class="flex-1 h-4 bg-surface-container rounded-sm overflow-hidden"><div class="h-full rounded-sm bg-[#c44030]" style="width:51.8%"></div></div>
+                        <span class="text-[10px] font-bold text-[#c44030] tabular-nums w-[36px]">{{ extra_stats.avg_network_speed }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
         {% endif %}
 
@@ -192,10 +234,14 @@
                     </span>
                 </span>
             </div>
-            <div class="flex items-baseline gap-2 mb-5">
+            <div class="flex items-baseline gap-2 mb-2">
                 <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums">{{ extra_stats.tl_time_pct }}</span>
                 <span class="text-lg font-medium text-secondary/60">%</span>
             </div>
+            <p class="text-sm text-secondary mb-5">
+                <span class="i18n-it">del tempo il tram sta fermo ad aspettare inutilmente</span>
+                <span class="i18n-en">of the time the tram is stopped waiting needlessly</span>
+            </p>
             {% if extra_stats.tl_pct_chart %}
             <div class="mt-auto w-full">{{ extra_stats.tl_pct_chart }}</div>
             {% endif %}
@@ -226,58 +272,122 @@
             </div>
             {% if extra_stats.tl_seconds_per_stop %}
             <p class="text-sm text-secondary mt-auto">
-                <span class="i18n-it">Circa una sosta ogni {{ extra_stats.tl_seconds_per_stop }} secondi di viaggio</span>
-                <span class="i18n-en">Roughly one stop every {{ extra_stats.tl_seconds_per_stop }} seconds of travel</span>
+                <span class="i18n-it">Circa ogni {{ extra_stats.tl_seconds_per_stop }} secondi il tram fa una fermata evitabile</span>
+                <span class="i18n-en">Roughly every {{ extra_stats.tl_seconds_per_stop }} seconds the tram makes an avoidable stop</span>
             </p>
             {% endif %}
         </div>
         {% endif %}
 
-        {% if extra_stats.potential_speed %}
-        <!-- Potential speed — chart support -->
+
+        <!-- Estimated annual cost -->
         <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
             <div class="flex items-center gap-1.5 mb-2">
                 <span class="text-sm font-medium text-secondary">
-                    <span class="i18n-it">Velocit&agrave; possibile con priorit&agrave;</span>
-                    <span class="i18n-en">Possible speed with priority</span>
+                    <span class="i18n-it">Costo annuo stimato</span>
+                    <span class="i18n-en">Estimated annual cost</span>
                 </span>
                 <span class="info-tip" tabindex="0">
                     <span class="material-symbols-outlined info-tip-icon">info</span>
                     <span class="info-tip-bubble">
-                        <span class="i18n-it">Velocit&agrave; ricalcolata rimuovendo le attese ai semafori e i rallentamenti nei colli di bottiglia.</span>
-                        <span class="i18n-en">Speed recalculated after removing traffic-light waits and bottleneck slowdowns.</span>
+                        <span class="i18n-it">Ore perse al giorno &times; 365 &times; costo orario medio di un conducente (~&euro;35/h lordo). Solo costo del personale fermo ai semafori.</span>
+                        <span class="i18n-en">Hours lost per day &times; 365 &times; average driver hourly cost (~&euro;35/h loaded). Only the cost of staff stopped at traffic lights.</span>
                     </span>
                 </span>
             </div>
-            <div class="flex items-baseline gap-2 mb-1">
-                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tabular-nums">{{ extra_stats.potential_speed }}</span>
-                <span class="text-lg font-medium text-secondary/60">km/h</span>
-            </div>
-            {% if extra_stats.speed_gain_pct %}
-            <p class="text-sm font-medium text-primary mb-4">+{{ extra_stats.speed_gain_pct }}%
-                <span class="font-normal text-secondary">
-                    <span class="i18n-it">rispetto agli attuali {{ extra_stats.current_speed }}</span>
-                    <span class="i18n-en">vs current {{ extra_stats.current_speed }}</span>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-4xl md:text-5xl font-black text-[#c44030] tracking-tighter tabular-nums">&euro;{{ extra_stats.annual_cost_m }}M</span>
+                <span class="text-lg font-medium text-secondary/60">
+                    <span class="i18n-it">/ anno</span><span class="i18n-en">/ year</span>
                 </span>
+            </div>
+            <p class="text-sm text-secondary mt-auto">
+                <span class="i18n-it">Il costo in stipendi dei conducenti fermi ai semafori, pagato ogni anno dai contribuenti</span>
+                <span class="i18n-en">The cost of driver wages wasted at traffic lights, paid every year by taxpayers</span>
             </p>
-            {% endif %}
-            {% if extra_stats.comparison_chart %}
-            <div class="mt-auto w-full">
-                {{ extra_stats.comparison_chart }}
-                <div class="flex gap-4 mt-1.5">
-                    <span class="text-[10px] text-secondary/50 flex items-center gap-1">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-secondary/50"></span>
-                        <span class="i18n-it">attuale</span><span class="i18n-en">current</span>
-                    </span>
-                    <span class="text-[10px] text-primary flex items-center gap-1">
-                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
-                        <span class="i18n-it">con priorit&agrave;</span><span class="i18n-en">with priority</span>
-                    </span>
-                </div>
-            </div>
-            {% endif %}
         </div>
-        {% endif %}
+
+
+        <!-- Time actually moving -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
+                    <span class="i18n-it">Tempo effettivo in movimento</span>
+                    <span class="i18n-en">Time actually moving</span>
+                </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Rapporto tra velocit&agrave; media di viaggio e velocit&agrave; di crociera (quando il tram si muove). Il resto &egrave; tempo fermo.</span>
+                        <span class="i18n-en">Ratio of average trip speed to cruising speed (when the tram is moving). The rest is time stopped.</span>
+                    </span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums">{{ extra_stats.moving_pct }}</span>
+                <span class="text-lg font-medium text-secondary/60">%</span>
+            </div>
+            <p class="text-sm text-secondary mt-auto">
+                <span class="i18n-it">I tram sono fermi per il {{ extra_stats.stopped_pct }}% di ogni corsa &mdash; su 20 minuti, {{ extra_stats.stopped_minutes }} sono a motori spenti</span>
+                <span class="i18n-en">Trams are stopped for {{ extra_stats.stopped_pct }}% of every trip &mdash; out of 20 minutes, {{ extra_stats.stopped_minutes }} are spent standing still</span>
+            </p>
+        </div>
+
+
+        <!-- Full-time driver equivalents -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
+                    <span class="i18n-it">Conducenti equivalenti a tempo pieno</span>
+                    <span class="i18n-en">Full-time driver equivalents</span>
+                </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Ore perse all'anno (~{{ extra_stats.annual_hours_lost }}) divise per 1.760 ore lavorative annuali di un dipendente a tempo pieno.</span>
+                        <span class="i18n-en">Hours lost per year (~{{ extra_stats.annual_hours_lost }}) divided by 1,760 annual working hours of a full-time employee.</span>
+                    </span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tabular-nums">{{ extra_stats.fte_drivers }}</span>
+                <span class="text-lg font-medium text-secondary/60">
+                    <span class="i18n-it">conducenti</span><span class="i18n-en">drivers</span>
+                </span>
+            </div>
+            <p class="text-sm text-secondary mt-auto">
+                <span class="i18n-it">{{ extra_stats.fte_drivers }} conducenti a tempo pieno passerebbero l'intera giornata lavorativa fermi al semaforo</span>
+                <span class="i18n-en">{{ extra_stats.fte_drivers }} full-time drivers would spend their entire working day stopped at traffic lights</span>
+            </p>
+        </div>
+
+
+        <!-- Lines slower than a runner -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
+                    <span class="i18n-it">Linee di tram pi&ugrave; lente di un runner</span>
+                    <span class="i18n-en">Tram lines slower than a runner</span>
+                </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Direzioni di linea con velocit&agrave; media porta-a-porta inferiore a 10 km/h (passo di corsa 6:00 min/km).</span>
+                        <span class="i18n-en">Line directions with average door-to-door speed below 10 km/h (running pace 6:00 min/km).</span>
+                    </span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums">{{ extra_stats.lines_slower_than_runner }}</span>
+                <span class="text-lg font-medium text-secondary/60">
+                    <span class="i18n-it">su {{ extra_stats.total_directions }}</span><span class="i18n-en">of {{ extra_stats.total_directions }}</span>
+                </span>
+            </div>
+            <p class="text-sm text-secondary mt-auto">
+                <span class="i18n-it">{{ extra_stats.lines_slower_than_runner }} direzioni di linea sono pi&ugrave; lente di un runner amatoriale a passo 6:00/km</span>
+                <span class="i18n-en">{{ extra_stats.lines_slower_than_runner }} line directions are slower than a casual runner at 6:00/km pace</span>
+            </p>
+        </div>
 
     </div>
     </div>

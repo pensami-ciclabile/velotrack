@@ -153,10 +153,10 @@ def _svg_lollipop_chart(
             f'<line x1="{cx}" y1="{baseline_y}" x2="{cx}" y2="{cy}"'
             f' stroke="{c}" stroke-width="1.5" opacity="{opacity}"/>'
         )
-        # Dot
+        # Dot (always solid so stem doesn't show through)
         parts.append(
             f'<circle cx="{cx}" cy="{cy}" r="{dot_r}"'
-            f' fill="{c}" opacity="{opacity}"/>'
+            f' fill="{c}"/>'
         )
         # Label
         ly = height - 1
@@ -436,6 +436,37 @@ def build_site(
     # Insight for hours-lost card: equivalent driver shifts (8h shift)
     if tl_hours:
         extra_stats["hours_shifts"] = round(tl_hours.get("weekday", 0) / 8)
+
+    # Annual cost: hours_lost_per_day * 365 * €35/h driver cost
+    if tl_hours:
+        annual_hours = tl_hours.get("weekday", 0) * 365
+        extra_stats["annual_hours_lost"] = f"{round(annual_hours / 1000) * 1000:,}".replace(",", ".")
+        extra_stats["annual_cost_m"] = round(annual_hours * 35 / 1_000_000, 1)
+        extra_stats["fte_drivers"] = round(annual_hours / 1760)
+
+    # Time actually moving: avg_trip_speed / avg_moving_speed
+    per_line_moving: list[tuple[float, float]] = []
+    for li in lines:
+        s = li.stats
+        trip_spd = s.get("speed", {}).get("avg_trip", 0)
+        moving_spd = s.get("speed", {}).get("avg_moving", 0)
+        if trip_spd > 0 and moving_spd > 0:
+            per_line_moving.append((trip_spd, moving_spd))
+    if per_line_moving:
+        avg_ratio = sum(t / m for t, m in per_line_moving) / len(per_line_moving)
+        moving_pct = round(avg_ratio * 100)
+        extra_stats["moving_pct"] = moving_pct
+        extra_stats["stopped_pct"] = 100 - moving_pct
+        extra_stats["stopped_minutes"] = round(20 * (1 - avg_ratio))
+
+    # Lines slower than a runner (10 km/h = 6:00/km pace)
+    total_dirs = len(lines)
+    slower_count = sum(
+        1 for li in lines
+        if li.stats.get("speed", {}).get("avg_trip", 99) < 10
+    )
+    extra_stats["lines_slower_than_runner"] = slower_count
+    extra_stats["total_directions"] = total_dirs
 
     # Load GTFS stop sequences from cache file
     gtfs_stops_by_line: dict[int, list[str]] = {}
