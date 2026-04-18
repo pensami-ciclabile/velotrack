@@ -33,6 +33,7 @@ STOP_DISTANCE = 15.0  # meters — max movement during a stop
 TRANSIT_STOP_RADIUS = 30.0  # meters — match radius to GTFS scheduled stop
 TRAFFIC_LIGHT_RADIUS = 25.0  # meters — match radius to traffic light
 COMBINED_STOP_DEDUCT = 12.0  # seconds — estimated boarding time deducted for combined stops
+TL_GROUPING_RADIUS = 50.0  # meters — radius within which two traffic lights may be confused by GPS
 
 # Velocity outlier removal
 MAX_REALISTIC_SPEED = 50.0  # km/h — cap for outlier removal

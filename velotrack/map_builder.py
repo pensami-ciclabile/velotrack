@@ -5,7 +5,7 @@ import folium
 from folium import Element
 import pandas as pd
 
-from velotrack.config import STOP_COLORS, STOP_DISTANCE, STOP_TIME_GAP, VELOCITY_COLORS
+from velotrack.config import STOP_COLORS, STOP_DISTANCE, STOP_TIME_GAP, TL_GROUPING_RADIUS, VELOCITY_COLORS
 from velotrack.gpx_parser import haversine
 from velotrack.stop_detector import StopEvent
 
@@ -501,6 +501,90 @@ def _filter_bottlenecks(
     }
 
 
+def _apply_majority_voting(
+    merged_stops: dict[tuple[float, float], list[StopEvent]],
+    grouping_radius_m: float = TL_GROUPING_RADIUS,
+) -> dict[tuple[float, float], list[StopEvent]]:
+    """Consolidate nearby reference locations using majority voting.
+
+    GPS may lock a stop onto the wrong reference point when two points lie
+    within ``grouping_radius_m`` of each other — e.g. traffic lights at an
+    intersection, or tram stops on opposite sides of a road. Cross-type
+    grouping is also handled: a combined stop may incorrectly lock to a
+    transit stop on the far side of the road.
+
+    For each connected cluster of non-bottleneck locations within the radius:
+    - if total tracks across the cluster >= 3, all tracks are moved to the
+      location with the most matches (the majority winner); the moved events
+      keep their original category but get the winner's reference coordinates.
+    - if total tracks < 3, the cluster is left as-is (insufficient data).
+
+    Bottleneck locations (no reference point) are never touched.
+    """
+    tl_keys = [
+        key for key, events in merged_stops.items()
+        if _majority_category(events) != "bottleneck"
+    ]
+
+    if len(tl_keys) < 2:
+        return merged_stops
+
+    # Build adjacency between TL keys within grouping radius
+    n = len(tl_keys)
+    adj: list[list[int]] = [[] for _ in range(n)]
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = haversine(tl_keys[i][0], tl_keys[i][1], tl_keys[j][0], tl_keys[j][1])
+            if d <= grouping_radius_m:
+                adj[i].append(j)
+                adj[j].append(i)
+
+    # Find connected components via BFS
+    visited = [False] * n
+    components: list[list[int]] = []
+    for start in range(n):
+        if visited[start]:
+            continue
+        component: list[int] = []
+        queue = [start]
+        visited[start] = True
+        while queue:
+            node = queue.pop(0)
+            component.append(node)
+            for neighbor in adj[node]:
+                if not visited[neighbor]:
+                    visited[neighbor] = True
+                    queue.append(neighbor)
+        components.append(component)
+
+    result = dict(merged_stops)
+
+    for component in components:
+        if len(component) < 2:
+            continue  # isolated TL — nothing to consolidate
+
+        keys_in_component = [tl_keys[i] for i in component]
+        total_tracks = sum(len(merged_stops[k]) for k in keys_in_component)
+
+        if total_tracks < 3:
+            continue  # not enough data for majority voting
+
+        # Winner = key with the most tracks; ties are broken deterministically by key value
+        winner_key = max(keys_in_component, key=lambda k: (len(merged_stops[k]), k))
+
+        for key in keys_in_component:
+            if key == winner_key:
+                continue
+            # Restamp moved events with the winner's reference coordinates
+            for event in merged_stops[key]:
+                event.ref_lat = winner_key[0]
+                event.ref_lon = winner_key[1]
+            result[winner_key] = result[winner_key] + merged_stops[key]
+            del result[key]
+
+    return result
+
+
 def compute_line_stats(
     ride_dfs: list[pd.DataFrame],
     all_stops: list[list[StopEvent]],
@@ -510,6 +594,7 @@ def compute_line_stats(
     Reuses the same merge-stops + _compute_stats logic from build_map.
     """
     merged_stops = _merge_stops(all_stops)
+    merged_stops = _apply_majority_voting(merged_stops)
     merged_stops = _filter_bottlenecks(merged_stops, len(all_stops))
     stats = _compute_stats(ride_dfs, merged_stops)
     return _jsonify_stats(stats)
@@ -1070,9 +1155,12 @@ def build_map(
                 popup=folium.Popup(popup_text, max_width=200),
             ).add_to(route_group)
 
-    # Merge stops: within each ride first (sum durations), then across rides
-    # Filter bottlenecks below 50% threshold — used for both map and stats
-    merged_stops = _filter_bottlenecks(_merge_stops(all_stops), num_rides)
+    # Merge stops: within each ride first (sum durations), then across rides.
+    # Apply majority voting to consolidate nearby confused TLs, then filter
+    # bottlenecks below 50% threshold — used for both map and stats.
+    merged_stops = _filter_bottlenecks(
+        _apply_majority_voting(_merge_stops(all_stops)), num_rides
+    )
 
     for (lat, lon), events in merged_stops.items():
         category = _majority_category(events)
