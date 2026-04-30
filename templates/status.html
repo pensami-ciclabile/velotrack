@@ -197,12 +197,12 @@
       bounds.push([s.y, s.x]);
       var covered = s.c === 1;
       var marker = L.circleMarker([s.y, s.x], {
-        radius: covered ? 4 : 6,
-        color: covered ? '#5F5E5E' : '#F67A32',
-        weight: covered ? 1 : 2,
-        opacity: covered ? 0.45 : 1,
-        fillColor: covered ? '#5F5E5E' : '#F67A32',
-        fillOpacity: covered ? 0.35 : 0.85,
+        radius: covered ? 6 : 4,
+        color: covered ? '#F67A32' : '#5F5E5E',
+        weight: covered ? 2 : 1,
+        opacity: covered ? 1 : 0.45,
+        fillColor: covered ? '#F67A32' : '#5F5E5E',
+        fillOpacity: covered ? 0.85 : 0.35,
       });
       marker.bindTooltip(
         s.n + (covered ? '' : ' — missing'),
