@@ -3,7 +3,7 @@
 <p align="center">
   <img src="assets/img/teaser.png" alt="Velotrack teaser — interactive tram speed map of Milan" width="700">
 </p>
-<p align="center"><strong>🚋 Try Velotrack:</strong> <a href="https://velotrack.pensamiciclabile.it/">velotrack.pensamiciclabile.it</a></p>
+<p align="center"><strong>🚋 Try Velotrack:</strong> <a href="https://tramsformami.velocipiedi.it/">tramsformami.velocipiedi.it</a></p>
 
 Analyze GPS recordings of Milan surface public transport rides — trams and ATM's rapid-bus corridors (linee di forza 90, 91, 92, 93) — to produce interactive maps with velocity heatmaps and classified stop events.
 
