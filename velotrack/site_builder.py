@@ -263,6 +263,10 @@ def build_site(
     debug_lines: list[dict[str, Any]] | None = None,
 ) -> None:
     """Render the full static site into SITE_DIR."""
+    for generated_dir in (LINES_DIR,):
+        if generated_dir.exists():
+            shutil.rmtree(generated_dir)
+
     # Prepare output dirs
     for d in (SITE_DIR, MAPS_DIR, LINES_DIR, DATA_DIR_SITE):
         d.mkdir(parents=True, exist_ok=True)
@@ -489,9 +493,11 @@ def build_site(
     # Compute coverage once — reused by home (for the veil) and status pages.
     line_coverage: dict[str, dict] | None = None
     city_coverage: dict | None = None
+    city_stop_coverage: list[dict] | None = None
     if rides_by_line is not None:
         from velotrack.coverage import (
             compute_city_coverage,
+            compute_city_stop_coverage,
             compute_line_coverage,
             load_or_build_line_stops,
         )
@@ -500,6 +506,7 @@ def build_site(
         if line_stops:
             line_coverage = compute_line_coverage(rides_by_line, line_stops)
             city_coverage = compute_city_coverage(line_coverage)
+            city_stop_coverage = compute_city_stop_coverage(line_coverage)
 
     # Setup Jinja2
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
@@ -598,6 +605,19 @@ def build_site(
             ]
             for ln, cov in line_coverage.items()
         }
+        city_map_data = [
+            {
+                "n": s["name"],
+                "y": round(s["lat"], 6),
+                "x": round(s["lon"], 6),
+                "c": 1 if s["covered"] else 0,
+                "h": s["mapped_count"],
+                "sl": s["served_lines"],
+                "ml": s["mapped_lines"],
+                "xl": s["missing_lines"],
+            }
+            for s in city_stop_coverage or []
+        ]
 
         tmpl = env.get_template("status.html")
         (SITE_DIR / "status.html").write_text(
@@ -607,6 +627,7 @@ def build_site(
                 cards=cards,
                 card_sections=card_sections,
                 coverage_json=Markup(json.dumps(map_data, ensure_ascii=False)),
+                city_coverage_json=Markup(json.dumps(city_map_data, ensure_ascii=False)),
             )
         )
         print(

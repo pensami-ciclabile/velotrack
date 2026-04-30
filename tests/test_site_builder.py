@@ -90,7 +90,7 @@ class TestSiteBuilderIntegration(unittest.TestCase):
                  patch.object(sb, "DATA_DIR_SITE", data_dir), \
                  patch.object(sb, "DAILY_TRIPS_JSON", tmp / "daily_trips.json"), \
                  patch.object(sb, "GTFS_STOPS_JSON", tmp / "gtfs_stops.json"), \
-                 patch.object(sb, "TEMPLATES_DIR", Path("/Volumes/T7/velotrack/templates")):
+                 patch.object(sb, "TEMPLATES_DIR", Path(__file__).resolve().parents[1] / "templates"):
                 sb.build_site([line], location_stats=location_stats, hotspot_slices=hotspot_slices)
 
             self.assertTrue((site_dir / "index.html").exists())

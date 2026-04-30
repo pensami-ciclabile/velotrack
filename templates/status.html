@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Velotrack — Mapping Status{% endblock %}
+{% block title %}Priorità al Tram — Mapping Status{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -15,8 +15,14 @@
   .line-trace-fill.full { background: #9F4200; }
   .status-card { transition: background 0.2s ease; }
   .status-card.full { opacity: 0.55; }
+  .network-status-map { height: min(680px, 72vh); min-height: 440px; border-radius: 0.75rem; overflow: hidden; background: #F6F3F2; }
+  .network-status-map .leaflet-container { background: #F6F3F2; font-family: Inter, sans-serif; }
   .status-map { height: 280px; border-radius: 0.75rem; overflow: hidden; background: #F6F3F2; }
   .status-map .leaflet-container { background: #F6F3F2; font-family: Inter, sans-serif; }
+  .coverage-legend-dot {
+    display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 9999px;
+    border: 1px solid currentColor;
+  }
   .missing-chip {
     display: inline-flex; align-items: center; gap: 0.35rem;
     padding: 0.2rem 0.6rem; border-radius: 9999px;
@@ -66,8 +72,30 @@
     </div>
 </section>
 
-<!-- Per-line cards -->
 <script id="coverage-data" type="application/json">{{ coverage_json }}</script>
+<script id="city-coverage-data" type="application/json">{{ city_coverage_json }}</script>
+
+<!-- Citywide map -->
+<section class="bg-surface-container-low py-16 md:py-20">
+    <div class="max-w-[1440px] mx-auto px-6 md:px-8">
+        <div class="mb-8 md:ml-12 max-w-3xl">
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-on-surface">
+                <span class="i18n-it">Mappa completa delle fermate</span><span class="i18n-en">Full stop coverage map</span>
+            </h2>
+            <p class="text-secondary mt-2">
+                <span class="i18n-it">Tutte le fermate GTFS nel perimetro di Priorità al Tram, aggregate tra linee tram e linee di forza. La dimensione indica quante tracce GPS sono passate entro 50 m.</span>
+                <span class="i18n-en">All GTFS stops in Priorità al Tram's scope, aggregated across tram and rapid bus lines. Marker size shows how many GPS traces passed within 50 m.</span>
+            </p>
+        </div>
+        <div id="city-coverage-map" class="network-status-map"></div>
+        <div class="flex flex-wrap gap-4 mt-4 text-[0.6875rem] font-bold uppercase tracking-[0.05em] text-secondary">
+            <span class="inline-flex items-center gap-2"><span class="coverage-legend-dot text-[#F67A32] bg-[#F67A32]"></span><span class="i18n-it">Mappata</span><span class="i18n-en">Mapped</span></span>
+            <span class="inline-flex items-center gap-2"><span class="coverage-legend-dot text-[#5F5E5E] bg-[#5F5E5E] opacity-40"></span><span class="i18n-it">Da mappare</span><span class="i18n-en">Missing</span></span>
+        </div>
+    </div>
+</section>
+
+<!-- Per-line cards -->
 <section class="bg-surface-container-low py-16 md:py-20">
     <div class="max-w-[1440px] mx-auto px-6 md:px-8">
         {% for section in card_sections %}
@@ -164,15 +192,94 @@
 <script>
 (function () {
   var raw = document.getElementById('coverage-data');
+  var cityRaw = document.getElementById('city-coverage-data');
   if (!raw) return;
   var data;
+  var cityData = [];
   try { data = JSON.parse(raw.textContent || '{}'); } catch (e) { return; }
+  try { cityData = JSON.parse(cityRaw ? cityRaw.textContent || '[]' : '[]'); } catch (e) { cityData = []; }
+
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
   function whenLeafletReady(cb) {
     if (window.L) { cb(); return; }
     var t = setInterval(function () {
       if (window.L) { clearInterval(t); cb(); }
     }, 60);
+  }
+
+  function addBaseLayer(map) {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 18,
+      subdomains: 'abcd',
+    }).addTo(map);
+  }
+
+  function linesLabel(lines) {
+    return (lines || []).length ? (lines || []).join(', ') : '—';
+  }
+
+  function rideLabel(count) {
+    return count + (count === 1 ? ' ride trace' : ' ride traces');
+  }
+
+  function cityRadius(hitCount) {
+    if (!hitCount) return 4;
+    return Math.max(6, Math.min(14, 5 + Math.sqrt(hitCount) * 1.8));
+  }
+
+  function initCityMap() {
+    var el = document.getElementById('city-coverage-map');
+    if (!el || !cityData.length) return;
+
+    var map = L.map(el, {
+      zoomControl: true,
+      scrollWheelZoom: false,
+      attributionControl: false,
+      dragging: true,
+      tap: false,
+    });
+    addBaseLayer(map);
+
+    var bounds = [];
+    cityData.forEach(function (s) {
+      bounds.push([s.y, s.x]);
+      var covered = s.c === 1;
+      var hitCount = Number(s.h || 0);
+      var marker = L.circleMarker([s.y, s.x], {
+        radius: cityRadius(hitCount),
+        color: covered ? '#F67A32' : '#5F5E5E',
+        weight: covered ? 2 : 1,
+        opacity: covered ? 1 : 0.45,
+        fillColor: covered ? '#F67A32' : '#5F5E5E',
+        fillOpacity: covered ? 0.78 : 0.28,
+      });
+      marker.bindTooltip(
+        s.n + ' · ' + (covered ? rideLabel(hitCount) : 'missing'),
+        { direction: 'top', offset: [0, -4], className: 'status-tip' }
+      );
+      marker.bindPopup(
+        '<div class="text-sm leading-relaxed">'
+          + '<strong>' + esc(s.n) + '</strong><br>'
+          + '<span>' + esc(rideLabel(hitCount)) + '</span><br>'
+          + '<span>Lines: ' + esc(linesLabel(s.sl)) + '</span><br>'
+          + '<span>Mapped: ' + esc(linesLabel(s.ml)) + '</span><br>'
+          + '<span>Missing: ' + esc(linesLabel(s.xl)) + '</span>'
+        + '</div>',
+        { maxWidth: 280 }
+      );
+      marker.addTo(map);
+    });
+
+    map.fitBounds(bounds, { padding: [24, 24] });
+    el.addEventListener('click', function () { map.scrollWheelZoom.enable(); }, { once: true });
   }
 
   function initMap(el) {
@@ -187,10 +294,7 @@
       dragging: true,
       tap: false,
     });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18,
-      subdomains: 'abcd',
-    }).addTo(map);
+    addBaseLayer(map);
 
     var bounds = [];
     stops.forEach(function (s) {
@@ -220,6 +324,7 @@
   }
 
   whenLeafletReady(function () {
+    initCityMap();
     var els = document.querySelectorAll('[data-line-map]');
     if (!('IntersectionObserver' in window)) {
       els.forEach(initMap);

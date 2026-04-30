@@ -42,22 +42,51 @@ def load_or_build_line_stops() -> dict[str, list[dict]]:
     return line_stops
 
 
-def _gather_points_for_line(rides_by_line: dict[str, dict], line_num: str) -> tuple[np.ndarray, np.ndarray]:
-    """Concatenate lat/lon arrays from every recorded ride matching a line number."""
+def _gather_ride_points_for_line(
+    rides_by_line: dict[str, dict],
+    line_num: str,
+) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Return lat/lon arrays for each recorded ride matching a line number."""
     prefix = f"line{line_num}_"
-    lats: list[np.ndarray] = []
-    lons: list[np.ndarray] = []
+    rides: list[tuple[np.ndarray, np.ndarray]] = []
     for line_key, data in rides_by_line.items():
         if not (line_key == f"line{line_num}" or line_key.startswith(prefix)):
             continue
         for df in data["ride_dfs"]:
             if df is None or df.empty:
                 continue
-            lats.append(df["lat"].to_numpy(dtype=float))
-            lons.append(df["lon"].to_numpy(dtype=float))
-    if not lats:
+            rides.append((
+                df["lat"].to_numpy(dtype=float),
+                df["lon"].to_numpy(dtype=float),
+            ))
+    return rides
+
+
+def _gather_points_for_line(rides_by_line: dict[str, dict], line_num: str) -> tuple[np.ndarray, np.ndarray]:
+    """Concatenate lat/lon arrays from every recorded ride matching a line number."""
+    rides = _gather_ride_points_for_line(rides_by_line, line_num)
+    if not rides:
         return np.array([], dtype=float), np.array([], dtype=float)
+    lats = [lat for lat, _lon in rides]
+    lons = [lon for _lat, lon in rides]
     return np.concatenate(lats), np.concatenate(lons)
+
+
+def _count_ride_hits(
+    lat: float,
+    lon: float,
+    ride_points: list[tuple[np.ndarray, np.ndarray]],
+    radius_m: float,
+) -> int:
+    """Count rides that pass within radius_m of one stop."""
+    hits = 0
+    for lats, lons in ride_points:
+        if lats.size == 0:
+            continue
+        dists = _haversine_vec(lat, lon, lats, lons)
+        if bool(dists.min() <= radius_m):
+            hits += 1
+    return hits
 
 
 def compute_line_coverage(
@@ -74,7 +103,7 @@ def compute_line_coverage(
     for line_num, stops in line_stops.items():
         if not stops:
             continue
-        plats, plons = _gather_points_for_line(rides_by_line, line_num)
+        ride_points = _gather_ride_points_for_line(rides_by_line, line_num)
 
         stop_records: list[dict] = []
         covered_count = 0
@@ -82,16 +111,15 @@ def compute_line_coverage(
         for stop in stops:
             slat = float(stop["lat"])
             slon = float(stop["lon"])
-            covered = False
-            if plats.size > 0:
-                dists = _haversine_vec(slat, slon, plats, plons)
-                covered = bool(dists.min() <= radius_m)
+            mapped_count = _count_ride_hits(slat, slon, ride_points, radius_m)
+            covered = mapped_count > 0
             stop_records.append({
                 "stop_id": stop.get("stop_id", ""),
                 "name": stop.get("name", ""),
                 "lat": slat,
                 "lon": slon,
                 "covered": covered,
+                "mapped_count": mapped_count,
             })
             if covered:
                 covered_count += 1
@@ -137,3 +165,61 @@ def compute_city_coverage(line_coverage: dict[str, dict]) -> dict:
     covered = sum(1 for v in seen.values() if v)
     pct = round(covered / total * 100) if total else 0
     return {"total": total, "covered": covered, "missing": total - covered, "pct": pct}
+
+
+def compute_city_stop_coverage(line_coverage: dict[str, dict]) -> list[dict]:
+    """Aggregate coverage for each unique physical stop across all tracked lines."""
+    stops: dict[tuple, dict] = {}
+    for line_num, cov in line_coverage.items():
+        for stop in cov["stops"]:
+            sid = stop.get("stop_id") or ""
+            if sid:
+                key: tuple = ("id", sid)
+            else:
+                key = (
+                    "nm",
+                    stop.get("name", ""),
+                    round(stop["lat"], 5),
+                    round(stop["lon"], 5),
+                )
+
+            entry = stops.setdefault(key, {
+                "stop_id": sid,
+                "name": stop.get("name", ""),
+                "lat": stop["lat"],
+                "lon": stop["lon"],
+                "mapped_count": 0,
+                "served_lines": set(),
+                "mapped_lines": set(),
+                "missing_lines": set(),
+            })
+            line = str(line_num)
+            entry["served_lines"].add(line)
+            entry["mapped_count"] += int(stop.get("mapped_count", 0))
+            if stop["covered"]:
+                entry["mapped_lines"].add(line)
+            else:
+                entry["missing_lines"].add(line)
+
+    result: list[dict] = []
+    for entry in stops.values():
+        served_lines = sorted(entry["served_lines"], key=lambda line: (len(line), line))
+        mapped_lines = sorted(entry["mapped_lines"], key=lambda line: (len(line), line))
+        missing_lines = sorted(entry["missing_lines"], key=lambda line: (len(line), line))
+        mapped_count = int(entry["mapped_count"])
+        result.append({
+            "stop_id": entry["stop_id"],
+            "name": entry["name"],
+            "lat": entry["lat"],
+            "lon": entry["lon"],
+            "covered": mapped_count > 0,
+            "mapped_count": mapped_count,
+            "served_lines": served_lines,
+            "mapped_lines": mapped_lines,
+            "missing_lines": missing_lines,
+            "served_line_count": len(served_lines),
+            "mapped_line_count": len(mapped_lines),
+        })
+
+    result.sort(key=lambda s: (not s["covered"], -s["mapped_count"], s["name"]))
+    return result

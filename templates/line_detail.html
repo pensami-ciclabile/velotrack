@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ line.display_name }} — Velotrack{% endblock %}
+{% block title %}{{ line.display_name }} — Priorità al Tram{% endblock %}
 
 {% macro fmt_ms(secs) %}{% set s = secs|int %}{% set m = (s // 60)|int %}{% set r = (s % 60)|int %}{% if m > 0 %}{{ m }}m {{ r }}s{% else %}{{ r }}s{% endif %}{% endmacro %}
 {% macro fmt_delta(secs) %}{% set sign = "+" if secs >= 0 else "-" %}{% set a = secs|abs|int %}{% set m = (a // 60)|int %}{% set r = (a % 60)|int %}{% if m > 0 %}{{ sign }}{{ m }}m {{ r }}s{% else %}{{ sign }}{{ r }}s{% endif %}{% endmacro %}

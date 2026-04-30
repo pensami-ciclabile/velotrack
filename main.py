@@ -5,6 +5,7 @@ import getpass
 import io
 import json
 import re
+import shutil
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -318,7 +319,7 @@ def cmd_analyze(gpx_paths: list[str]):
 
     for line_key, data in rides_by_line.items():
         m = build_map(
-            data["ride_dfs"], data["all_stops"], title=f"Velotrack — {line_key}",
+            data["ride_dfs"], data["all_stops"], title=f"Priorità al Tram — {line_key}",
             scheduled_stops=scheduled_stops, traffic_lights=traffic_lights,
         )
         out_path = OUTPUT_DIR / f"{line_key}.html"
@@ -347,6 +348,9 @@ def cmd_build_site():
 
     rides_by_line, scheduled_stops, traffic_lights = _process_rides()
 
+    for generated_dir in (MAPS_DIR,):
+        if generated_dir.exists():
+            shutil.rmtree(generated_dir)
     MAPS_DIR.mkdir(parents=True, exist_ok=True)
     inspect_dir = MAPS_DIR / "inspect"
     inspect_dir.mkdir(parents=True, exist_ok=True)
@@ -366,7 +370,7 @@ def cmd_build_site():
 
         # Save map to site/maps/
         m = build_map(
-            ride_dfs, all_stops, title=f"Velotrack — {line_key}",
+            ride_dfs, all_stops, title=f"Priorità al Tram — {line_key}",
             scheduled_stops=scheduled_stops, traffic_lights=traffic_lights,
         )
         m.save(str(MAPS_DIR / f"{line_key}.html"))

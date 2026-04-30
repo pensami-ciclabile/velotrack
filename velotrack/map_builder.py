@@ -1088,7 +1088,7 @@ def _average_route(ride_dfs: list[pd.DataFrame], step_m: float = 10.0) -> pd.Dat
 def build_map(
     ride_dfs: list[pd.DataFrame],
     all_stops: list[list[StopEvent]],
-    title: str = "Velotrack",
+    title: str = "Priorità al Tram",
     scheduled_stops: pd.DataFrame | None = None,
     traffic_lights: pd.DataFrame | None = None,
 ) -> folium.Map:
