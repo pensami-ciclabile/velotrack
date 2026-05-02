@@ -2,6 +2,25 @@
 
 {% block title %}Priorità al Tram — Milan Tram Ride Analysis{% endblock %}
 
+{% block head %}
+<style>
+    .clustrmaps-tracker {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+        clip-path: inset(50%);
+    }
+
+    .clustrmaps-tracker * {
+        max-width: 1px !important;
+        max-height: 1px !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 {% set coverage_incomplete = city_coverage and city_coverage.pct < 100 %}
 {% set veil_class = "coverage-veiled" if coverage_incomplete else "" %}
@@ -653,4 +672,7 @@
     </div>
 </section>
 {% endif %}
+<div class="clustrmaps-tracker" aria-hidden="true">
+    <script type="text/javascript" id="clustrmaps" src="//clustrmaps.com/map_v2.js?d=FLBANYgsNnnmlGPlsx7Lok_W34knznkRZuJBXuyFrn0&cl=ffffff&w=a"></script>
+</div>
 {% endblock %}
