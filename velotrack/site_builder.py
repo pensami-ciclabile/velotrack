@@ -3,7 +3,9 @@
 import json
 import re
 import shutil
+import subprocess
 from dataclasses import dataclass, asdict, field
+from datetime import datetime
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
@@ -15,6 +17,7 @@ from velotrack.config import (
     GTFS_STOPS_JSON,
     LINES_DIR,
     MAPS_DIR,
+    PROJECT_ROOT,
     SITE_DIR,
     TEMPLATES_DIR,
 )
@@ -34,6 +37,58 @@ class LineInfo:
         match = re.search(r"line(\d+)", self.line_key)
         if match:
             self.mode = mode_for_line_number(match.group(1))
+
+
+_MONTHS_IT = {
+    1: "Gennaio",
+    2: "Febbraio",
+    3: "Marzo",
+    4: "Aprile",
+    5: "Maggio",
+    6: "Giugno",
+    7: "Luglio",
+    8: "Agosto",
+    9: "Settembre",
+    10: "Ottobre",
+    11: "Novembre",
+    12: "Dicembre",
+}
+
+_MONTHS_EN = {
+    1: "January",
+    2: "February",
+    3: "March",
+    4: "April",
+    5: "May",
+    6: "June",
+    7: "July",
+    8: "August",
+    9: "September",
+    10: "October",
+    11: "November",
+    12: "December",
+}
+
+
+def _format_update_dates(dt: datetime) -> dict[str, str]:
+    return {
+        "it": f"{dt.day} {_MONTHS_IT[dt.month]} {dt.year}",
+        "en": f"{dt.day} {_MONTHS_EN[dt.month]} {dt.year}",
+    }
+
+
+def _latest_git_update_dates() -> dict[str, str]:
+    """Return the latest commit date for display on the static site."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(PROJECT_ROOT), "log", "-1", "--format=%cI"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return _format_update_dates(datetime.fromisoformat(result.stdout.strip()))
+    except (OSError, subprocess.CalledProcessError, ValueError):
+        return _format_update_dates(datetime.now())
 
 
 def _destination_name(line_key: str) -> str:
@@ -292,6 +347,7 @@ def build_site(
 
     # Group lines by number for home page
     grouped_lines = _group_lines(lines)
+    update_dates = _latest_git_update_dates()
 
     # Compute traffic light hours lost (if trip counts available).
     # tl_total_lines is derived from the GTFS-stop cache so the denominator
@@ -530,6 +586,7 @@ def build_site(
             hotspot_slices_json=Markup(json.dumps(hotspot_slices, ensure_ascii=False)),
             extra_stats=extra_stats,
             city_coverage=city_coverage,
+            update_dates=update_dates,
         )
     )
 

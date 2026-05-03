@@ -90,12 +90,16 @@ class TestSiteBuilderIntegration(unittest.TestCase):
                  patch.object(sb, "DATA_DIR_SITE", data_dir), \
                  patch.object(sb, "DAILY_TRIPS_JSON", tmp / "daily_trips.json"), \
                  patch.object(sb, "GTFS_STOPS_JSON", tmp / "gtfs_stops.json"), \
-                 patch.object(sb, "TEMPLATES_DIR", Path(__file__).resolve().parents[1] / "templates"):
+                 patch.object(sb, "TEMPLATES_DIR", Path(__file__).resolve().parents[1] / "templates"), \
+                 patch.object(sb, "_latest_git_update_dates", return_value={"it": "3 Maggio 2026", "en": "3 May 2026"}):
                 sb.build_site([line], location_stats=location_stats, hotspot_slices=hotspot_slices)
 
             self.assertTrue((site_dir / "index.html").exists())
             self.assertTrue((site_dir / "hotspots.html").exists())
             self.assertTrue((data_dir / "location_stats.json").exists())
+            home_html = (site_dir / "index.html").read_text()
+            self.assertIn("Ultimo aggiornamento: 3 Maggio 2026", home_html)
+            self.assertIn("Last updated: 3 May 2026", home_html)
             html = (site_dir / "hotspots.html").read_text()
             self.assertIn("id=\"hotspots-map\"", html)
             self.assertIn("id=\"hotspots-list\"", html)

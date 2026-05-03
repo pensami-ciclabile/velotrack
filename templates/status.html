@@ -54,6 +54,10 @@
             <span class="i18n-it">Tram e linee di forza (90, 91, 92, 93): {{ city_coverage.covered }} fermate su {{ city_coverage.total }} hanno almeno una traccia GPS registrata. Le linee qui sotto sono ordinate dalla meno mappata.</span>
             <span class="i18n-en">Trams and rapid bus corridors (90, 91, 92, 93): {{ city_coverage.covered }} of {{ city_coverage.total }} stops have at least one recorded GPS track. Lines below are sorted from least mapped first.</span>
         </p>
+        <p class="text-sm md:text-base text-secondary leading-relaxed max-w-xl mb-10">
+            <span class="i18n-it">Puoi contribuire anche tu alla mappatura, <a href="https://velocipiedi.it/tramsformami/" target="_blank" rel="noopener" class="text-primary font-bold hover:text-on-primary-fixed-variant transition-colors">pi&ugrave; informazioni qui</a>!</span>
+            <span class="i18n-en">You can contribute to the mapping too: <a href="https://velocipiedi.it/tramsformami/" target="_blank" rel="noopener" class="text-primary font-bold hover:text-on-primary-fixed-variant transition-colors">more information here</a>.</span>
+        </p>
 
         <!-- City line-trace progress bar -->
         <div class="line-trace-track" role="progressbar" aria-valuenow="{{ city_coverage.pct }}" aria-valuemin="0" aria-valuemax="100">

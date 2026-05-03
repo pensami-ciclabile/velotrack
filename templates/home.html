@@ -87,6 +87,12 @@
             <span class="i18n-it">Analisi GPS delle corse di tram e linee di forza a Milano. Mappe di velocità, rilevamento fermate e monitoraggio ritardi ai semafori.</span>
             <span class="i18n-en">GPS-based ride analysis for Milan trams and rapid bus corridors. Velocity heatmaps, stop detection, and traffic light delay tracking.</span>
         </p>
+        {% if update_dates %}
+        <p class="mt-5 text-xs font-bold uppercase tracking-[0.08em] text-secondary/70">
+            <span class="i18n-it">Ultimo aggiornamento: {{ update_dates.it }}</span>
+            <span class="i18n-en">Last updated: {{ update_dates.en }}</span>
+        </p>
+        {% endif %}
     </div>
 </section>
 
