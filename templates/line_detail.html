@@ -25,7 +25,7 @@
         </div>
         {% endif %}
         <p class="text-secondary text-lg">
-            {{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km
+            {{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }} registrate</span><span class="i18n-en">recorded ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km <span class="i18n-it">mappati</span><span class="i18n-en">mapped</span>
         </p>
     </section>
 
@@ -112,8 +112,25 @@
         {% set pct_bottleneck = (100 - pct_moving - pct_boarding - pct_tl)|round(1) %}
         <div class="lg:col-span-4">
             <div class="bg-surface-container-low p-8 rounded-2xl h-full">
-                <h3 class="text-[0.6875rem] font-bold uppercase tracking-wider text-secondary mb-4">
-                    <span class="i18n-it">Ripartizione tempo</span><span class="i18n-en">Time breakdown</span>
+                <h3 class="text-[0.6875rem] font-bold uppercase tracking-wider text-secondary mb-4 flex items-center gap-1">
+                    <span><span class="i18n-it">Ripartizione tempo</span><span class="i18n-en">Time breakdown</span></span>
+                    <span class="relative inline-block cursor-help group">
+                        <span class="material-symbols-outlined text-secondary/50 font-normal normal-case tracking-normal !text-[14px] !leading-none align-middle">info</span>
+                        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-64 p-3 rounded-lg bg-on-surface text-surface text-[0.625rem] leading-snug font-normal normal-case tracking-normal hidden group-hover:block z-10 shadow-lg space-y-1.5">
+                            <span class="i18n-it">
+                                <span class="block"><span class="inline-block w-2 h-2 rounded-sm mr-1" style="background:#598e47"></span><strong>Movimento</strong> — il tram è in marcia.</span>
+                                <span class="block"><span class="inline-block w-2 h-2 rounded-sm mr-1" style="background:#f4b256"></span><strong>Fermate</strong> — tempo alle fermate per salita/discesa passeggeri. Per fermate vicine a un semaforo, si stimano 15s di imbarco; il resto va ai semafori.</span>
+                                <span class="block"><span class="inline-block w-2 h-2 rounded-sm mr-1" style="background:#ed5f49"></span><strong>Semafori</strong> — attesa al rosso, inclusa la parte eccedente i 15s nelle fermate vicine a un semaforo.</span>
+                                <span class="block"><span class="inline-block w-2 h-2 rounded-sm mr-1" style="background:#909090"></span><strong>Bottleneck</strong> — soste non classificate (congestione, incroci non mappati).</span>
+                            </span>
+                            <span class="i18n-en">
+                                <span class="block"><span class="inline-block w-2 h-2 rounded-sm mr-1" style="background:#598e47"></span><strong>Moving</strong> — tram is in motion.</span>
+                                <span class="block"><span class="inline-block w-2 h-2 rounded-sm mr-1" style="background:#f4b256"></span><strong>Boarding</strong> — time at stops for passenger boarding/alighting. At stops near a traffic light, 15s is estimated for boarding; the remainder is counted as traffic-light wait.</span>
+                                <span class="block"><span class="inline-block w-2 h-2 rounded-sm mr-1" style="background:#ed5f49"></span><strong>Lights</strong> — waiting at red lights, including the portion above 15s at stops also near a traffic light.</span>
+                                <span class="block"><span class="inline-block w-2 h-2 rounded-sm mr-1" style="background:#909090"></span><strong>Bottleneck</strong> — unclassified stops (congestion, unmapped intersections).</span>
+                            </span>
+                        </span>
+                    </span>
                 </h3>
                 <div class="time-bar mb-3">
                     {% if pct_moving > 0 %}<div style="width:{{ pct_moving }}%;background:#598e47" title="Moving: {{ fmt_ms(moving_time) }}">&nbsp;</div>{% endif %}

@@ -113,8 +113,8 @@
                 <span class="info-tip" tabindex="0">
                     <span class="material-symbols-outlined info-tip-icon">info</span>
                     <span class="info-tip-bubble">
-                        <span class="i18n-it">Σ (attesa media ai semafori per corsa &times; corse giornaliere GTFS) ÷ 3600. Aggregato su tutte le linee misurate.</span>
-                        <span class="i18n-en">Σ (avg traffic-light wait per trip &times; daily GTFS trips) ÷ 3600. Aggregated across all measured lines.</span>
+                        <span class="i18n-it">Σ (attesa media ai semafori per corsa (s) &times; corse giornaliere GTFS) ÷ 3600. Aggregato su tutte le linee misurate.</span>
+                        <span class="i18n-en">Σ (avg traffic-light wait per trip (s) &times; daily GTFS trips) ÷ 3600. Aggregated across all measured lines.</span>
                     </span>
                 </span>
             </div>
@@ -572,7 +572,7 @@
                         </div>
                         <div class="flex justify-between items-baseline">
                             <span class="text-xs text-secondary group-hover:text-white/60">
-                                {{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }}</span><span class="i18n-en">ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km · {{ line.stats.total_stops }} <span class="i18n-it">fermate</span><span class="i18n-en">stops</span>
+                                {{ line.num_rides }} <span class="i18n-it">cors{{ "e" if line.num_rides != 1 else "a" }} registrate</span><span class="i18n-en">recorded ride{{ "s" if line.num_rides != 1 }}</span> · {{ "%.1f"|format(line.total_distance_km) }} km <span class="i18n-it">mappati</span><span class="i18n-en">mapped</span> · {{ line.stats.total_stops }} <span class="i18n-it">fermate</span><span class="i18n-en">stops</span>
                             </span>
                             <span class="font-black text-on-surface group-hover:text-white text-sm shrink-0 ml-3">{{ "%.1f"|format(line.stats.speed.avg_trip) }} km/h</span>
                         </div>
@@ -608,8 +608,8 @@
                     <span class="i18n-en">For each measured tram line, we detect the average time lost at traffic lights per trip via GPS analysis. We multiply that value by the number of daily trips scheduled in GTFS (ATM timetable). If we have data for both directions, we use the average. The total is the sum across all measured lines.</span>
                 </p>
                 <p class="font-mono text-xs text-secondary/60 bg-surface-container px-4 py-2 rounded-lg inline-block">
-                    <span class="i18n-it">Formula: Σ (attesa semafori per corsa × corse giornaliere) ÷ 3600</span>
-                    <span class="i18n-en">Formula: Σ (traffic light wait per trip × daily trips) ÷ 3600</span>
+                    <span class="i18n-it">Formula: Σ (attesa semafori per corsa (s) × corse giornaliere) ÷ 3600</span>
+                    <span class="i18n-en">Formula: Σ (traffic light wait per trip (s) × daily trips) ÷ 3600</span>
                 </p>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -657,8 +657,8 @@
                     <span class="i18n-en">For each measured line, we multiply the average traffic light wait by the number of daily trips: this gives the total recoverable time. We then divide by the average trip duration of that same line to get how many additional rides could be run. The total is the sum across all measured lines.</span>
                 </p>
                 <p class="font-mono text-xs text-secondary/60 bg-surface-container px-4 py-2 rounded-lg inline-block">
-                    <span class="i18n-it">Formula: Σ (attesa semafori per corsa × corse giornaliere ÷ durata media corsa)</span>
-                    <span class="i18n-en">Formula: Σ (TL wait per trip × daily trips ÷ avg trip duration)</span>
+                    <span class="i18n-it">Formula: Σ (attesa semafori per corsa (s) × corse giornaliere ÷ durata media corsa (s))</span>
+                    <span class="i18n-en">Formula: Σ (TL wait per trip (s) × daily trips ÷ avg trip duration (s))</span>
                 </p>
                 <p class="text-xs text-secondary/60">
                     <span class="i18n-it">Durata media corsa e attesa ai semafori da rilevamento GPS. Corse giornaliere da GTFS ATM Milano. Il calcolo assume che il tempo risparmiato possa essere interamente riutilizzato per corse aggiuntive — una stima teorica ottimistica.</span>
