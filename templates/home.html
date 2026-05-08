@@ -132,37 +132,30 @@
             {% endif %}
         </div>
 
-        {% if tl_extra_rides %}
-        <!-- Extra rides possible -->
-        <div class="tl-highlight metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl"
-             data-rides-weekday="{{ tl_extra_rides.weekday }}"
-             data-rides-saturday="{{ tl_extra_rides.saturday }}"
-             data-rides-sunday="{{ tl_extra_rides.sunday }}">
+        <!-- Time actually moving -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
             <div class="flex items-center gap-1.5 mb-2">
                 <span class="text-sm font-medium text-secondary">
-                    <span class="i18n-it">Corse extra possibili</span>
-                    <span class="i18n-en">Extra rides possible</span>
+                    <span class="i18n-it">Tempo effettivo in movimento</span>
+                    <span class="i18n-en">Time actually moving</span>
                 </span>
                 <span class="info-tip" tabindex="0">
                     <span class="material-symbols-outlined info-tip-icon">info</span>
                     <span class="info-tip-bubble">
-                        <span class="i18n-it">Tempo recuperabile dai semafori diviso per la durata media di una corsa, sommato su tutte le linee. Stima teorica.</span>
-                        <span class="i18n-en">Recoverable traffic-light time divided by the average trip duration, summed across all lines. Theoretical estimate.</span>
+                        <span class="i18n-it">Rapporto tra velocit&agrave; media di viaggio e velocit&agrave; di crociera (quando il tram si muove). Il resto &egrave; tempo fermo.</span>
+                        <span class="i18n-en">Ratio of average trip speed to cruising speed (when the tram is moving). The rest is time stopped.</span>
                     </span>
                 </span>
             </div>
-            <div class="flex items-baseline gap-2 mb-4">
-                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tabular-nums tl-rides-value">{{ tl_extra_rides.weekday }}</span>
-                <span class="text-lg font-medium text-secondary/60">
-                    <span class="i18n-it">corse</span><span class="i18n-en">rides</span>
-                </span>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums">{{ extra_stats.moving_pct }}</span>
+                <span class="text-lg font-medium text-secondary/60">%</span>
             </div>
-            <p class="text-sm text-secondary">
-                <span class="i18n-it">Con lo stesso numero di tram e conducenti attualmente in servizio</span>
-                <span class="i18n-en">With the same number of trams and drivers currently in service</span>
+            <p class="text-sm text-secondary mt-auto">
+                <span class="i18n-it">I tram sono fermi per il {{ extra_stats.stopped_pct }}% di ogni corsa &mdash; su 20 minuti, {{ extra_stats.stopped_minutes }} sono a motori spenti</span>
+                <span class="i18n-en">Trams are stopped for {{ extra_stats.stopped_pct }}% of every trip &mdash; out of 20 minutes, {{ extra_stats.stopped_minutes }} are spent standing still</span>
             </p>
         </div>
-        {% endif %}
     </div>
 
     {% if extra_stats %}
@@ -192,7 +185,7 @@
                 <span class="text-lg font-medium text-secondary/60">km/h</span>
             </div>
             <p class="text-sm text-secondary mb-5">
-                <span class="i18n-it">Ultima in Europa tra le citt&agrave; con rete tramviaria</span>
+                <span class="i18n-it">Tra le ultime in Europa tra le citt&agrave; con rete tramviaria</span>
                 <span class="i18n-en">Last in Europe among cities with a tram network</span>
             </p>
 
@@ -305,88 +298,6 @@
         {% endif %}
 
 
-        <!-- Estimated annual cost -->
-        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
-            <div class="flex items-center gap-1.5 mb-2">
-                <span class="text-sm font-medium text-secondary">
-                    <span class="i18n-it">Costo annuo stimato</span>
-                    <span class="i18n-en">Estimated annual cost</span>
-                </span>
-                <span class="info-tip" tabindex="0">
-                    <span class="material-symbols-outlined info-tip-icon">info</span>
-                    <span class="info-tip-bubble">
-                        <span class="i18n-it">Ore perse al giorno &times; 365 &times; costo orario medio di un conducente (~&euro;35/h lordo). Solo costo del personale fermo ai semafori.</span>
-                        <span class="i18n-en">Hours lost per day &times; 365 &times; average driver hourly cost (~&euro;35/h loaded). Only the cost of staff stopped at traffic lights.</span>
-                    </span>
-                </span>
-            </div>
-            <div class="flex items-baseline gap-2 mb-2">
-                <span class="text-4xl md:text-5xl font-black text-[#c44030] tracking-tighter tabular-nums">&euro;{{ extra_stats.annual_cost_m }}M</span>
-                <span class="text-lg font-medium text-secondary/60">
-                    <span class="i18n-it">/ anno</span><span class="i18n-en">/ year</span>
-                </span>
-            </div>
-            <p class="text-sm text-secondary mt-auto">
-                <span class="i18n-it">Il costo in stipendi dei conducenti fermi ai semafori, pagato ogni anno dai contribuenti</span>
-                <span class="i18n-en">The cost of driver wages wasted at traffic lights, paid every year by taxpayers</span>
-            </p>
-        </div>
-
-
-        <!-- Time actually moving -->
-        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
-            <div class="flex items-center gap-1.5 mb-2">
-                <span class="text-sm font-medium text-secondary">
-                    <span class="i18n-it">Tempo effettivo in movimento</span>
-                    <span class="i18n-en">Time actually moving</span>
-                </span>
-                <span class="info-tip" tabindex="0">
-                    <span class="material-symbols-outlined info-tip-icon">info</span>
-                    <span class="info-tip-bubble">
-                        <span class="i18n-it">Rapporto tra velocit&agrave; media di viaggio e velocit&agrave; di crociera (quando il tram si muove). Il resto &egrave; tempo fermo.</span>
-                        <span class="i18n-en">Ratio of average trip speed to cruising speed (when the tram is moving). The rest is time stopped.</span>
-                    </span>
-                </span>
-            </div>
-            <div class="flex items-baseline gap-2 mb-2">
-                <span class="text-5xl md:text-6xl font-black text-[#c44030] tracking-tighter tabular-nums">{{ extra_stats.moving_pct }}</span>
-                <span class="text-lg font-medium text-secondary/60">%</span>
-            </div>
-            <p class="text-sm text-secondary mt-auto">
-                <span class="i18n-it">I tram sono fermi per il {{ extra_stats.stopped_pct }}% di ogni corsa &mdash; su 20 minuti, {{ extra_stats.stopped_minutes }} sono a motori spenti</span>
-                <span class="i18n-en">Trams are stopped for {{ extra_stats.stopped_pct }}% of every trip &mdash; out of 20 minutes, {{ extra_stats.stopped_minutes }} are spent standing still</span>
-            </p>
-        </div>
-
-
-        <!-- Full-time driver equivalents -->
-        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
-            <div class="flex items-center gap-1.5 mb-2">
-                <span class="text-sm font-medium text-secondary">
-                    <span class="i18n-it">Conducenti equivalenti a tempo pieno</span>
-                    <span class="i18n-en">Full-time driver equivalents</span>
-                </span>
-                <span class="info-tip" tabindex="0">
-                    <span class="material-symbols-outlined info-tip-icon">info</span>
-                    <span class="info-tip-bubble">
-                        <span class="i18n-it">Ore perse all'anno (~{{ extra_stats.annual_hours_lost }}) divise per 1.760 ore lavorative annuali di un dipendente a tempo pieno.</span>
-                        <span class="i18n-en">Hours lost per year (~{{ extra_stats.annual_hours_lost }}) divided by 1,760 annual working hours of a full-time employee.</span>
-                    </span>
-                </span>
-            </div>
-            <div class="flex items-baseline gap-2 mb-2">
-                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tabular-nums">{{ extra_stats.fte_drivers }}</span>
-                <span class="text-lg font-medium text-secondary/60">
-                    <span class="i18n-it">conducenti</span><span class="i18n-en">drivers</span>
-                </span>
-            </div>
-            <p class="text-sm text-secondary mt-auto">
-                <span class="i18n-it">{{ extra_stats.fte_drivers }} conducenti a tempo pieno passerebbero l'intera giornata lavorativa fermi al semaforo</span>
-                <span class="i18n-en">{{ extra_stats.fte_drivers }} full-time drivers would spend their entire working day stopped at traffic lights</span>
-            </p>
-        </div>
-
-
         <!-- Lines slower than a runner -->
         <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
             <div class="flex items-center gap-1.5 mb-2">
@@ -413,6 +324,101 @@
                 <span class="i18n-en">{{ extra_stats.lines_slower_than_runner }} line directions are slower than a casual runner at 6:00/km pace</span>
             </p>
         </div>
+
+
+        {# HIDDEN: "Corse extra possibili" — needs revision before restoring
+        {% if tl_extra_rides %}
+        <!-- Extra rides possible -->
+        <div class="tl-highlight metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl"
+             data-rides-weekday="{{ tl_extra_rides.weekday }}"
+             data-rides-saturday="{{ tl_extra_rides.saturday }}"
+             data-rides-sunday="{{ tl_extra_rides.sunday }}">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
+                    <span class="i18n-it">Corse extra possibili</span>
+                    <span class="i18n-en">Extra rides possible</span>
+                </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Tempo recuperabile dai semafori diviso per la durata media di una corsa, sommato su tutte le linee. Stima teorica.</span>
+                        <span class="i18n-en">Recoverable traffic-light time divided by the average trip duration, summed across all lines. Theoretical estimate.</span>
+                    </span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-4">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tabular-nums tl-rides-value">{{ tl_extra_rides.weekday }}</span>
+                <span class="text-lg font-medium text-secondary/60">
+                    <span class="i18n-it">corse</span><span class="i18n-en">rides</span>
+                </span>
+            </div>
+            <p class="text-sm text-secondary">
+                <span class="i18n-it">Con lo stesso numero di tram e conducenti attualmente in servizio</span>
+                <span class="i18n-en">With the same number of trams and drivers currently in service</span>
+            </p>
+        </div>
+        {% endif %}
+        #}
+
+
+        {# HIDDEN: "Costo annuo stimato" — needs revision before restoring
+        <!-- Estimated annual cost -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
+                    <span class="i18n-it">Costo annuo stimato</span>
+                    <span class="i18n-en">Estimated annual cost</span>
+                </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Ore perse al giorno &times; 365 &times; costo orario medio di un conducente (~&euro;35/h lordo). Solo costo del personale fermo ai semafori.</span>
+                        <span class="i18n-en">Hours lost per day &times; 365 &times; average driver hourly cost (~&euro;35/h loaded). Only the cost of staff stopped at traffic lights.</span>
+                    </span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-4xl md:text-5xl font-black text-[#c44030] tracking-tighter tabular-nums">&euro;{{ extra_stats.annual_cost_m }}M</span>
+                <span class="text-lg font-medium text-secondary/60">
+                    <span class="i18n-it">/ anno</span><span class="i18n-en">/ year</span>
+                </span>
+            </div>
+            <p class="text-sm text-secondary mt-auto">
+                <span class="i18n-it">Il costo in stipendi dei conducenti fermi ai semafori, pagato ogni anno dai contribuenti</span>
+                <span class="i18n-en">The cost of driver wages wasted at traffic lights, paid every year by taxpayers</span>
+            </p>
+        </div>
+        #}
+
+
+        {# HIDDEN: "Conducenti equivalenti a tempo pieno" — needs revision before restoring
+        <!-- Full-time driver equivalents -->
+        <div class="metric-card bg-surface-container-low p-8 md:p-10 rounded-2xl flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+                <span class="text-sm font-medium text-secondary">
+                    <span class="i18n-it">Conducenti equivalenti a tempo pieno</span>
+                    <span class="i18n-en">Full-time driver equivalents</span>
+                </span>
+                <span class="info-tip" tabindex="0">
+                    <span class="material-symbols-outlined info-tip-icon">info</span>
+                    <span class="info-tip-bubble">
+                        <span class="i18n-it">Ore perse all'anno (~{{ extra_stats.annual_hours_lost }}) divise per 1.760 ore lavorative annuali di un dipendente a tempo pieno.</span>
+                        <span class="i18n-en">Hours lost per year (~{{ extra_stats.annual_hours_lost }}) divided by 1,760 annual working hours of a full-time employee.</span>
+                    </span>
+                </span>
+            </div>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-5xl md:text-6xl font-black text-on-surface tracking-tighter tabular-nums">{{ extra_stats.fte_drivers }}</span>
+                <span class="text-lg font-medium text-secondary/60">
+                    <span class="i18n-it">conducenti</span><span class="i18n-en">drivers</span>
+                </span>
+            </div>
+            <p class="text-sm text-secondary mt-auto">
+                <span class="i18n-it">{{ extra_stats.fte_drivers }} conducenti a tempo pieno passerebbero l'intera giornata lavorativa fermi al semaforo</span>
+                <span class="i18n-en">{{ extra_stats.fte_drivers }} full-time drivers would spend their entire working day stopped at traffic lights</span>
+            </p>
+        </div>
+        #}
 
     </div>
     </div>
