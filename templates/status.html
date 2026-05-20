@@ -17,11 +17,21 @@
   .status-card.full { opacity: 0.55; }
   .network-status-map { height: min(680px, 72vh); min-height: 440px; border-radius: 0.75rem; overflow: hidden; background: #F6F3F2; }
   .network-status-map .leaflet-container { background: #F6F3F2; font-family: Inter, sans-serif; }
+  .status-heat-canvas { pointer-events: none; }
   .status-map { height: 280px; border-radius: 0.75rem; overflow: hidden; background: #F6F3F2; }
   .status-map .leaflet-container { background: #F6F3F2; font-family: Inter, sans-serif; }
   .coverage-legend-dot {
     display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 9999px;
     border: 1px solid currentColor;
+  }
+  .coverage-legend-dot.missing {
+    width: 0.5rem; height: 0.5rem;
+    background: #5F5E5E; color: #5F5E5E; opacity: 0.55;
+  }
+  .heatmap-scale {
+    display: inline-flex; align-items: center; width: 7rem; height: 0.5rem; border-radius: 9999px;
+    background: linear-gradient(90deg, rgba(246, 122, 50, 0.12), rgba(246, 122, 50, 0.55), rgba(159, 66, 0, 0.95));
+    box-shadow: inset 0 0 0 1px rgba(159, 66, 0, 0.12);
   }
   .missing-chip {
     display: inline-flex; align-items: center; gap: 0.35rem;
@@ -79,22 +89,22 @@
 <script id="coverage-data" type="application/json">{{ coverage_json }}</script>
 <script id="city-coverage-data" type="application/json">{{ city_coverage_json }}</script>
 
-<!-- Citywide map -->
+<!-- Citywide heatmap -->
 <section class="bg-surface-container-low py-16 md:py-20">
     <div class="max-w-[1440px] mx-auto px-6 md:px-8">
         <div class="mb-8 md:ml-12 max-w-3xl">
             <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-on-surface">
-                <span class="i18n-it">Mappa completa delle fermate</span><span class="i18n-en">Full stop coverage map</span>
+                <span class="i18n-it">Dove abbiamo pi&ugrave; tracce</span><span class="i18n-en">Where we have more traces</span>
             </h2>
             <p class="text-secondary mt-2">
-                <span class="i18n-it">Tutte le fermate GTFS nel perimetro di Priorità al Tram, aggregate tra linee tram e linee di forza. La dimensione indica quante tracce GPS sono passate entro 50 m.</span>
-                <span class="i18n-en">All GTFS stops in Priorità al Tram's scope, aggregated across tram and rapid bus lines. Marker size shows how many GPS traces passed within 50 m.</span>
+                <span class="i18n-it">Ogni punto luminoso &egrave; una fermata gi&agrave; attraversata da tracce GPS; i punti pi&ugrave; intensi indicano pi&ugrave; passaggi entro 50 m. I piccoli punti grigi restano le fermate ancora da mappare.</span>
+                <span class="i18n-en">Each illuminated dot is a stop already crossed by GPS traces; brighter dots indicate more passes within 50 m. The small grey dots still mark stops that are missing coverage.</span>
             </p>
         </div>
         <div id="city-coverage-map" class="network-status-map"></div>
         <div class="flex flex-wrap gap-4 mt-4 text-[0.6875rem] font-bold uppercase tracking-[0.05em] text-secondary">
-            <span class="inline-flex items-center gap-2"><span class="coverage-legend-dot text-[#F67A32] bg-[#F67A32]"></span><span class="i18n-it">Mappata</span><span class="i18n-en">Mapped</span></span>
-            <span class="inline-flex items-center gap-2"><span class="coverage-legend-dot text-[#5F5E5E] bg-[#5F5E5E] opacity-40"></span><span class="i18n-it">Da mappare</span><span class="i18n-en">Missing</span></span>
+            <span class="inline-flex items-center gap-2"><span class="heatmap-scale"></span><span class="i18n-it">Pi&ugrave; tracce sovrapposte</span><span class="i18n-en">More overlapping traces</span></span>
+            <span class="inline-flex items-center gap-2"><span class="coverage-legend-dot missing"></span><span class="i18n-it">Fermata da mappare</span><span class="i18n-en">Missing stop</span></span>
         </div>
     </div>
 </section>
@@ -234,9 +244,81 @@
     return count + (count === 1 ? ' ride trace' : ' ride traces');
   }
 
-  function cityRadius(hitCount) {
-    if (!hitCount) return 4;
-    return Math.max(6, Math.min(14, 5 + Math.sqrt(hitCount) * 1.8));
+  function makeTraceHeatLayer(points) {
+    var heatPoints = points.filter(function (s) { return Number(s.h || 0) > 0; });
+    var maxHits = heatPoints.reduce(function (max, s) {
+      return Math.max(max, Number(s.h || 0));
+    }, 1);
+
+    return L.Layer.extend({
+      onAdd: function (map) {
+        this._map = map;
+        this._canvas = L.DomUtil.create('canvas', 'status-heat-canvas leaflet-layer');
+        this._canvas.style.position = 'absolute';
+        this._canvas.style.zIndex = 330;
+        map.getPanes().overlayPane.appendChild(this._canvas);
+        map.on('moveend zoomend resize viewreset', this._reset, this);
+        this._reset();
+      },
+      onRemove: function (map) {
+        map.off('moveend zoomend resize viewreset', this._reset, this);
+        if (this._canvas && this._canvas.parentNode) {
+          this._canvas.parentNode.removeChild(this._canvas);
+        }
+      },
+      _reset: function () {
+        if (!this._map || !this._canvas) return;
+        var size = this._map.getSize();
+        var ratio = window.devicePixelRatio || 1;
+        this._canvas.width = Math.max(1, Math.round(size.x * ratio));
+        this._canvas.height = Math.max(1, Math.round(size.y * ratio));
+        this._canvas.style.width = size.x + 'px';
+        this._canvas.style.height = size.y + 'px';
+        L.DomUtil.setPosition(this._canvas, this._map.containerPointToLayerPoint([0, 0]));
+        this._draw(ratio);
+      },
+      _draw: function (ratio) {
+        var ctx = this._canvas.getContext('2d');
+        var size = this._map.getSize();
+        ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        ctx.save();
+        ctx.scale(ratio, ratio);
+        ctx.globalCompositeOperation = 'source-over';
+
+        heatPoints.forEach(function (s) {
+          var hitCount = Number(s.h || 0);
+          if (!hitCount) return;
+          var p = this._map.latLngToContainerPoint([s.y, s.x]);
+          if (p.x < -80 || p.y < -80 || p.x > size.x + 80 || p.y > size.y + 80) return;
+
+          var intensity = Math.log1p(hitCount) / Math.log1p(maxHits);
+          var coreRadius = 3.5 + intensity * 4.5;
+          var glowRadius = coreRadius + 5 + intensity * 7;
+          var centerAlpha = 0.82 + intensity * 0.16;
+          var midAlpha = 0.28 + intensity * 0.28;
+          var edgeAlpha = 0.04 + intensity * 0.08;
+          var gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowRadius);
+          gradient.addColorStop(0, 'rgba(159, 66, 0, ' + centerAlpha.toFixed(3) + ')');
+          gradient.addColorStop(0.38, 'rgba(246, 122, 50, ' + midAlpha.toFixed(3) + ')');
+          gradient.addColorStop(0.74, 'rgba(246, 122, 50, ' + edgeAlpha.toFixed(3) + ')');
+          gradient.addColorStop(1, 'rgba(246, 122, 50, 0)');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, glowRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = intensity > 0.72 ? '#9F4200' : '#F67A32';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.78)';
+          ctx.lineWidth = 1.25;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, coreRadius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }, this);
+
+        ctx.restore();
+      },
+    });
   }
 
   function initCityMap() {
@@ -253,33 +335,35 @@
     addBaseLayer(map);
 
     var bounds = [];
+    var HeatLayer = makeTraceHeatLayer(cityData);
+    map.addLayer(new HeatLayer());
+
     cityData.forEach(function (s) {
       bounds.push([s.y, s.x]);
       var covered = s.c === 1;
-      var hitCount = Number(s.h || 0);
-      var marker = L.circleMarker([s.y, s.x], {
-        radius: cityRadius(hitCount),
-        color: covered ? '#F67A32' : '#5F5E5E',
-        weight: covered ? 2 : 1,
-        opacity: covered ? 1 : 0.45,
-        fillColor: covered ? '#F67A32' : '#5F5E5E',
-        fillOpacity: covered ? 0.78 : 0.28,
-      });
-      marker.bindTooltip(
-        s.n + ' · ' + (covered ? rideLabel(hitCount) : 'missing'),
-        { direction: 'top', offset: [0, -4], className: 'status-tip' }
-      );
-      marker.bindPopup(
-        '<div class="text-sm leading-relaxed">'
-          + '<strong>' + esc(s.n) + '</strong><br>'
-          + '<span>' + esc(rideLabel(hitCount)) + '</span><br>'
-          + '<span>Lines: ' + esc(linesLabel(s.sl)) + '</span><br>'
-          + '<span>Mapped: ' + esc(linesLabel(s.ml)) + '</span><br>'
-          + '<span>Missing: ' + esc(linesLabel(s.xl)) + '</span>'
-        + '</div>',
-        { maxWidth: 280 }
-      );
-      marker.addTo(map);
+      if (!covered) {
+        var marker = L.circleMarker([s.y, s.x], {
+          radius: 3,
+          color: '#5F5E5E',
+          weight: 1,
+          opacity: 0.65,
+          fillColor: '#5F5E5E',
+          fillOpacity: 0.38,
+        });
+        marker.bindTooltip(
+          s.n + ' · missing',
+          { direction: 'top', offset: [0, -4], className: 'status-tip' }
+        );
+        marker.bindPopup(
+          '<div class="text-sm leading-relaxed">'
+            + '<strong>' + esc(s.n) + '</strong><br>'
+            + '<span>Lines: ' + esc(linesLabel(s.sl)) + '</span><br>'
+            + '<span>Missing: ' + esc(linesLabel(s.xl)) + '</span>'
+          + '</div>',
+          { maxWidth: 260 }
+        );
+        marker.addTo(map);
+      }
     });
 
     map.fitBounds(bounds, { padding: [24, 24] });
