@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
+from velotrack import console as log
 from velotrack.config import (
     MAPS_DIR,
     MAX_REALISTIC_SPEED,
@@ -236,12 +237,16 @@ def _process_rides(gpx_paths: list[str] | None = None):
     if not gpx_paths:
         gpx_paths = sorted(str(p) for p in RIDES_DIR.glob("*.gpx") if not p.name.startswith("._"))
         if not gpx_paths:
-            print(f"No GPX files found. Place .gpx files in {RIDES_DIR}")
+            log.error(f"No GPX files found. Place .gpx files in {RIDES_DIR}")
             sys.exit(1)
 
-    print("Loading scheduled transit stops from GTFS...")
-    scheduled_stops = load_stops()
-    traffic_lights = load_traffic_lights()
+    with log.status("Loading scheduled transit stops from GTFS…"):
+        scheduled_stops = load_stops()
+        traffic_lights = load_traffic_lights()
+    log.success(
+        f"Loaded {len(scheduled_stops)} scheduled stops and "
+        f"{len(traffic_lights)} traffic lights"
+    )
 
     # Group files by tram line
     files_by_line: dict[str, list[tuple[Path, str]]] = defaultdict(list)
@@ -251,64 +256,75 @@ def _process_rides(gpx_paths: list[str] | None = None):
         line_key = f"line{match.group(1)}_{match.group(2)}" if match else path.stem
         files_by_line[line_key].append((path, path.name))
 
+    log.rule(
+        f"Processing {len(gpx_paths)} ride(s) across {len(files_by_line)} line(s)"
+    )
+
     # Parse and detect stops
     rides_by_line: dict[str, dict] = {}
-    for line_key, ride_files in files_by_line.items():
-        print(f"\nProcessing {line_key} ({len(ride_files)} ride(s))...")
-        ride_dfs = []
-        raw_ride_dfs = []
-        all_stops = []
-        valid_ride_files: list[tuple[Path, str]] = []
-        for ride_path, name in ride_files:
-            print(f"  Parsing {name}...")
-            df, outlier_count = parse_gpx(ride_path)
-            if df.empty:
-                print(f"  WARNING: No points in {name}, skipping.")
-                continue
+    with log.progress_bar() as progress:
+        task = progress.add_task("Parsing rides", total=len(gpx_paths))
+        for line_key, ride_files in files_by_line.items():
+            ride_dfs = []
+            raw_ride_dfs = []
+            all_stops = []
+            valid_ride_files: list[tuple[Path, str]] = []
+            for ride_path, name in ride_files:
+                progress.update(task, description=f"[step]{line_key}[/step] · {name}")
+                df, outlier_count = parse_gpx(ride_path)
+                if df.empty:
+                    log.warning(f"No points in {name}, skipping.")
+                    progress.advance(task)
+                    continue
 
-            # Keep the raw, fully un-processed trace around for the /debug/
-            # inspector so we can overlay it on top of the filtered+snapped
-            # version and see exactly what processing did.
-            raw_df = df.copy()
+                # Keep the raw, fully un-processed trace around for the /debug/
+                # inspector so we can overlay it on top of the filtered+snapped
+                # version and see exactly what processing did.
+                raw_df = df.copy()
 
-            # Filter GPS teleport artifacts
-            df, teleport_count = filter_teleports(df)
-            if teleport_count > 0:
-                print(f"  ⚠ {teleport_count} teleport points removed")
-                df, _ = recalculate_distances(df)
+                # Filter GPS teleport artifacts
+                df, teleport_count = filter_teleports(df)
+                if teleport_count > 0:
+                    log.warning(f"{name}: {teleport_count} teleport points removed")
+                    df, _ = recalculate_distances(df)
 
-            # Snap to OSM tram tracks if data is available (tram lines
-            # only — rapid-bus corridors have no rail to snap to).
-            line_num = re.search(r"line(\d+)", line_key)
-            if (
-                line_num
-                and mode_for_line_number(line_num.group(1)) == TRAM
-                and OSM_TRACKS_JSON.exists()
-            ):
-                tracks = load_line_tracks(line_num.group(1))
-                if tracks:
-                    df = snap_to_tracks(df, tracks)
+                # Snap to OSM tram tracks if data is available (tram lines
+                # only — rapid-bus corridors have no rail to snap to).
+                line_num = re.search(r"line(\d+)", line_key)
+                if (
+                    line_num
+                    and mode_for_line_number(line_num.group(1)) == TRAM
+                    and OSM_TRACKS_JSON.exists()
+                ):
+                    tracks = load_line_tracks(line_num.group(1))
+                    if tracks:
+                        df = snap_to_tracks(df, tracks)
 
-            ride_dfs.append(df)
-            raw_ride_dfs.append(raw_df)
-            valid_ride_files.append((ride_path, name))
-            stops = detect_stops(df)
-            stops = classify_stops(stops, scheduled_stops, traffic_lights)
-            all_stops.append(stops)
-            if outlier_count > 0:
-                print(f"  ⚠ {outlier_count} velocity outliers clamped to {MAX_REALISTIC_SPEED} km/h")
-            print(f"  {len(df)} points, {len(stops)} stops detected")
+                ride_dfs.append(df)
+                raw_ride_dfs.append(raw_df)
+                valid_ride_files.append((ride_path, name))
+                stops = detect_stops(df)
+                stops = classify_stops(stops, scheduled_stops, traffic_lights)
+                all_stops.append(stops)
+                if outlier_count > 0:
+                    log.warning(
+                        f"{name}: {outlier_count} velocity outliers clamped to "
+                        f"{MAX_REALISTIC_SPEED} km/h"
+                    )
+                log.detail(f"{name}: {len(df)} points, {len(stops)} stops detected")
+                progress.advance(task)
 
-        if ride_dfs:
-            rides_by_line[line_key] = {
-                "ride_dfs": ride_dfs,
-                "raw_ride_dfs": raw_ride_dfs,
-                "all_stops": all_stops,
-                "ride_files": valid_ride_files,
-            }
-        else:
-            print(f"  No valid rides for {line_key}, skipping.")
+            if ride_dfs:
+                rides_by_line[line_key] = {
+                    "ride_dfs": ride_dfs,
+                    "raw_ride_dfs": raw_ride_dfs,
+                    "all_stops": all_stops,
+                    "ride_files": valid_ride_files,
+                }
+            else:
+                log.warning(f"No valid rides for {line_key}, skipping.")
 
+    log.success(f"Processed {len(rides_by_line)} line(s)")
     return rides_by_line, scheduled_stops, traffic_lights
 
 
@@ -346,7 +362,11 @@ def _slugify(stem: str) -> str:
 def cmd_build_site():
     from velotrack.site_builder import LineInfo, build_site
 
+    log.console.rule("[step]velotrack · build-site[/step]", style="magenta")
+
     rides_by_line, scheduled_stops, traffic_lights = _process_rides()
+
+    log.rule("Building maps")
 
     for generated_dir in (MAPS_DIR,):
         if generated_dir.exists():
@@ -362,7 +382,11 @@ def cmd_build_site():
     debug_rides: list[dict] = []
     debug_lines: list[dict] = []
     used_inspect_slugs: set[str] = set()
+    progress_cm = log.progress_bar()
+    progress = progress_cm.__enter__()
+    map_task = progress.add_task("Building line maps", total=len(rides_by_line))
     for line_key, data in rides_by_line.items():
+        progress.update(map_task, description=f"[step]{line_key}[/step]")
         ride_dfs = data["ride_dfs"]
         raw_ride_dfs = data["raw_ride_dfs"]
         all_stops = data["all_stops"]
@@ -374,7 +398,6 @@ def cmd_build_site():
             scheduled_stops=scheduled_stops, traffic_lights=traffic_lights,
         )
         m.save(str(MAPS_DIR / f"{line_key}.html"))
-        print(f"  Map saved: {MAPS_DIR / f'{line_key}.html'}")
 
         # Build per-ride inspect maps (hidden /debug/ section)
         for df, raw_df, (ride_path, _name) in zip(ride_dfs, raw_ride_dfs, ride_files):
@@ -446,17 +469,25 @@ def cmd_build_site():
             "num_rides": len(ride_dfs),
             "map_path": f"maps/debug_line/{line_debug_name}",
         })
+        progress.advance(map_task)
+
+    progress_cm.__exit__(None, None, None)
+    log.success(f"Built {len(line_infos)} line map(s)")
+
+    log.rule("Analytics & rendering")
 
     # Build global location analytics (one row per physical hotspot + nested breakdowns)
-    normalized_events = build_normalized_events(rides_by_line)
-    location_aggregates = aggregate_location_events(normalized_events)
-    hotspot_slices = build_hotspot_slices(location_aggregates, limit=25)
+    with log.status("Aggregating location analytics…"):
+        normalized_events = build_normalized_events(rides_by_line)
+        location_aggregates = aggregate_location_events(normalized_events)
+        hotspot_slices = build_hotspot_slices(location_aggregates, limit=25)
+    log.success(f"Aggregated {len(location_aggregates)} location hotspots")
 
     # Build traffic lights map into site/maps/
     tl = load_traffic_lights()
     tl_map = build_traffic_lights_map(tl)
     tl_map.save(str(MAPS_DIR / "traffic_lights.html"))
-    print(f"  Traffic lights map saved: {MAPS_DIR / 'traffic_lights.html'}")
+    log.saved("Traffic lights map", MAPS_DIR / "traffic_lights.html")
 
     # Render the site
     build_site(
@@ -467,9 +498,9 @@ def cmd_build_site():
         debug_rides=debug_rides,
         debug_lines=debug_lines,
     )
-    print(f"  Inspect maps saved: {len(debug_rides)} rides → {inspect_dir}")
-    print(f"  Line-debug maps saved: {len(debug_lines)} lines → {line_debug_dir}")
-    print("\nSite build complete!")
+    log.detail(f"Inspect maps: {len(debug_rides)} rides → {inspect_dir}")
+    log.detail(f"Line-debug maps: {len(debug_lines)} lines → {line_debug_dir}")
+    log.success("Site build complete!")
 
 
 def main():

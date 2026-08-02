@@ -11,4 +11,5 @@ dependencies = [
     "numpy",
     "pandas",
     "requests",
+    "rich>=15.0.0",
 ]

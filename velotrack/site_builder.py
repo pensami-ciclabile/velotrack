@@ -11,6 +11,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from markupsafe import Markup
 
+from velotrack import console as log
 from velotrack.config import (
     DAILY_TRIPS_JSON,
     DATA_DIR_SITE,
@@ -687,7 +688,7 @@ def build_site(
                 city_coverage_json=Markup(json.dumps(city_map_data, ensure_ascii=False)),
             )
         )
-        print(
+        log.detail(
             f"Coverage: {city_coverage['pct']}% of city stops mapped "
             f"({city_coverage['covered']}/{city_coverage['total']})"
         )
@@ -729,4 +730,4 @@ def build_site(
         )
     )
 
-    print(f"Site built: {SITE_DIR}")
+    log.saved("Site built", SITE_DIR)

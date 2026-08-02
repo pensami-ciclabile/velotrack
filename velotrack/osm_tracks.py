@@ -7,6 +7,7 @@ from collections import defaultdict
 import pandas as pd
 import requests
 
+from velotrack import console as log
 from velotrack.config import OSM_TRACKS_JSON, SNAP_CONTINUITY_BONUS, SNAP_MAX_DISTANCE
 
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
@@ -83,7 +84,7 @@ def load_line_tracks(line_number: str) -> list[list[tuple[float, float]]]:
         # Strict opt-in: if we have no relation for this line, return empty
         # rather than falling back to *all* tram tracks. The old fallback
         # was a silent footgun that mis-snapped non-tram lines onto rails.
-        print(f"  Warning: no OSM relation found for line {line_number}, skipping snap.")
+        log.warning(f"No OSM relation found for line {line_number}, skipping snap.")
         return []
 
     # Build polylines from matching ways
@@ -265,5 +266,5 @@ def snap_to_tracks(
 
     df["snapped"] = snapped_flags
     snap_count = sum(snapped_flags)
-    print(f"  Snapped {snap_count}/{len(df)} points ({100*snap_count/len(df):.0f}%)")
+    log.detail(f"Snapped {snap_count}/{len(df)} points ({100*snap_count/len(df):.0f}%)")
     return df
