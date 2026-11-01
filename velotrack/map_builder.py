@@ -5,6 +5,7 @@ import folium
 from folium import Element
 import pandas as pd
 
+from velotrack.basemap import carto_key, carto_tile_url, folium_basemap
 from velotrack.config import STOP_COLORS, STOP_DISTANCE, STOP_TIME_GAP, TL_GROUPING_RADIUS, VELOCITY_COLORS
 from velotrack.gpx_parser import haversine
 from velotrack.stop_detector import StopEvent
@@ -28,16 +29,27 @@ def build_traffic_lights_map(
         center_lat = traffic_lights["lat"].mean()
         center_lon = traffic_lights["lon"].mean()
 
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=14, tiles="cartodbpositron", max_zoom=22)
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=14, max_zoom=22, **folium_basemap())
 
-    # Google Maps satellite (no labels) + CartoDB street-only overlay
+    # Optional satellite view for identifying traffic lights.
     folium.TileLayer(
         tiles="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
         attr="Google",
-        name="Google Satellite + Streets",
+        name="Google Satellite",
         overlay=False,
         max_zoom=22,
     ).add_to(m)
+
+    if carto_key():
+        folium.TileLayer(
+            tiles=carto_tile_url("light_only_labels"),
+            attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            name="Street names",
+            overlay=True,
+            show=True,
+            max_zoom=22,
+            min_zoom=15,
+        ).add_to(m)
 
     for _, row in traffic_lights.iterrows():
         name = row.get("name", "")
@@ -57,20 +69,6 @@ def build_traffic_lights_map(
         if not server_mode:
             marker.add_child(folium.Popup(popup_text, max_width=250))
         marker.add_to(m)
-
-    # Street names overlay (no POIs/shops) — useful on top of satellite
-    street_labels = folium.TileLayer(
-        tiles="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}@2x.png",
-        attr="CartoDB",
-        name="Street names",
-        overlay=True,
-        show=True,
-        max_zoom=22,
-        min_zoom=15,
-        tile_size=1024,
-        zoom_offset=-2,
-    )
-    street_labels.add_to(m)
 
     folium.LayerControl(collapsed=False).add_to(m)
 
@@ -1110,7 +1108,7 @@ def build_map(
     center_lat = sum(all_lats) / len(all_lats) if all_lats else 45.464
     center_lon = sum(all_lons) / len(all_lons) if all_lons else 9.19
 
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=14, tiles="cartodbpositron")
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=14, **folium_basemap())
 
     # Feature groups for layer control
     route_group = folium.FeatureGroup(name="route_velocity", show=True)
@@ -1253,7 +1251,7 @@ def build_inspect_map(df: pd.DataFrame, title: str = "Ride Inspector",
     center_lat = df["lat"].mean()
     center_lon = df["lon"].mean()
     m = folium.Map(location=[center_lat, center_lon], zoom_start=13,
-                   tiles="cartodbpositron")
+                   **folium_basemap())
 
     # ---- Processed trace (filtered + snapped) ----
     processed_fg = folium.FeatureGroup(name="Processed (filtered + snapped)", show=True)
@@ -1429,13 +1427,13 @@ def build_line_debug_map(
     individual traces and spot the one that's dragging the line average off.
     """
     if not ride_dfs:
-        return folium.Map(location=[45.46, 9.19], zoom_start=12, tiles="cartodbpositron")
+        return folium.Map(location=[45.46, 9.19], zoom_start=12, **folium_basemap())
 
     # Center on the overall centroid of all rides (weighted by point count is
     # overkill; plain mean of means is fine for a debug view).
     lat_mean = float(np.mean([df["lat"].mean() for df in ride_dfs if not df.empty]))
     lon_mean = float(np.mean([df["lon"].mean() for df in ride_dfs if not df.empty]))
-    m = folium.Map(location=[lat_mean, lon_mean], zoom_start=13, tiles="cartodbpositron")
+    m = folium.Map(location=[lat_mean, lon_mean], zoom_start=13, **folium_basemap())
 
     for idx, (df, name) in enumerate(zip(ride_dfs, ride_names)):
         if df.empty:

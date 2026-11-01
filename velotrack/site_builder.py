@@ -11,6 +11,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from markupsafe import Markup
 
+from velotrack.basemap import carto_key, carto_tile_url
 from velotrack import console as log
 from velotrack.config import (
     DAILY_TRIPS_JSON,
@@ -335,7 +336,17 @@ def build_site(
 
     static_src = TEMPLATES_DIR / "static"
     shutil.copy2(static_src / "css" / "style.css", css_dir / "style.css")
-    shutil.copy2(static_src / "js" / "main.js", js_dir / "main.js")
+    basemap_url = carto_tile_url("light_all") if carto_key() else "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+    basemap_attribution = (
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        if carto_key() else
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    )
+    (js_dir / "main.js").write_text(
+        f"window.VELOTRACK_BASEMAP_URL = {json.dumps(basemap_url)};\n"
+        f"window.VELOTRACK_BASEMAP_ATTRIBUTION = {json.dumps(basemap_attribution)};\n"
+        + (static_src / "js" / "main.js").read_text()
+    )
 
     # Export lines.json
     lines_data = [asdict(li) for li in lines]
@@ -686,6 +697,8 @@ def build_site(
                 card_sections=card_sections,
                 coverage_json=Markup(json.dumps(map_data, ensure_ascii=False)),
                 city_coverage_json=Markup(json.dumps(city_map_data, ensure_ascii=False)),
+                basemap_url_json=Markup(json.dumps(basemap_url)),
+                basemap_attribution_json=Markup(json.dumps(basemap_attribution)),
             )
         )
         log.detail(

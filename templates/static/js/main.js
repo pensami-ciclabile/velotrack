@@ -451,9 +451,9 @@ document.addEventListener("DOMContentLoaded", function () {
             zoomControl: true
         }).setView([45.4642, 9.19], 12);
 
-        L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        L.tileLayer(window.VELOTRACK_BASEMAP_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
-            attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+            attribution: window.VELOTRACK_BASEMAP_ATTRIBUTION || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
         var markersLayer = L.layerGroup().addTo(map);

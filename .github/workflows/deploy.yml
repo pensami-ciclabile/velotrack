@@ -33,6 +33,8 @@ jobs:
         run: uv sync
 
       - name: Build site
+        env:
+          CARTO_BASEMAP_KEY: ${{ secrets.CARTO_BASEMAP_KEY }}
         run: uv run main.py build-site
 
       - name: Add CNAME for custom domain

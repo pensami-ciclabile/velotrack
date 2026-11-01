@@ -254,9 +254,9 @@
   }
 
   function addBaseLayer(map) {
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18,
-      subdomains: 'abcd',
+    L.tileLayer({{ basemap_url_json }}, {
+      maxZoom: 19,
+      attribution: {{ basemap_attribution_json }},
     }).addTo(map);
   }
 
